@@ -7,13 +7,18 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
 abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
+
+    @Component
+    protected MavenProject project;
 
     @Parameter(property = "username", required = true)
     protected String username;
@@ -39,16 +44,13 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
     @Parameter(property = "jarPath")
     protected String jarPath;
 
-    protected Date verifiyDateTime;
+    // Start time we will look for
+    protected static Date verifyDateTime;
 
     private static final String AGENT_NAME = "contrast.jar";
 
     public void execute() throws MojoExecutionException {
-        ContrastSDK contrast = connectToTeamserver();
-
-        getLog().info("Successfully authenticated to Teamserver. Attempting to download the latest Java agent.");
-
-        File agentFile = installJavaAgent(contrast);
+        getLog().info("----------------------- Contrast Maven plugin ------------------------");
     }
 
     ContrastSDK connectToTeamserver() throws MojoExecutionException {
@@ -67,8 +69,9 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
         byte[] javaAgent;
         File agentFile;
 
-        if (!StringUtils.isEmpty(jarPath)) {
-            // no jar path parameter, download latest
+        if (StringUtils.isEmpty(jarPath)) {
+            getLog().info("No jar path was configured. Downloading the latest contrast.jar...");
+
             try {
                 javaAgent = connection.getAgent(AgentType.JAVA, orgUuid);
             } catch (IOException e) {
@@ -88,11 +91,13 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
             getLog().info("Saved the latest java agent to " + AGENT_NAME);
 
         } else {
+            getLog().info("Using configured jar path " + jarPath);
+
             // try to retrieve the local jar
             agentFile = new File(jarPath);
 
             if (!agentFile.exists()) {
-                throw new MojoExecutionException("Unable to load the Java agent from " + jarPath);
+                throw new MojoExecutionException("Unable to load the local Java agent from " + jarPath);
             }
 
             getLog().info("Loaded the latest java agent from " + jarPath);
