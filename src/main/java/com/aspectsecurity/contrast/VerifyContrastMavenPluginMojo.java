@@ -4,6 +4,7 @@ import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.http.FilterForm;
 import com.contrastsecurity.models.Traces;
 import com.contrastsecurity.sdk.ContrastSDK;
+import com.sun.tools.attach.VirtualMachine;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -17,7 +18,6 @@ import java.util.List;
 public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMojo {
 
     public void execute() throws MojoExecutionException {
-        super.execute();
         getLog().info("Integration tests have finished. Checking for new vulnerabilities...");
 
         ContrastSDK contrast = connectToTeamserver();

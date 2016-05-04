@@ -3,6 +3,7 @@ package com.aspectsecurity.contrast;
 import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.models.AgentType;
 import com.contrastsecurity.sdk.ContrastSDK;
+import com.sun.tools.attach.VirtualMachine;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
@@ -13,9 +14,15 @@ import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.Date;
 
 abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
+
+    // TODO call getProfileOrganizations or default organization
+    // TODO get application id from app name?
+    // TODO remove MavenProject?
+    // TODO install contrast jar
 
     @Component
     protected MavenProject project;
@@ -75,7 +82,7 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
             try {
                 javaAgent = connection.getAgent(AgentType.JAVA, orgUuid);
             } catch (IOException e) {
-                throw new MojoExecutionException("Unable to retrieve the latest java agent.", e);
+                throw new MojoExecutionException("Unable to download the latest java agent.", e);
             } catch (UnauthorizedException e) {
                 throw new MojoExecutionException("Unable to retrieve the latest java agent due to authorization.", e);
             }
@@ -105,5 +112,15 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
         }
 
         return agentFile;
+    }
+
+    String getProcessId() {
+        String processName = ManagementFactory.getRuntimeMXBean().getName();
+
+        if (processName.contains("@")) {
+            return processName.split("@")[0];
+        } else {
+            return processName;
+        }
     }
 }
