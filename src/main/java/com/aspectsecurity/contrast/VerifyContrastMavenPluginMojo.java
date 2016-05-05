@@ -30,7 +30,7 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
 
         getLog().info("Sending vulnerability request to Teamserver.");
 
-        Traces traces;
+        Traces traces = null;
 
         try {
             traces = contrast.getTracesWithFilter(orgUuid, appId, form);
@@ -40,7 +40,7 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
             throw new MojoExecutionException("Unable to connect to Teamserver.", e);
         }
 
-        if (traces.getCount() > 0) {
+        if (traces != null && traces.getCount() > 0) {
             throw new MojoExecutionException(traces.getCount() + " new vulnerability(s) were found after running the integration tests.");
         } else {
             getLog().info("No new vulnerabilities were found!");

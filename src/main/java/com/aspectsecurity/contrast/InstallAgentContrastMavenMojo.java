@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.Date;
 
 
-@Mojo(name = "install", defaultPhase = LifecyclePhase.PRE_INTEGRATION_TEST, requiresOnline = true)
+@Mojo(name = "install", defaultPhase = LifecyclePhase.INITIALIZE, requiresOnline = true)
 public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMojo {
 
     public void execute() throws MojoExecutionException {
@@ -39,7 +39,7 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
             try {
                 getLog().info("Attempting to attach the Java agent to the target JVM.");
                 virtualMachine.loadAgent(agentFile.getName());
-                virtualMachine.detach(); // FIXME Needed?
+                // virtualMachine.detach();
             } catch (AgentLoadException e) {
                 getLog().info("Unable to load the Java agent.", e);
             } catch (AgentInitializationException e) {
