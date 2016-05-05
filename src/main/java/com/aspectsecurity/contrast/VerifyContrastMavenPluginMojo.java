@@ -45,6 +45,8 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
         } else {
             getLog().info("No new vulnerabilities were found!");
         }
+
+        getLog().info("Finished verifying your applications integration tests.");
     }
 
     // Returns the sublist of severities greater than or equal to the configured severity level

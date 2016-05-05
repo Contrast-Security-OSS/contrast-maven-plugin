@@ -30,9 +30,9 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
         try {
             virtualMachine = VirtualMachine.attach(getProcessId());
         } catch (AttachNotSupportedException e) {
-            getLog().info("Unable to attach to this JVM.", e);
+            throw new MojoExecutionException("Unable to attach to this JVM.", e);
         } catch (IOException e) {
-            getLog().info("Unable load the JVM.", e);
+            throw new MojoExecutionException("Unable load the JVM.", e);
         }
 
         if (agentFile.exists() && virtualMachine != null) {
@@ -41,11 +41,11 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
                 virtualMachine.loadAgent(agentFile.getName());
                 // virtualMachine.detach();
             } catch (AgentLoadException e) {
-                getLog().info("Unable to load the Java agent.", e);
+                throw new MojoExecutionException("Unable to load the Java agent.", e);
             } catch (AgentInitializationException e) {
-                getLog().info("Unable to initialize the Java agent.", e);
+                throw new MojoExecutionException("Unable to initialize the Java agent.", e);
             } catch (IOException e) {
-                getLog().info("Unable to load the Java agent.", e);
+                throw new MojoExecutionException("Unable to load the Java agent.", e);
             }
         }
 
