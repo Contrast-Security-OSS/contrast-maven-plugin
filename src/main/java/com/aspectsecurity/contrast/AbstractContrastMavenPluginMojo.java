@@ -3,14 +3,11 @@ package com.aspectsecurity.contrast;
 import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.models.AgentType;
 import com.contrastsecurity.sdk.ContrastSDK;
-import com.sun.tools.attach.VirtualMachine;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,11 +18,6 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
 
     // TODO call getProfileOrganizations or default organization
     // TODO get application id from app name?
-    // TODO remove MavenProject?
-    // TODO install contrast jar
-
-    @Component
-    protected MavenProject project;
 
     @Parameter(property = "username", required = true)
     protected String username;
@@ -44,6 +36,9 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
 
     @Parameter(property = "appId", required = true)
     protected String appId;
+
+    @Parameter(property = "appName", required = false)
+    protected String appName;
 
     @Parameter(property = "minSeverity", defaultValue = "Medium")
     protected String minSeverity;

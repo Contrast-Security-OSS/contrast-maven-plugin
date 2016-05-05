@@ -4,7 +4,6 @@ import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.http.FilterForm;
 import com.contrastsecurity.models.Traces;
 import com.contrastsecurity.sdk.ContrastSDK;
-import com.sun.tools.attach.VirtualMachine;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
