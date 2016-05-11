@@ -7,17 +7,21 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.util.Date;
 
 abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
 
     // TODO call getProfileOrganizations or default organization
     // TODO get application id from app name?
+
+    @Component
+    protected MavenProject project;
 
     @Parameter(property = "username", required = true)
     protected String username;
@@ -107,15 +111,5 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
         }
 
         return agentFile;
-    }
-
-    String getProcessId() {
-        String processName = ManagementFactory.getRuntimeMXBean().getName();
-
-        if (processName.contains("@")) {
-            return processName.split("@")[0];
-        } else {
-            return processName;
-        }
     }
 }

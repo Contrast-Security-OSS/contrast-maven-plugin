@@ -5,19 +5,17 @@ import com.contrastsecurity.http.FilterForm;
 import com.contrastsecurity.models.Traces;
 import com.contrastsecurity.sdk.ContrastSDK;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-
-@Mojo(name = "verify", defaultPhase = LifecyclePhase.POST_INTEGRATION_TEST, requiresOnline = true)
+@Mojo(name = "verify", requiresOnline = true)
 public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMojo {
 
     public void execute() throws MojoExecutionException {
-        getLog().info("Integration tests have finished. Checking for new vulnerabilities...");
+        getLog().info("Checking for new vulnerabilities...");
 
         ContrastSDK contrast = connectToTeamserver();
 
@@ -40,12 +38,12 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
         }
 
         if (traces != null && traces.getCount() > 0) {
-            throw new MojoExecutionException(traces.getCount() + " new vulnerability(s) were found after running the integration tests.");
+            throw new MojoExecutionException(traces.getCount() + " new vulnerability(s) were found!");
         } else {
             getLog().info("No new vulnerabilities were found!");
         }
 
-        getLog().info("Finished verifying your applications integration tests.");
+        getLog().info("Finished verifying your application.");
     }
 
     // Returns the sublist of severities greater than or equal to the configured severity level

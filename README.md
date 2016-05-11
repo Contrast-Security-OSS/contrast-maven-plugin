@@ -1,9 +1,7 @@
 # Contrast Maven Plugin
 
-Repository for the Contrast Maven plugin. This plugin will download and install the Contrast Java agent pre-integration tests.
-Then it will verify no new vulnerabilities were found in the post-integration test lifecycle phase.
-
-Setting '-Djavaagent:contrast.jar' is required.
+Repository for the Contrast Maven plugin. This plugin will download and install the Contrast Java agent during the initialize lifecycle phase.
+Then it will verify no new vulnerabilities were found before you call the verify goal.
 
 ## Goals
 
