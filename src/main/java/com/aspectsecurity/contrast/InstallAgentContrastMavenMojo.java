@@ -7,7 +7,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 
 import java.io.File;
 import java.util.Date;
-import java.util.Properties;
 
 
 @Mojo(name = "install", defaultPhase = LifecyclePhase.VALIDATE, requiresOnline = true)
@@ -24,16 +23,6 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
         getLog().info("Successfully authenticated to Teamserver. Attempting to install the Java agent.");
 
         File agentFile = installJavaAgent(contrast);
-
-        final Properties projectProperties = project.getProperties();
-
-        if (jarPath != null) {
-            projectProperties.setProperty(JAVAAGENT_PROPERTY, jarPath);
-        } else {
-            projectProperties.setProperty(JAVAAGENT_PROPERTY, agentFile.getName());
-        }
-
-        projectProperties.setProperty(CONTRAST_ENABLED, "true");
 
         verifyDateTime = new Date();
 

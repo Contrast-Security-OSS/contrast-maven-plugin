@@ -17,9 +17,6 @@ import java.util.Date;
 
 abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
 
-    // TODO call getProfileOrganizations or default organization
-    // TODO get application id from app name?
-
     @Component
     protected MavenProject project;
 
