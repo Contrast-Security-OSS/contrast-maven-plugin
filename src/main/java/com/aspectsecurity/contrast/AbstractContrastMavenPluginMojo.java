@@ -35,6 +35,7 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
     @Parameter(property = "orgUuid", required = true)
     protected String orgUuid;
 
+    // TODO convert to list
     @Parameter(property = "appId", required = true)
     protected String appId;
 
@@ -56,7 +57,7 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
         getLog().info("----------------------- Contrast Maven plugin ------------------------");
     }
 
-    ContrastSDK connectToTeamserver() throws MojoExecutionException {
+    ContrastSDK connectToTeamServer() throws MojoExecutionException {
         try {
             if (!StringUtils.isEmpty(apiUrl)) {
                 return new ContrastSDK(username, serviceKey, apiKey, apiUrl);
@@ -64,7 +65,7 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
                 return new ContrastSDK(username, serviceKey, apiKey);
             }
         } catch (IllegalArgumentException e) {
-            throw new MojoExecutionException("Unable to connect to Teamserver. Please check your maven settings.", e);
+            throw new MojoExecutionException("Unable to connect to TeamServer. Please check your maven settings.", e);
         }
     }
 

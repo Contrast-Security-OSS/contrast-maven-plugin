@@ -75,7 +75,7 @@
     <profile>
       <id>run-its</id>
       <build>
-
+        <!-- TODO remove -->
         <plugins>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>

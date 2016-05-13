@@ -7,22 +7,28 @@ import org.apache.maven.plugins.annotations.Mojo;
 
 import java.io.File;
 import java.util.Date;
+import java.util.Properties;
 
 
 @Mojo(name = "install", defaultPhase = LifecyclePhase.VALIDATE, requiresOnline = true)
 public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMojo {
 
-    private static final String JAVAAGENT_PROPERTY = "javaagent";
-    private static final String CONTRAST_ENABLED = "contrast.enabled";
-
     public void execute() throws MojoExecutionException {
-        getLog().info("Attempting to connect to configured Teamserver...");
+        getLog().info("Attempting to connect to configured TeamServer...");
 
-        ContrastSDK contrast = connectToTeamserver();
+        ContrastSDK contrast = connectToTeamServer();
 
         getLog().info("Successfully authenticated to Teamserver. Attempting to install the Java agent.");
 
         File agentFile = installJavaAgent(contrast);
+
+        Properties projectProperties = project.getProperties();
+
+        if (jarPath != null) {
+            projectProperties.setProperty("javaagent", jarPath);
+        } else {
+            projectProperties.setProperty("javaagent", agentFile.getName());
+        }
 
         verifyDateTime = new Date();
 

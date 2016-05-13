@@ -2,6 +2,7 @@ package com.aspectsecurity.contrast;
 
 import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.http.FilterForm;
+import com.contrastsecurity.models.Trace;
 import com.contrastsecurity.models.Traces;
 import com.contrastsecurity.sdk.ContrastSDK;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -17,15 +18,15 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
     public void execute() throws MojoExecutionException {
         getLog().info("Checking for new vulnerabilities...");
 
-        ContrastSDK contrast = connectToTeamserver();
+        ContrastSDK contrast = connectToTeamServer();
 
-        getLog().info("Successfully authenticated to Teamserver.");
+        getLog().info("Successfully authenticated to TeamServer.");
 
         FilterForm form = new FilterForm();
         form.setSeverities(getSeverityList(minSeverity));
         form.setStartDate(verifyDateTime);
 
-        getLog().info("Sending vulnerability request to Teamserver.");
+        getLog().info("Sending vulnerability request to TeamServer.");
 
         Traces traces = null;
 
@@ -34,16 +35,37 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
         } catch (IOException e) {
             throw new MojoExecutionException("Unable to retrieve the traces.", e);
         } catch (UnauthorizedException e) {
-            throw new MojoExecutionException("Unable to connect to Teamserver.", e);
+            throw new MojoExecutionException("Unable to connect to TeamServer.", e);
         }
 
         if (traces != null && traces.getCount() > 0) {
-            throw new MojoExecutionException(traces.getCount() + " new vulnerability(s) were found!");
+            getLog().info(traces.getCount() + " new vulnerability(s) were found! Printing vulnerability report.");
+
+            for (Trace trace: traces.getTraces()) {
+                getLog().info(generateTraceReport(trace));
+            }
+
+            throw new MojoExecutionException("Your application is vulnerable. Please see the above report for new vulnerabilities.");
         } else {
             getLog().info("No new vulnerabilities were found!");
         }
 
         getLog().info("Finished verifying your application.");
+    }
+
+    private String generateTraceReport(Trace trace) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Trace: ");
+        sb.append(trace.getTitle());
+        sb.append("\nTrace Uuid: ");
+        sb.append(trace.getUuid());
+        sb.append("\nTrace Severity: ");
+        sb.append(trace.getSeverity());
+        sb.append("\nTrace Likelihood: ");
+        sb.append(trace.getLikelihood());
+        sb.append("\n");
+
+        return sb.toString();
     }
 
     // Returns the sublist of severities greater than or equal to the configured severity level
