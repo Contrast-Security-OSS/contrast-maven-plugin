@@ -19,6 +19,7 @@ Then it will verify no new vulnerabilities were found before you call the verify
 | orgUuid     | True     |         |             |
 | appId       | True     |         |             |
 | apiUrl      | True     |         |             |
+| serverName  | True     |         |             |
 | minSeverity | False    | Medium  |             |
 | jarPath     | False    |         |             |
 
@@ -43,8 +44,8 @@ Then it will verify no new vulnerabilities were found before you call the verify
          <apiUrl>http://www.app.contrastsecurity.com/api</apiUrl>
          <orgUuid>QWER-ASDF-ZXCV-ERTY</orgUuid>
          <appId>QWER-ASDF-ZXCV-ERTY</appId>
+         <serverName>jenkins.slave1</serverName>
          <minSeverity>High</minSeverity>
-         <jarPath>~/.contrast/contrast.jar</jarPath>
      </configuration>
 </plugin>
 ```

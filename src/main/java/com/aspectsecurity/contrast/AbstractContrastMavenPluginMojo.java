@@ -35,15 +35,14 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
     @Parameter(property = "orgUuid", required = true)
     protected String orgUuid;
 
-    // TODO convert to list
     @Parameter(property = "appId", required = true)
     protected String appId;
 
-    @Parameter(property = "appName", required = false)
-    protected String appName;
-
     @Parameter(property = "minSeverity", defaultValue = "Medium")
     protected String minSeverity;
+
+    @Parameter(property = "serverName", required = true)
+    protected String serverName;
 
     @Parameter(property = "jarPath")
     protected String jarPath;
@@ -54,7 +53,6 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
     private static final String AGENT_NAME = "contrast.jar";
 
     public void execute() throws MojoExecutionException {
-        getLog().info("----------------------- Contrast Maven plugin ------------------------");
     }
 
     ContrastSDK connectToTeamServer() throws MojoExecutionException {

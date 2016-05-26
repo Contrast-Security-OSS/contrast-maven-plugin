@@ -2,6 +2,8 @@ package com.aspectsecurity.contrast;
 
 import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.http.FilterForm;
+import com.contrastsecurity.http.ServerFilterForm;
+import com.contrastsecurity.models.Servers;
 import com.contrastsecurity.models.Trace;
 import com.contrastsecurity.models.Traces;
 import com.contrastsecurity.sdk.ContrastSDK;
@@ -22,6 +24,26 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
 
         getLog().info("Successfully authenticated to TeamServer.");
 
+        ServerFilterForm serverFilterForm = new ServerFilterForm();
+        serverFilterForm.setQ(serverName);
+
+        Servers servers = null;
+        long serverId = 0L;
+
+        try {
+            servers = contrast.getServersWithFilter(orgUuid, serverFilterForm);
+        } catch (IOException e) {
+            throw new MojoExecutionException("Unable to retrieve the servers.", e);
+        } catch (UnauthorizedException e) {
+            throw new MojoExecutionException("Unable to connect to TeamServer.", e);
+        }
+
+        if (!servers.getServers().isEmpty()) {
+            serverId = servers.getServers().get(0).getServerId();
+        } else {
+            throw new MojoExecutionException("Server with name '" + serverName + "' not found.");
+        }
+
         FilterForm form = new FilterForm();
         form.setSeverities(getSeverityList(minSeverity));
         form.setStartDate(verifyDateTime);
@@ -31,7 +53,7 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
         Traces traces = null;
 
         try {
-            traces = contrast.getTracesWithFilter(orgUuid, appId, form);
+            traces = contrast.getTracesWithFilter(orgUuid, appId, "servers", Long.toString(serverId), form);
         } catch (IOException e) {
             throw new MojoExecutionException("Unable to retrieve the traces.", e);
         } catch (UnauthorizedException e) {
