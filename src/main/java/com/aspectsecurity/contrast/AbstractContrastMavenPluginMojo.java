@@ -83,7 +83,7 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
                 throw new MojoExecutionException("Unable to retrieve the latest java agent due to authorization.", e);
             }
 
-            // Saving the file to the 'target' directory
+            // Save the jar to the 'target' directory
             agentFile = new File(project.getBuild().getDirectory() + File.separator + AGENT_NAME);
 
             try {
@@ -92,12 +92,11 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
                 throw new MojoExecutionException("Unable to save the latest java agent.", e);
             }
 
-            getLog().info("Saved the latest java agent to " + AGENT_NAME);
+            getLog().info("Saved the latest java agent to " + agentFile.getAbsolutePath());
 
         } else {
             getLog().info("Using configured jar path " + jarPath);
 
-            // try to retrieve the local jar
             agentFile = new File(jarPath);
 
             if (!agentFile.exists()) {

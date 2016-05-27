@@ -32,6 +32,8 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
         Servers servers;
         long serverId;
 
+        getLog().info("Sending server request to TeamServer.");
+
         try {
             servers = contrast.getServersWithFilter(orgUuid, serverFilterForm);
         } catch (IOException e) {

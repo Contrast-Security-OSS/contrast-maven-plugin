@@ -11,17 +11,17 @@ Then it will verify no new vulnerabilities were found before you call the verify
 
 ## Configuration Options
 
-| Parameter   | Required | Default | Description |
-|-------------|----------|---------|-------------|
-| username    | True     |         |             |
-| serviceKey  | True     |         |             |
-| apiKey      | True     |         |             |
-| orgUuid     | True     |         |             |
-| appId       | True     |         |             |
-| apiUrl      | True     |         |             |
-| serverName  | True     |         |             |
-| minSeverity | False    | Medium  |             |
-| jarPath     | False    |         |             |
+| Parameter   | Required | Default | Description                                             |
+|-------------|----------|---------|---------------------------------------------------------|
+| username    | True     |         | Username in TeamServer                                  |
+| serviceKey  | True     |         | Service Key found in Organization Settings              |
+| apiKey      | True     |         | Api Key found in Organization Settings                  |
+| orgUuid     | True     |         | Organization Uuid found in Organization Settings        |
+| appId       | True     |         | Application Id of application                           |
+| apiUrl      | True     |         | API Url to your TeamServer instance                     |
+| serverName  | True     |         | Name of server you set with -Dcontrast.server           |
+| minSeverity | False    | Medium  | Minimum severity level to verify                        |
+| jarPath     | False    |         | Path to contrast.jar if you already have one downloaded |
 
 ## Example Configurations
 
