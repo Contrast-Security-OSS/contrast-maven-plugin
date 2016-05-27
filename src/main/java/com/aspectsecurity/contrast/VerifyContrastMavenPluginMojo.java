@@ -11,6 +11,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -25,10 +26,11 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
         getLog().info("Successfully authenticated to TeamServer.");
 
         ServerFilterForm serverFilterForm = new ServerFilterForm();
+        serverFilterForm.setApplicationIds(Arrays.asList(appId));
         serverFilterForm.setQ(serverName);
 
-        Servers servers = null;
-        long serverId = 0L;
+        Servers servers;
+        long serverId;
 
         try {
             servers = contrast.getServersWithFilter(orgUuid, serverFilterForm);
@@ -50,7 +52,7 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
 
         getLog().info("Sending vulnerability request to TeamServer.");
 
-        Traces traces = null;
+        Traces traces;
 
         try {
             traces = contrast.getTracesWithFilter(orgUuid, appId, "servers", Long.toString(serverId), form);
@@ -75,6 +77,11 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
         getLog().info("Finished verifying your application.");
     }
 
+    /**
+     * Creates a basic report for a Trace object
+     * @param trace Trace object
+     * @return String report
+     */
     private String generateTraceReport(Trace trace) {
         StringBuilder sb = new StringBuilder();
         sb.append("Trace: ");
@@ -90,7 +97,12 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
         return sb.toString();
     }
 
-    // Returns the sublist of severities greater than or equal to the configured severity level
+    /**
+     * Returns the sublist of severities greater than or equal to the configured severity level
+     *
+     * @param severity include severity to filter with severity list with
+     * @return list of severity strings
+     */
     private static List<String> getSeverityList(String severity) {
         return SEVERITIES.subList(SEVERITIES.indexOf(severity), SEVERITIES.size());
     }
@@ -98,5 +110,3 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
     // Severity levels
     private static final List<String> SEVERITIES = Arrays.asList("Note", "Low", "Medium", "High", "Critical");
 }
-
-

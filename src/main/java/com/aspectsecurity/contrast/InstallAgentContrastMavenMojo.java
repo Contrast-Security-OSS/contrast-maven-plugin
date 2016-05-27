@@ -22,19 +22,9 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
 
         File agentFile = installJavaAgent(contrast);
 
-        Properties projectProperties = project.getProperties();
-
-        if (jarPath != null) {
-            projectProperties.setProperty("javaagent", jarPath);
-        } else {
-            projectProperties.setProperty("javaagent", agentFile.getName());
-        }
-
         verifyDateTime = new Date();
 
         getLog().info("Verifying there are no new vulnerabilities after time " + verifyDateTime.toString());
     }
 
 }
-
-

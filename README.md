@@ -31,10 +31,17 @@ Then it will verify no new vulnerabilities were found before you call the verify
      <artifactId>contrast-maven-plugin</artifactId>
      <executions>
          <execution>
+             <id>install-contrast-jar</id>
              <goals>
                 <goal>install</goal>
-                <goal>verify</goal>
              </goals>
+         </execution>
+         <execution>
+            <id>verify-with-contrast</id>
+            <phase>post-integration-test</phase>
+            <goals>
+                <goal>verify</goal>
+            </goals>
          </execution>
      </executions>
      <configuration>

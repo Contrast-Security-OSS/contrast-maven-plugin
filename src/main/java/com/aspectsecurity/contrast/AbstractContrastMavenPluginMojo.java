@@ -11,6 +11,7 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
+import java.awt.peer.SystemTrayPeer;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
@@ -82,7 +83,8 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
                 throw new MojoExecutionException("Unable to retrieve the latest java agent due to authorization.", e);
             }
 
-            agentFile = new File(AGENT_NAME);
+            // Saving the file to the 'target' directory
+            agentFile = new File(project.getBuild().getDirectory() + File.separator + AGENT_NAME);
 
             try {
                 FileUtils.writeByteArrayToFile(agentFile, javaAgent);
