@@ -3,9 +3,7 @@ package com.aspectsecurity.contrast;
 import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.http.FilterForm;
 import com.contrastsecurity.http.ServerFilterForm;
-import com.contrastsecurity.models.Servers;
-import com.contrastsecurity.models.Trace;
-import com.contrastsecurity.models.Traces;
+import com.contrastsecurity.models.*;
 import com.contrastsecurity.sdk.ContrastSDK;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -25,28 +23,9 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
 
         getLog().info("Successfully authenticated to TeamServer.");
 
-        ServerFilterForm serverFilterForm = new ServerFilterForm();
-        serverFilterForm.setApplicationIds(Arrays.asList(appId));
-        serverFilterForm.setQ(serverName);
+        String applicationId = getApplicationId(contrast, appName);
 
-        Servers servers;
-        long serverId;
-
-        getLog().info("Sending server request to TeamServer.");
-
-        try {
-            servers = contrast.getServersWithFilter(orgUuid, serverFilterForm);
-        } catch (IOException e) {
-            throw new MojoExecutionException("Unable to retrieve the servers.", e);
-        } catch (UnauthorizedException e) {
-            throw new MojoExecutionException("Unable to connect to TeamServer.", e);
-        }
-
-        if (!servers.getServers().isEmpty()) {
-            serverId = servers.getServers().get(0).getServerId();
-        } else {
-            throw new MojoExecutionException("Server with name '" + serverName + "' not found.");
-        }
+        long serverId = getServerId(contrast, applicationId);
 
         FilterForm form = new FilterForm();
         form.setSeverities(getSeverityList(minSeverity));
@@ -57,7 +36,7 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
         Traces traces;
 
         try {
-            traces = contrast.getTracesWithFilter(orgUuid, appId, "servers", Long.toString(serverId), form);
+            traces = contrast.getTracesWithFilter(orgUuid, applicationId, "servers", Long.toString(serverId), form);
         } catch (IOException e) {
             throw new MojoExecutionException("Unable to retrieve the traces.", e);
         } catch (UnauthorizedException e) {
@@ -77,6 +56,66 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
         }
 
         getLog().info("Finished verifying your application.");
+    }
+
+    /** Retrieves the server id by server name
+     *
+     * @param sdk Contrast SDK object
+     * @param applicationId application id to filter on
+     * @return Long id of the server
+     * @throws MojoExecutionException
+     */
+    private long getServerId(ContrastSDK sdk, String applicationId) throws MojoExecutionException {
+        ServerFilterForm serverFilterForm = new ServerFilterForm();
+        serverFilterForm.setApplicationIds(Arrays.asList(applicationId));
+        serverFilterForm.setQ(serverName);
+
+        Servers servers;
+        long serverId;
+
+        try {
+            servers = sdk.getServersWithFilter(orgUuid, serverFilterForm);
+        } catch (IOException e) {
+            throw new MojoExecutionException("Unable to retrieve the servers.", e);
+        } catch (UnauthorizedException e) {
+            throw new MojoExecutionException("Unable to connect to TeamServer.", e);
+        }
+
+        if (!servers.getServers().isEmpty()) {
+            serverId = servers.getServers().get(0).getServerId();
+        } else {
+            throw new MojoExecutionException("Server with name '" + serverName + "' not found.");
+        }
+
+        return serverId;
+    }
+
+    /** Retrieves the application id by application name; else null
+     *
+     * @param sdk Contrast SDK object
+     * @param applicationName application name to filter on
+     * @return String of the application
+     * @throws MojoExecutionException
+     */
+    private String getApplicationId(ContrastSDK sdk, String applicationName) throws MojoExecutionException {
+
+        Applications applications;
+
+        try {
+            applications = sdk.getApplications(orgUuid);
+        } catch (IOException e) {
+            throw new MojoExecutionException("Unable to retrieve the applications.", e);
+        } catch (UnauthorizedException e) {
+            throw new MojoExecutionException("Unable to connect to TeamServer.", e);
+        }
+
+        for(Application application: applications.getApplications()) {
+            if (applicationName.equals(application.getName())) {
+                return application.getId();
+            }
+        }
+
+        throw new MojoExecutionException("Application with name '" + applicationName + "' not found.");
     }
 
     /**

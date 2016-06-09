@@ -36,8 +36,8 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
     @Parameter(property = "orgUuid", required = true)
     protected String orgUuid;
 
-    @Parameter(property = "appId", required = true)
-    protected String appId;
+    @Parameter(property = "appName", required = true)
+    protected String appName;
 
     @Parameter(property = "minSeverity", defaultValue = "Medium")
     protected String minSeverity;

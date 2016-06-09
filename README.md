@@ -17,7 +17,7 @@ Then it will verify no new vulnerabilities were found before you call the verify
 | serviceKey  | True     |         | Service Key found in Organization Settings              |
 | apiKey      | True     |         | Api Key found in Organization Settings                  |
 | orgUuid     | True     |         | Organization Uuid found in Organization Settings        |
-| appId       | True     |         | Application Id of application                           |
+| appName     | True     |         | Name of application                                     |
 | apiUrl      | True     |         | API Url to your TeamServer instance                     |
 | serverName  | True     |         | Name of server you set with -Dcontrast.server           |
 | minSeverity | False    | Medium  | Minimum severity level to verify                        |
@@ -50,7 +50,7 @@ Then it will verify no new vulnerabilities were found before you call the verify
          <serviceKey>ADSFASFASF</serviceKey>
          <apiUrl>http://www.app.contrastsecurity.com/api</apiUrl>
          <orgUuid>QWER-ASDF-ZXCV-ERTY</orgUuid>
-         <appId>QWER-ASDF-ZXCV-ERTY</appId>
+         <appName>Test Application</appName>
          <serverName>jenkins.slave1</serverName>
          <minSeverity>High</minSeverity>
      </configuration>
