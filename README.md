@@ -1,7 +1,7 @@
 # Contrast Maven Plugin
 
 Repository for the Contrast Maven plugin. This plugin will download and install the Contrast Java agent during the initialize lifecycle phase.
-Then it will verify no new vulnerabilities were found before you call the verify goal.
+It will then verify no new vulnerabilities were found before you called the verify goal and after the agent was downloaded.
 
 ## Goals
 
