@@ -9,7 +9,7 @@ It will then verify no new vulnerabilities were found before you called the veri
 * `verify`: checks for new vulnerabilities in your web application
 
 
-## Configuration Options
+## Pom Configuration Options
 
 | Parameter   | Required | Default | Description                                             |
 |-------------|----------|---------|---------------------------------------------------------|
@@ -23,7 +23,7 @@ It will then verify no new vulnerabilities were found before you called the veri
 | minSeverity | False    | Medium  | Minimum severity level to verify                        |
 | jarPath     | False    |         | Path to contrast.jar if you already have one downloaded |
 
-## Example Configurations
+## Example Configuration
 
 ```xml
 <plugin>
