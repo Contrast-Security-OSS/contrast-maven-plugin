@@ -11,6 +11,28 @@
   <description>Maven plugin to test for vulnerablities when running integration tests for a Java application</description>
   <url>http://www.contrastsecurity.com</url>
 
+  <scm>
+        <connection>scm:git:git@github.com:Contrast-Security-OSS/contrast-maven-plugin.git</connection>
+        <url>scm:git:git@github.com:Contrast-Security-OSS/contrast-maven-plugin.git</url>
+        <developerConnection>scm:git:git@github.com:Contrast-Security-OSS/contrast-maven-plugin.git</developerConnection>
+        <tag>HEAD</tag>
+  </scm>
+
+  <distributionManagement>
+     <snapshotRepository>
+       <id>ossrh</id>
+         <url>
+           https://oss.sonatype.org/content/repositories/snapshots
+         </url>
+      </snapshotRepository>
+      <repository>
+        <id>ossrh</id>
+          <url>
+            https://oss.sonatype.org/service/local/staging/deploy/maven2/
+         </url>
+        </repository>
+   </distributionManagement>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
