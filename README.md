@@ -15,10 +15,10 @@ It will then verify no new vulnerabilities were found before you called the veri
 |-------------|----------|---------|---------------------------------------------------------|
 | username    | True     |         | Username in TeamServer                                  |
 | serviceKey  | True     |         | Service Key found in Organization Settings              |
-| apiKey      | True     |         | Api Key found in Organization Settings                  |
-| orgUuid     | True     |         | Organization Uuid found in Organization Settings        |
+| apiKey      | True     |         | API Key found in Organization Settings                  |
+| orgUuid     | True     |         | Organization UUID found in Organization Settings        |
 | appName     | True     |         | Name of application                                     |
-| apiUrl      | True     |         | API Url to your TeamServer instance                     |
+| apiUrl      | True     |         | API URL to your TeamServer instance                     |
 | serverName  | True     |         | Name of server you set with -Dcontrast.server           |
 | minSeverity | False    | Medium  | Minimum severity level to verify                        |
 | jarPath     | False    |         | Path to contrast.jar if you already have one downloaded |
@@ -46,10 +46,10 @@ It will then verify no new vulnerabilities were found before you called the veri
      </executions>
      <configuration>
          <username>contrast_user</username>
-         <apiKey>ASDFONASFNASFIASNFLNAS</apiKey>
-         <serviceKey>ADSFASFASF</serviceKey>
-         <apiUrl>http://www.app.contrastsecurity.com/api</apiUrl>
-         <orgUuid>QWER-ASDF-ZXCV-ERTY</orgUuid>
+         <apiKey>API_KEY_HERE</apiKey>
+         <serviceKey>SERVICE_KEY_HERE</serviceKey>
+         <apiUrl>http://app.contrastsecurity.com/api</apiUrl>
+         <orgUuid>ORG_UID_HERE</orgUuid>
          <appName>Test Application</appName>
          <serverName>jenkins.slave1</serverName>
          <minSeverity>High</minSeverity>
