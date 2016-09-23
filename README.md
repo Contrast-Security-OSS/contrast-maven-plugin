@@ -1,7 +1,12 @@
 # Contrast Maven Plugin
 
 Repository for the Contrast Maven plugin. This plugin will download and install the Contrast Java agent during the initialize lifecycle phase.
-It will then verify no new vulnerabilities were found before you called the verify goal and after the agent was downloaded.
+
+It's up to you to add the -javaagent flag to the JVM options of the application that should be monitored by Contrast. The flag should look something like this, but you should consult the documentation of the application launcher:
+
+ -javaagent:/git/project/target/contrast.jar
+
+In the "verify" goal, the plugin will check if any new vulnerabilities were discovered during the test phases. The build will fail if any serious vulnerabilities are discovered.
 
 ## Goals
 
@@ -11,17 +16,17 @@ It will then verify no new vulnerabilities were found before you called the veri
 
 ## Pom Configuration Options
 
-| Parameter   | Required | Default | Description                                             |
-|-------------|----------|---------|---------------------------------------------------------|
-| username    | True     |         | Username in TeamServer                                  |
-| serviceKey  | True     |         | Service Key found in Organization Settings              |
-| apiKey      | True     |         | API Key found in Organization Settings                  |
-| orgUuid     | True     |         | Organization UUID found in Organization Settings        |
-| appName     | True     |         | Name of application                                     |
-| apiUrl      | True     |         | API URL to your TeamServer instance                     |
-| serverName  | True     |         | Name of server you set with -Dcontrast.server           |
-| minSeverity | False    | Medium  | Minimum severity level to verify                        |
-| jarPath     | False    |         | Path to contrast.jar if you already have one downloaded |
+| Parameter   | Required | Default | Description                                                                  |
+|-------------|----------|---------|------------------------------------------------------------------------------|
+| username    | True     |         | Username in TeamServer                                                       |
+| serviceKey  | True     |         | Service Key found in Organization Settings                                   |
+| apiKey      | True     |         | API Key found in Organization Settings                                       |
+| orgUuid     | True     |         | Organization UUID found in Organization Settings                             |
+| appName     | True     |         | Name of application                                                          |
+| apiUrl      | True     |         | API URL to your TeamServer instance                                          |
+| serverName  | True     |         | Name of server you set with -Dcontrast.server                                |
+| minSeverity | False    | Medium  | Minimum severity level to verify (can be Note, Low, Medium, High or Critical |
+| jarPath     | False    |         | Path to contrast.jar if you already have one downloaded                      |
 
 ## Example Configuration
 
