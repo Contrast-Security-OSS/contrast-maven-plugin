@@ -10,7 +10,7 @@
 
     <groupId>com.contrastsecurity</groupId>
     <artifactId>contrast-maven-plugin</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.3-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
 
     <organization>
@@ -37,7 +37,7 @@
     </scm>
 
     <name>Contrast Maven Plugin</name>
-    <description>Maven plugin to test for vulnerablities when running integration tests for a Java application</description>
+    <description>Maven plugin to test for vulnerabilities when running integration tests for a Java application</description>
     <url>http://www.contrastsecurity.com</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -69,7 +69,7 @@
         <dependency>
             <groupId>com.contrastsecurity</groupId>
             <artifactId>contrast-sdk-java</artifactId>
-            <version>2.1.1</version>
+            <version>2.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
