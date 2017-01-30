@@ -1,9 +1,14 @@
 package com.aspectsecurity.contrast;
 
 import com.contrastsecurity.exceptions.UnauthorizedException;
-import com.contrastsecurity.http.FilterForm;
+import com.contrastsecurity.http.RuleSeverity;
 import com.contrastsecurity.http.ServerFilterForm;
-import com.contrastsecurity.models.*;
+import com.contrastsecurity.http.TraceFilterForm;
+import com.contrastsecurity.models.Application;
+import com.contrastsecurity.models.Applications;
+import com.contrastsecurity.models.Servers;
+import com.contrastsecurity.models.Trace;
+import com.contrastsecurity.models.Traces;
 import com.contrastsecurity.sdk.ContrastSDK;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -11,6 +16,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 
 @Mojo(name = "verify", requiresOnline = true)
@@ -27,16 +33,17 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
 
         long serverId = getServerId(contrast, applicationId);
 
-        FilterForm form = new FilterForm();
+        TraceFilterForm form = new TraceFilterForm();
         form.setSeverities(getSeverityList(minSeverity));
         form.setStartDate(verifyDateTime);
+        form.setServerIds(Arrays.asList(serverId));
 
         getLog().info("Sending vulnerability request to TeamServer.");
 
         Traces traces;
 
         try {
-            traces = contrast.getTracesWithFilter(orgUuid, applicationId, "servers", Long.toString(serverId), form);
+            traces = contrast.getTraces(orgUuid, applicationId, form);
         } catch (IOException e) {
             throw new MojoExecutionException("Unable to retrieve the traces.", e);
         } catch (UnauthorizedException e) {
@@ -144,8 +151,17 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
      * @param severity include severity to filter with severity list with
      * @return list of severity strings
      */
-    private static List<String> getSeverityList(String severity) {
-        return SEVERITIES.subList(SEVERITIES.indexOf(severity), SEVERITIES.size());
+    private static EnumSet<RuleSeverity> getSeverityList(String severity) {
+
+        List<String> serverityList = SEVERITIES.subList(SEVERITIES.indexOf(severity), SEVERITIES.size());
+
+        List<RuleSeverity> ruleSeverities = new ArrayList<RuleSeverity>();
+
+        for (String severityToAdd: serverityList) {
+            ruleSeverities.add(RuleSeverity.valueOf(severityToAdd));
+        }
+
+        return EnumSet.copyOf(ruleSeverities);
     }
 
     // Severity levels
