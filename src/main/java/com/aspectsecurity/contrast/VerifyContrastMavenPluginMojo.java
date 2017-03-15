@@ -153,12 +153,12 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
      */
     private static EnumSet<RuleSeverity> getSeverityList(String severity) {
 
-        List<String> serverityList = SEVERITIES.subList(SEVERITIES.indexOf(severity), SEVERITIES.size());
+        List<String> severityList = SEVERITIES.subList(SEVERITIES.indexOf(severity), SEVERITIES.size());
 
         List<RuleSeverity> ruleSeverities = new ArrayList<RuleSeverity>();
 
-        for (String severityToAdd: serverityList) {
-            ruleSeverities.add(RuleSeverity.valueOf(severityToAdd));
+        for (String severityToAdd : severityList) {
+            ruleSeverities.add(RuleSeverity.valueOf(severityToAdd.toUpperCase()));
         }
 
         return EnumSet.copyOf(ruleSeverities);
