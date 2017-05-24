@@ -27,7 +27,7 @@ In the "verify" phase, the plugin will check if any new vulnerabilities were dis
 | appName     | True     |         | Name of the application as seen in the Contrast site                         |
 | apiUrl      | True     |         | API URL to your TeamServer instance                                          |
 | serverName  | True     |         | Name of the server you set with -Dcontrast.server                            |
-| minSeverity | False    | Medium  | Minimum severity level to verify (can be Note, Low, Medium, High or Critical |
+| minSeverity | False    | MEDIUM  | Minimum severity level to verify (can be NOTE, LOW, MEDIUM, HIGH or CRITICAL |
 | jarPath     | False    |         | Path to contrast.jar if you already have one downloaded                      |
 
 ## Example Configuration
@@ -36,32 +36,33 @@ The following is a typical example.
 
 ```xml
 <plugin>
-     <groupId>com.aspectsecurity.contrast</groupId>
-     <artifactId>contrast-maven-plugin</artifactId>
-     <executions>
-         <execution>
-             <id>install-contrast-jar</id>
-             <goals>
+    <groupId>com.contrastsecurity</groupId>
+    <artifactId>contrast-maven-plugin</artifactId>
+    <version>1.3</version>
+    <executions>
+        <execution>
+            <id>install-contrast-jar</id>
+            <goals>
                 <goal>install</goal>
-             </goals>
-         </execution>
-         <execution>
+            </goals>
+        </execution>
+        <execution>
             <id>verify-with-contrast</id>
             <phase>post-integration-test</phase>
             <goals>
                 <goal>verify</goal>
             </goals>
-         </execution>
-     </executions>
-     <configuration>
-         <username>contrast_user</username>
-         <apiKey>API_KEY_HERE</apiKey>
-         <serviceKey>SERVICE_KEY_HERE</serviceKey>
-         <apiUrl>http://app.contrastsecurity.com/api</apiUrl>
-         <orgUuid>ORG_UID_HERE</orgUuid>
-         <appName>Test Application</appName>
-         <serverName>jenkins.slave1</serverName>
-         <minSeverity>High</minSeverity>
-     </configuration>
+        </execution>
+    </executions>
+    <configuration>
+        <username>test_user</username>
+        <apiKey>testApiKey</apiKey>
+        <serviceKey>testServiceKEy</serviceKey>
+        <apiUrl>http://www.app.contrastsecurity.com/Contrast/api</apiUrl>
+        <orgUuid>QWER-ASDF-ZXCV-ERTY</orgUuid>
+        <appName>Test Application</appName>
+        <serverName>jenkins.slave1</serverName>
+        <minSeverity>HIGH</minSeverity>
+    </configuration>
 </plugin>
 ```
