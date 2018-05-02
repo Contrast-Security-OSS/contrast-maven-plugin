@@ -51,7 +51,7 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
         }
 
         if (traces != null && traces.getCount() > 0) {
-            getLog().info(traces.getCount() + " new vulnerability(s) were found! Printing vulnerability report.");
+            getLog().info(traces.getCount() + " new vulnerability(s) were found. Printing vulnerability report.");
 
             for (Trace trace: traces.getTraces()) {
                 getLog().info(generateTraceReport(trace));
