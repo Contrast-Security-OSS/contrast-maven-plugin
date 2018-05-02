@@ -59,7 +59,7 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
 
             throw new MojoExecutionException("Your application is vulnerable. Please see the above report for new vulnerabilities.");
         } else {
-            getLog().info("No new vulnerabilities were found!");
+            getLog().info("No new vulnerabilities were found.");
         }
 
         getLog().info("Finished verifying your application.");
