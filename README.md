@@ -36,7 +36,7 @@ The following is a typical example.
 
 ```xml
 <plugin>
-     <groupId>com.aspectsecurity.contrast</groupId>
+     <groupId>com.contrast</groupId>
      <artifactId>contrast-maven-plugin</artifactId>
      <executions>
          <execution>
