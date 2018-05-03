@@ -64,7 +64,7 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
                 return new ContrastSDK(username, serviceKey, apiKey);
             }
         } catch (IllegalArgumentException e) {
-            throw new MojoExecutionException("Unable to connect to TeamServer. Please check your maven settings.", e);
+            throw new MojoExecutionException("\n\nWe couldn't connect to TeamServer at this address [" + apiUrl + "]. The error is: ", e);
         }
     }
 
@@ -78,9 +78,9 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
             try {
                 javaAgent = connection.getAgent(AgentType.JAVA, orgUuid);
             } catch (IOException e) {
-                throw new MojoExecutionException("Unable to download the latest java agent.", e);
+                throw new MojoExecutionException("\n\nWe couldn't download the Java agent from TeamServer. There probably isn't much you can do to resolve this, so please contact Contrast Support. The error is:", e);
             } catch (UnauthorizedException e) {
-                throw new MojoExecutionException("Unable to retrieve the latest java agent due to authorization.", e);
+                throw new MojoExecutionException("\n\nWe contacted TeamServer successfully but couldn't authorize with the credentials you provided. The error is:", e);
             }
 
             // Save the jar to the 'target' directory

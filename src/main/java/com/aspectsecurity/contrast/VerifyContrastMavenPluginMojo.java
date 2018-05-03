@@ -91,7 +91,7 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
         if (!servers.getServers().isEmpty()) {
             serverId = servers.getServers().get(0).getServerId();
         } else {
-            throw new MojoExecutionException("Server with name '" + serverName + "' not found.");
+            throw new MojoExecutionException("\n\nServer with name '" + serverName + "' not found. Make sure this server name appears in TeamServer under the 'Servers' tab.\n");
         }
 
         return serverId;
@@ -122,7 +122,7 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
             }
         }
 
-        throw new MojoExecutionException("Application with name '" + applicationName + "' not found.");
+        throw new MojoExecutionException("\n\nApplication with name '" + applicationName + "' not found. Make sure this server name appears in TeamServer under the 'Applications' tab.\n");
     }
 
     /**
