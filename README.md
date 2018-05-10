@@ -4,6 +4,8 @@
 
 Always refer to Contrast's Open Docs site for the most up to date documentation: https://docs.contrastsecurity.com/tools-build.html#maven
 
+## Java version
+
 ## Usage
 
 This Maven plugin can be used to allow Contrast to discover vulnerabilities in your application during your integration or verification tests. 
@@ -18,7 +20,6 @@ In the "verify" phase, the plugin will check if any new vulnerabilities were dis
 
 * `install`: installs a Contrast Java agent to your local project
 * `verify`: checks for new vulnerabilities in your web application
-
 
 ## Configuration Options
 
