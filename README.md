@@ -4,8 +4,6 @@
 
 Always refer to Contrast's Open Docs site for the most up to date documentation: https://docs.contrastsecurity.com/tools-build.html#maven
 
-## Java version
-
 ## Usage
 
 This Maven plugin can be used to allow Contrast to discover vulnerabilities in your application during your integration or verification tests. 
