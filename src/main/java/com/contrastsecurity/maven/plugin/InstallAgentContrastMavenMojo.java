@@ -1,4 +1,4 @@
-package com.aspectsecurity.contrast;
+package com.contrastsecurity.maven.plugin;
 
 import com.contrastsecurity.sdk.ContrastSDK;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -7,8 +7,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 
 import java.io.File;
 import java.util.Date;
-import java.util.Properties;
-import org.apache.maven.plugins.annotations.Parameter;
 
 
 @Mojo(name = "install", defaultPhase = LifecyclePhase.VALIDATE, requiresOnline = true)

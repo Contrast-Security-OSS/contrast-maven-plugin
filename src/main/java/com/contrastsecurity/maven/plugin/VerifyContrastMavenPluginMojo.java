@@ -1,4 +1,4 @@
-package com.aspectsecurity.contrast;
+package com.contrastsecurity.maven.plugin;
 
 import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.http.RuleSeverity;
