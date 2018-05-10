@@ -30,24 +30,7 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
 
         getLog().info("Agent downloaded.");
 
-        getLog().info("Configuring argLine property.");
-
-        String currentArgLine = project.getProperties().getProperty("argLine");
-
-        if(currentArgLine == null) {
-            getLog().info("currentArgLine is null");
-            currentArgLine = "";
-        } else {
-            getLog().info("Current argLine is [" + currentArgLine + "]");
-        }
-
-        appVersion = generateAppVersion();
-
-        String newArgLine = currentArgLine + " -javaagent:" + contrastAgentLocation + " -Dcontrast.override.appname=" + appName + " -Dcontrast.server=" + serverName + " -Dcontrast.env=qa -Dcontrast.override.appversion=" + appVersion;
-
-        getLog().info("Updated argLine is " + newArgLine);
-
-        project.getProperties().setProperty("argLine", newArgLine);
+        project.getProperties().setProperty("argLine", buildArgLine());
 
         verifyDateTime = new Date();
 

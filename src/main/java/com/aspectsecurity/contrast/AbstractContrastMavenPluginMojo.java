@@ -52,6 +52,9 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
     @Parameter(property = "appVersion")
     protected String appVersion;
 
+    @Parameter(property = "skipArgLine")
+    protected boolean skipArgLine;
+
     protected String contrastAgentLocation;
 
     // Start time we will look for
@@ -82,6 +85,33 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
         String appVersionTimestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         appVersion = appName + "-" + appVersionTimestamp;
         return appVersion;
+    }
+
+    protected String buildArgLine() {
+        String currentArgLine = project.getProperties().getProperty("argLine");
+
+        if(currentArgLine == null) {
+            getLog().info("currentArgLine is null");
+            currentArgLine = "";
+        } else {
+            getLog().info("Current argLine is [" + currentArgLine + "]");
+        }
+
+        if(skipArgLine) {
+            getLog().info("skipArgLine is set to false.");
+            getLog().info("You will need to configure the Maven argLine property manually for the Contrast agent to work.");
+            return currentArgLine;
+        }
+
+        getLog().info("Configuring argLine property.");
+
+        appVersion = generateAppVersion();
+
+        String newArgLine = currentArgLine + " -javaagent:" + contrastAgentLocation + " -Dcontrast.override.appname=" + appName + " -Dcontrast.server=" + serverName + " -Dcontrast.env=qa -Dcontrast.override.appversion=" + appVersion;
+
+        getLog().info("Updated argLine is " + newArgLine);
+
+        return newArgLine;
     }
 
     File installJavaAgent(ContrastSDK connection) throws MojoExecutionException {
