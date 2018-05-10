@@ -3,6 +3,7 @@ package com.aspectsecurity.contrast;
 import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.models.AgentType;
 import com.contrastsecurity.sdk.ContrastSDK;
+import java.text.SimpleDateFormat;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
@@ -48,6 +49,11 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
     @Parameter(property = "jarPath")
     protected String jarPath;
 
+    @Parameter(property = "appVersion")
+    protected String appVersion;
+
+    protected String contrastAgentLocation;
+
     // Start time we will look for
     protected static Date verifyDateTime;
 
@@ -66,6 +72,16 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
         } catch (IllegalArgumentException e) {
             throw new MojoExecutionException("\n\nWe couldn't connect to TeamServer at this address [" + apiUrl + "]. The error is: ", e);
         }
+    }
+
+    protected String generateAppVersion() {
+        if (appVersion != null) {
+            return appVersion;
+        }
+
+        String appVersionTimestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        appVersion = appName + "-" + appVersionTimestamp;
+        return appVersion;
     }
 
     File installJavaAgent(ContrastSDK connection) throws MojoExecutionException {
@@ -93,6 +109,7 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
             }
 
             getLog().info("Saved the latest java agent to " + agentFile.getAbsolutePath());
+            contrastAgentLocation = agentFile.getAbsolutePath();
 
         } else {
             getLog().info("Using configured jar path " + jarPath);
@@ -104,6 +121,7 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
             }
 
             getLog().info("Loaded the latest java agent from " + jarPath);
+            contrastAgentLocation = jarPath;
 
         }
 

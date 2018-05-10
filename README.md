@@ -1,12 +1,16 @@
 # Contrast Maven Plugin
 
+## Documentation
+
+Always refer to Contrast's Open Docs site for the most up to date documentation: https://docs.contrastsecurity.com/tools-build.html#maven
+
+## Usage
+
 This Maven plugin can be used to allow Contrast to discover vulnerabilities in your application during your integration or verification tests. 
 
-The "install" goal of the plugin is used to download the agent to the /target directory. In order to use the agent, you should add the -javaagent flag to the JVM options of the application that will be monitored by Contrast in the testing lifecycle phases. 
+The "install" goal of the plugin is used to download the agent to the /target directory.
 
-The flag should look something like this, but you should consult the documentation of the application launcher for how to add arbitrary JVM options:
-
- -javaagent:/git/project/target/contrast.jar
+The plugin will edit maven's "argLine" property to launch the JVM with the Contrast agent.
 
 In the "verify" phase, the plugin will check if any new vulnerabilities were discovered during the test phases. The build will fail if any serious vulnerabilities are discovered.
 
@@ -25,6 +29,7 @@ In the "verify" phase, the plugin will check if any new vulnerabilities were dis
 | apiKey      | True     |         | API Key found in Organization Settings page                                  |
 | orgUuid     | True     |         | Organization UUID found in Organization Settings page                        |
 | appName     | True     |         | Name of the application as seen in the Contrast site                         |
+| appVersion  | False    |         | The appversion to report to TeamServer. See explanation below                |
 | apiUrl      | True     |         | API URL to your TeamServer instance                                          |
 | serverName  | True     |         | Name of the server you set with -Dcontrast.server                            |
 | minSeverity | False    | Medium  | Minimum severity level to verify (can be Note, Low, Medium, High or Critical |
@@ -65,3 +70,13 @@ The following is a typical example.
      </configuration>
 </plugin>
 ```
+
+## appVersion
+
+When your app's integration tests are run, the Contrast agent can add an app version to its metadata so that vulnerabilites can be compared between app versions, cI builds, etc...
+
+We generate this app version as follows:
+
+* If you specify an appVersion in the properties, we'll use that without modification
+* If no appVersion is specified, we'll generate one in the following format: appName-yyyyMMddHHmmss
+* (Coming soon) If your build is running in TravisCI, we'll use appName-$TRAVIS_BUILD_NUMBER
