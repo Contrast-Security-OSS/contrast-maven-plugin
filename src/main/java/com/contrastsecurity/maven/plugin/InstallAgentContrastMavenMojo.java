@@ -13,11 +13,6 @@ import java.util.Date;
 @Mojo(name = "install", defaultPhase = LifecyclePhase.VALIDATE, requiresOnline = true)
 public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMojo {
 
-//    @Parameter(defaultValue = "${project}")
-//    private org.apache.maven.project.MavenProject project;
-
-    // and in execute(), use it:
-
     public void execute() throws MojoExecutionException {
         getLog().info("Attempting to connect to configured TeamServer...");
 
@@ -30,10 +25,6 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
         getLog().info("Agent downloaded.");
 
         project.getProperties().setProperty("argLine", buildArgLine(project.getProperties().getProperty("argLine")));
-
-        verifyDateTime = new Date();
-
-        getLog().info("Verifying there are no new vulnerabilities after time " + verifyDateTime.toString());
     }
 
     public String generateAppVersion(Date currentDate) {

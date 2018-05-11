@@ -57,9 +57,6 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
 
     protected String contrastAgentLocation;
 
-    // Start time we will look for
-    protected static Date verifyDateTime;
-
     private static final String AGENT_NAME = "contrast.jar";
 
     public void execute() throws MojoExecutionException {
@@ -75,43 +72,6 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
         } catch (IllegalArgumentException e) {
             throw new MojoExecutionException("\n\nWe couldn't connect to TeamServer at this address [" + apiUrl + "]. The error is: ", e);
         }
-    }
-
-    protected String generateAppVersion() {
-        if (appVersion != null) {
-            return appVersion;
-        }
-
-        String appVersionTimestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-        appVersion = appName + "-" + appVersionTimestamp;
-        return appVersion;
-    }
-
-    protected String buildArgLine() {
-        String currentArgLine = project.getProperties().getProperty("argLine");
-
-        if(currentArgLine == null) {
-            getLog().info("currentArgLine is null");
-            currentArgLine = "";
-        } else {
-            getLog().info("Current argLine is [" + currentArgLine + "]");
-        }
-
-        if(skipArgLine) {
-            getLog().info("skipArgLine is set to false.");
-            getLog().info("You will need to configure the Maven argLine property manually for the Contrast agent to work.");
-            return currentArgLine;
-        }
-
-        getLog().info("Configuring argLine property.");
-
-        appVersion = generateAppVersion();
-
-        String newArgLine = currentArgLine + " -javaagent:" + contrastAgentLocation + " -Dcontrast.override.appname=" + appName + " -Dcontrast.server=" + serverName + " -Dcontrast.env=qa -Dcontrast.override.appversion=" + appVersion;
-
-        getLog().info("Updated argLine is " + newArgLine);
-
-        return newArgLine;
     }
 
     File installJavaAgent(ContrastSDK connection) throws MojoExecutionException {

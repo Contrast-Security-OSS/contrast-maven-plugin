@@ -9,6 +9,7 @@ import static org.junit.Assert.*;
 
 public class InstallAgentContrastMavenMojoTest {
     InstallAgentContrastMavenMojo installMojo;
+    Date now;
 
     @Before
     public void setUp() {
@@ -16,17 +17,18 @@ public class InstallAgentContrastMavenMojoTest {
         installMojo.appName = "caddyshack";
         installMojo.serverName = "Bushwood";
         installMojo.contrastAgentLocation = "/usr/local/bin/contrast.jar";
+
+        now = new Date();
     }
 
    @Test
    public void testGenerateAppVersion() {
         installMojo.appVersion = "mycustomversion";
-        assertEquals("mycustomversion",installMojo.generateAppVersion());
+        assertEquals("mycustomversion",installMojo.generateAppVersion(now));
    }
 
     @Test
     public void testGenerateAppVersionNoAppVersion() {
-        Date now = new Date();
         String expectedVersion = new SimpleDateFormat("yyyyMMddHHmmss").format(now);
         assertEquals("caddyshack-" + expectedVersion,installMojo.generateAppVersion(now));
         assertEquals("caddyshack-" + expectedVersion,installMojo.generateAppVersion(now));
