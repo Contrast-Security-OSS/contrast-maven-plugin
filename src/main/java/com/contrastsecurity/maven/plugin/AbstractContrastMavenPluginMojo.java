@@ -50,12 +50,21 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
     protected String jarPath;
 
     @Parameter(property = "appVersion")
-    protected String appVersion;
+    protected String userSpecifiedAppVersion;
 
     @Parameter(property = "skipArgLine")
     protected boolean skipArgLine;
 
     protected String contrastAgentLocation;
+
+    /*
+     * As near as I can tell, there doesn't appear ot be any way
+     * to share data between Mojo phases. However, we need to compute
+     * the appVersion in the install phase and then use the computedAppVersion
+     * in the verify phase. Setting the field to static is the only
+     * way I found for it to work
+     */
+    protected static String computedAppVersion;
 
     private static final String AGENT_NAME = "contrast.jar";
 

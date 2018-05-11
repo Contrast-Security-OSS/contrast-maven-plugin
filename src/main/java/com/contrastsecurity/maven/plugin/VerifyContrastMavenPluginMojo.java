@@ -28,7 +28,7 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
 
         getLog().info("Successfully authenticated to TeamServer.");
 
-        getLog().info("Checking for new vulnerabilities for [" + appVersion + "]");
+        getLog().info("Checking for new vulnerabilities for appVersion [" + computedAppVersion + "]");
 
         String applicationId = getApplicationId(contrast, appName);
 
@@ -36,7 +36,7 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
 
         TraceFilterForm form = new TraceFilterForm();
         form.setSeverities(getSeverityList(minSeverity));
-        form.setAppVersionTags(Collections.singletonList(appVersion));
+        form.setAppVersionTags(Collections.singletonList(computedAppVersion));
         form.setServerIds(Arrays.asList(serverId));
 
         getLog().info("Sending vulnerability request to TeamServer.");

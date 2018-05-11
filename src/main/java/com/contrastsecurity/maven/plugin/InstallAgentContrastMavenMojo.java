@@ -27,14 +27,19 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
         project.getProperties().setProperty("argLine", buildArgLine(project.getProperties().getProperty("argLine")));
     }
 
-    public String generateAppVersion(Date currentDate) {
-        if (appVersion != null) {
-            return appVersion;
+    public String computeAppVersion(Date currentDate) {
+        if (computedAppVersion != null) {
+            return computedAppVersion;
+        }
+
+        if (userSpecifiedAppVersion != null) {
+            computedAppVersion = userSpecifiedAppVersion;
+            return computedAppVersion;
         }
 
         String appVersionTimestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(currentDate);
-        appVersion = appName + "-" + appVersionTimestamp;
-        return appVersion;
+        computedAppVersion = appName + "-" + appVersionTimestamp;
+        return computedAppVersion;
     }
 
     public String buildArgLine(String currentArgLine) {
@@ -54,9 +59,21 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
 
         getLog().info("Configuring argLine property.");
 
-        appVersion = generateAppVersion(new Date());
+        computedAppVersion = computeAppVersion(new Date());
 
-        String newArgLine = currentArgLine + " -javaagent:" + contrastAgentLocation + " -Dcontrast.override.appname=" + appName + " -Dcontrast.server=" + serverName + " -Dcontrast.env=qa -Dcontrast.override.appversion=" + appVersion;
+        StringBuilder argLineBuilder = new StringBuilder();
+        argLineBuilder.append(currentArgLine);
+        argLineBuilder.append(" -javaagent:");
+        argLineBuilder.append(contrastAgentLocation);
+        argLineBuilder.append(" -Dcontrast.override.appname=");
+        argLineBuilder.append(appName);
+        argLineBuilder.append(" -Dcontrast.server=");
+        argLineBuilder.append(serverName);
+        argLineBuilder.append(" -Dcontrast.env=qa");
+        argLineBuilder.append(" -Dcontrast.override.appversion=");
+        argLineBuilder.append(computedAppVersion);
+
+        String newArgLine = argLineBuilder.toString();
 
         getLog().info("Updated argLine is " + newArgLine);
         return newArgLine.trim();
