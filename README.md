@@ -85,8 +85,9 @@ The following is a typical example.
 
 When your app's integration tests are run, the Contrast agent can add an app version to its metadata so that vulnerabilites can be compared between app versions, CI builds, etc...
 
-We generate this app version as follows:
+We generate this app version as follows and in this order:
 
 * If you specify an appVersion in the properties, we'll use that without modification
-* If no appVersion is specified, we'll generate one in the following format: appName-yyyyMMddHHmmss
 * If your build is running in TravisCI, we'll use appName-$TRAVIS_BUILD_NUMBER
+* If your build is running in CircleCI, we'll use appName-$CIRCLE_BUILD_NUM
+* If no appVersion is specified, we'll generate one in the following format: appName-yyyyMMddHHmmss
