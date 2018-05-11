@@ -2,6 +2,7 @@ package com.contrastsecurity.maven.plugin;
 
 import com.contrastsecurity.sdk.ContrastSDK;
 import java.text.SimpleDateFormat;
+import java.util.Map;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -37,15 +38,28 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
             return computedAppVersion;
         }
 
-        String appVersionTimestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(currentDate);
-        computedAppVersion = appName + "-" + appVersionTimestamp;
+        String travisBuildNumber = System.getenv("TRAVIS_BUILD_NUMBER");
+        String circleBuildNum = System.getenv("CIRCLE_BUILD_NUM");
+
+        String appVersionQualifier = "";
+        if(travisBuildNumber != null) {
+            getLog().info("Build is running in TravisCI. We'll use TRAVIS_BUILD_NUMBER [" + travisBuildNumber + "]");
+            appVersionQualifier = travisBuildNumber;
+        } else if (circleBuildNum != null) {
+            getLog().info("Build is running in CircleCI. We'll use CIRCLE_BUILD_NUM [" + circleBuildNum + "]");
+            appVersionQualifier = circleBuildNum;
+        } else {
+            getLog().info("No CI build number detected, we'll use current timestamp.");
+            appVersionQualifier = new SimpleDateFormat("yyyyMMddHHmmss").format(currentDate);
+        }
+        computedAppVersion = appName + "-" + appVersionQualifier;
         return computedAppVersion;
     }
 
     public String buildArgLine(String currentArgLine) {
 
         if(currentArgLine == null) {
-            getLog().info("currentArgLine is null");
+            getLog().info("Current argLine is null");
             currentArgLine = "";
         } else {
             getLog().info("Current argLine is [" + currentArgLine + "]");
@@ -63,15 +77,11 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
 
         StringBuilder argLineBuilder = new StringBuilder();
         argLineBuilder.append(currentArgLine);
-        argLineBuilder.append(" -javaagent:");
-        argLineBuilder.append(contrastAgentLocation);
-        argLineBuilder.append(" -Dcontrast.override.appname=");
-        argLineBuilder.append(appName);
-        argLineBuilder.append(" -Dcontrast.server=");
-        argLineBuilder.append(serverName);
+        argLineBuilder.append(" -javaagent:").append(contrastAgentLocation);
+        argLineBuilder.append(" -Dcontrast.override.appname=").append(appName);
+        argLineBuilder.append(" -Dcontrast.server=").append(serverName);
         argLineBuilder.append(" -Dcontrast.env=qa");
-        argLineBuilder.append(" -Dcontrast.override.appversion=");
-        argLineBuilder.append(computedAppVersion);
+        argLineBuilder.append(" -Dcontrast.override.appversion=").append(computedAppVersion);
 
         String newArgLine = argLineBuilder.toString();
 
