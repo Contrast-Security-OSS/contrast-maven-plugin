@@ -2,6 +2,7 @@ package com.contrastsecurity.maven.plugin;
 
 import com.contrastsecurity.sdk.ContrastSDK;
 import java.text.SimpleDateFormat;
+import java.util.Map;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -12,11 +13,6 @@ import java.util.Date;
 
 @Mojo(name = "install", defaultPhase = LifecyclePhase.VALIDATE, requiresOnline = true)
 public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMojo {
-
-//    @Parameter(defaultValue = "${project}")
-//    private org.apache.maven.project.MavenProject project;
-
-    // and in execute(), use it:
 
     public void execute() throws MojoExecutionException {
         getLog().info("Attempting to connect to configured TeamServer...");
@@ -30,26 +26,40 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
         getLog().info("Agent downloaded.");
 
         project.getProperties().setProperty("argLine", buildArgLine(project.getProperties().getProperty("argLine")));
-
-        verifyDateTime = new Date();
-
-        getLog().info("Verifying there are no new vulnerabilities after time " + verifyDateTime.toString());
     }
 
-    public String generateAppVersion(Date currentDate) {
-        if (appVersion != null) {
-            return appVersion;
+    public String computeAppVersion(Date currentDate) {
+        if (computedAppVersion != null) {
+            return computedAppVersion;
         }
 
-        String appVersionTimestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(currentDate);
-        appVersion = appName + "-" + appVersionTimestamp;
-        return appVersion;
+        if (userSpecifiedAppVersion != null) {
+            computedAppVersion = userSpecifiedAppVersion;
+            return computedAppVersion;
+        }
+
+        String travisBuildNumber = System.getenv("TRAVIS_BUILD_NUMBER");
+        String circleBuildNum = System.getenv("CIRCLE_BUILD_NUM");
+
+        String appVersionQualifier = "";
+        if(travisBuildNumber != null) {
+            getLog().info("Build is running in TravisCI. We'll use TRAVIS_BUILD_NUMBER [" + travisBuildNumber + "]");
+            appVersionQualifier = travisBuildNumber;
+        } else if (circleBuildNum != null) {
+            getLog().info("Build is running in CircleCI. We'll use CIRCLE_BUILD_NUM [" + circleBuildNum + "]");
+            appVersionQualifier = circleBuildNum;
+        } else {
+            getLog().info("No CI build number detected, we'll use current timestamp.");
+            appVersionQualifier = new SimpleDateFormat("yyyyMMddHHmmss").format(currentDate);
+        }
+        computedAppVersion = appName + "-" + appVersionQualifier;
+        return computedAppVersion;
     }
 
     public String buildArgLine(String currentArgLine) {
 
         if(currentArgLine == null) {
-            getLog().info("currentArgLine is null");
+            getLog().info("Current argLine is null");
             currentArgLine = "";
         } else {
             getLog().info("Current argLine is [" + currentArgLine + "]");
@@ -63,9 +73,17 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
 
         getLog().info("Configuring argLine property.");
 
-        appVersion = generateAppVersion(new Date());
+        computedAppVersion = computeAppVersion(new Date());
 
-        String newArgLine = currentArgLine + " -javaagent:" + contrastAgentLocation + " -Dcontrast.override.appname=" + appName + " -Dcontrast.server=" + serverName + " -Dcontrast.env=qa -Dcontrast.override.appversion=" + appVersion;
+        StringBuilder argLineBuilder = new StringBuilder();
+        argLineBuilder.append(currentArgLine);
+        argLineBuilder.append(" -javaagent:").append(contrastAgentLocation);
+        argLineBuilder.append(" -Dcontrast.override.appname=").append(appName);
+        argLineBuilder.append(" -Dcontrast.server=").append(serverName);
+        argLineBuilder.append(" -Dcontrast.env=qa");
+        argLineBuilder.append(" -Dcontrast.override.appversion=").append(computedAppVersion);
+
+        String newArgLine = argLineBuilder.toString();
 
         getLog().info("Updated argLine is " + newArgLine);
         return newArgLine.trim();

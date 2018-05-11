@@ -10,6 +10,7 @@ import com.contrastsecurity.models.Servers;
 import com.contrastsecurity.models.Trace;
 import com.contrastsecurity.models.Traces;
 import com.contrastsecurity.sdk.ContrastSDK;
+import java.util.Collections;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 
@@ -23,11 +24,11 @@ import java.util.List;
 public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMojo {
 
     public void execute() throws MojoExecutionException {
-        getLog().info("Checking for new vulnerabilities...");
-
         ContrastSDK contrast = connectToTeamServer();
 
         getLog().info("Successfully authenticated to TeamServer.");
+
+        getLog().info("Checking for new vulnerabilities for appVersion [" + computedAppVersion + "]");
 
         String applicationId = getApplicationId(contrast, appName);
 
@@ -35,7 +36,7 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
 
         TraceFilterForm form = new TraceFilterForm();
         form.setSeverities(getSeverityList(minSeverity));
-        form.setStartDate(verifyDateTime);
+        form.setAppVersionTags(Collections.singletonList(computedAppVersion));
         form.setServerIds(Arrays.asList(serverId));
 
         getLog().info("Sending vulnerability request to TeamServer.");
