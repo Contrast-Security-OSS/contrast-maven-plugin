@@ -41,7 +41,7 @@ In the `verify` phase, the plugin will check if any new vulnerabilities were dis
 | appVersion  | False    | See below  | The appversion to report to TeamServer. See explanation below.                    |
 | apiUrl      | True     |            | API URL to your TeamServer instance                                               |
 | serverName  | True     |            | Name of the server you set with -Dcontrast.server                                 |
-| minSeverity | False    | Medium     | Minimum severity level to verify (can be Note, Low, Medium, High or Critical      |
+| minSeverity | False    | Medium     | Minimum severity level to verify (can be Note, Low, Medium, High or Critical)     |
 | jarPath     | False    |            | Path to contrast.jar if you already have one downloaded                           |
 | skipArgLine | False    | False      | If this is "true", the plugin will not alter the Maven argLine property in any way|
 
