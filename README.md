@@ -31,23 +31,40 @@ In the `verify` phase, the plugin will check if any new vulnerabilities were dis
 
 ## Configuration Options
 
-| Parameter   | Required | Default    | Description                                                                       |
-|-------------|----------|------------|-----------------------------------------------------------------------------------|
-| username    | True     |            | Username in TeamServer                                                            |
-| serviceKey  | True     |            | Service Key found in Organization Settings page                                   |
-| apiKey      | True     |            | API Key found in Organization Settings page                                       |
-| orgUuid     | True     |            | Organization UUID found in Organization Settings page                             |
-| appName     | True     |            | Name of the application as seen in the Contrast site                              |
-| appVersion  | False    | See below  | The appversion to report to TeamServer. See explanation below.                    |
-| apiUrl      | True     |            | API URL to your TeamServer instance                                               |
-| serverName  | True     |            | Name of the server you set with -Dcontrast.server                                 |
-| minSeverity | False    | Medium     | Minimum severity level to verify (can be Note, Low, Medium, High or Critical)     |
-| jarPath     | False    |            | Path to contrast.jar if you already have one downloaded                           |
-| skipArgLine | False    | False      | If this is "true", the plugin will not alter the Maven argLine property in any way|
+| Parameter   | Required | Default    | Description                                                                       | Since |
+|-------------|----------|------------|-----------------------------------------------------------------------------------|-------|
+| username    | True     |            | Username in TeamServer                                                            |       |
+| serviceKey  | True     |            | Service Key found in Organization Settings page                                   |       |
+| apiKey      | True     |            | API Key found in Organization Settings page                                       |       |
+| orgUuid     | True     |            | Organization UUID found in Organization Settings page                             |       |
+| appName     | True     |            | Name of the application as seen in the Contrast site                              |       |
+| appVersion  | False    | See below  | The appversion to report to TeamServer. See explanation below.                    |       |
+| apiUrl      | True     |            | API URL to your TeamServer instance                                               |       |
+| serverName  | True     |            | Name of the server you set with -Dcontrast.server                                 |       |
+| serverPath  | False    |            | The server context path                                                           |    2.1|
+| minSeverity | False    | Medium     | Minimum severity level to verify (can be Note, Low, Medium, High or Critical)     |       |
+| jarPath     | False    |            | Path to contrast.jar if you already have one downloaded                           |       |
+| skipArgLine | False    | False      | If this is "true", the plugin will not alter the Maven argLine property in any way|    2.0|
+
+
+## Option Details
+
+### serverPath
+
+Multi-module MAven builds can appear as different servers in TeamServer. If you would like to discourage this behavior and would rather see all modules appear under the same server in TeamServer, then please set the `serverPath` property.
+
+### appVersion
+
+When your app's integration tests are run, the Contrast agent can add an app version to its metadata so that vulnerabilites can be compared between app versions, CI builds, etc...
+
+We generate this app version as follows and in this order:
+
+* If you specify an appVersion in the properties, we'll use that without modification
+* If your build is running in TravisCI, we'll use appName-$TRAVIS_BUILD_NUMBER
+* If your build is running in CircleCI, we'll use appName-$CIRCLE_BUILD_NUM
+* If no appVersion is specified, we'll generate one in the following format: appName-yyyyMMddHHmmss
 
 ## Example Configuration
-
-The following is a typical example.
 
 ```xml
 <plugin>
@@ -80,14 +97,3 @@ The following is a typical example.
      </configuration>
 </plugin>
 ```
-
-## appVersion
-
-When your app's integration tests are run, the Contrast agent can add an app version to its metadata so that vulnerabilites can be compared between app versions, CI builds, etc...
-
-We generate this app version as follows and in this order:
-
-* If you specify an appVersion in the properties, we'll use that without modification
-* If your build is running in TravisCI, we'll use appName-$TRAVIS_BUILD_NUMBER
-* If your build is running in CircleCI, we'll use appName-$CIRCLE_BUILD_NUM
-* If no appVersion is specified, we'll generate one in the following format: appName-yyyyMMddHHmmss

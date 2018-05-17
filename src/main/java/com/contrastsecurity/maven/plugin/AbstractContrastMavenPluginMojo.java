@@ -46,6 +46,9 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
     @Parameter(property = "serverName", required = true)
     protected String serverName;
 
+    @Parameter(property = "serverPath")
+    protected String serverPath;
+
     @Parameter(property = "jarPath")
     protected String jarPath;
 
@@ -93,7 +96,7 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
             try {
                 javaAgent = connection.getAgent(AgentType.JAVA, orgUuid);
             } catch (IOException e) {
-                throw new MojoExecutionException("\n\nWe couldn't download the Java agent from TeamServer. There probably isn't much you can do to resolve this, so please contact Contrast Support. The error is:", e);
+                throw new MojoExecutionException("\n\nWe couldn't download the Java agent from TeamServer with this user [" + username + "]. Please check that all your credentials are correct. If everything is correct, please contact Contrast Support. The error is:", e);
             } catch (UnauthorizedException e) {
                 throw new MojoExecutionException("\n\nWe contacted TeamServer successfully but couldn't authorize with the credentials you provided. The error is:", e);
             }

@@ -111,10 +111,8 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
 
         try {
             applications = sdk.getApplications(orgUuid);
-        } catch (IOException e) {
-            throw new MojoExecutionException("Unable to retrieve the applications.", e);
-        } catch (UnauthorizedException e) {
-            throw new MojoExecutionException("Unable to connect to TeamServer.", e);
+        } catch (Exception e) {
+            throw new MojoExecutionException("\n\nUnable to retrieve the application list from TeamServer. Please check that TeamServer is running at this address [" + apiUrl + "]\n", e);
         }
 
         for(Application application: applications.getApplications()) {

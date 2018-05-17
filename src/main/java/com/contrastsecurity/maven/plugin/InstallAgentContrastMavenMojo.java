@@ -3,6 +3,7 @@ package com.contrastsecurity.maven.plugin;
 import com.contrastsecurity.sdk.ContrastSDK;
 import java.text.SimpleDateFormat;
 import java.util.Map;
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -82,6 +83,10 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
         argLineBuilder.append(" -Dcontrast.server=").append(serverName);
         argLineBuilder.append(" -Dcontrast.env=qa");
         argLineBuilder.append(" -Dcontrast.override.appversion=").append(computedAppVersion);
+
+        if(!StringUtils.isEmpty(serverPath)) {
+            argLineBuilder.append(" -Dcontrast.path=").append(serverPath);
+        }
 
         String newArgLine = argLineBuilder.toString();
 

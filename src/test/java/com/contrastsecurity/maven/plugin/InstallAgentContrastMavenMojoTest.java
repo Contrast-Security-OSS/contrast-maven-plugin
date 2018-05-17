@@ -67,6 +67,11 @@ public class InstallAgentContrastMavenMojoTest {
         String currentArgLine = "";
         String expectedArgLine = "-javaagent:/usr/local/bin/contrast.jar -Dcontrast.override.appname=caddyshack -Dcontrast.server=Bushwood -Dcontrast.env=qa -Dcontrast.override.appversion=caddyshack-2";
         assertEquals(expectedArgLine, installMojo.buildArgLine(currentArgLine));
+
+        installMojo.serverPath = "/home/tomcat/app/";
+        currentArgLine = "";
+        expectedArgLine = "-javaagent:/usr/local/bin/contrast.jar -Dcontrast.override.appname=caddyshack -Dcontrast.server=Bushwood -Dcontrast.env=qa -Dcontrast.override.appversion=caddyshack-2 -Dcontrast.path=/home/tomcat/app/";
+        assertEquals(expectedArgLine, installMojo.buildArgLine(currentArgLine));
     }
 
     @Test
