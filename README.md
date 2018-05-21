@@ -1,8 +1,8 @@
 # Contrast Maven Plugin
 
-## Version 2.0
+## Version 2
 
-This document refers to version 2.0 of the Contrast Maven Plugin. Behavior has changed a bit since the latest 1.X release.
+This document refers to version 2.X of the Contrast Maven Plugin. Behavior has changed a bit since the latest 1.X release.
 
 New in 2.X:
 
@@ -51,7 +51,7 @@ In the `verify` phase, the plugin will check if any new vulnerabilities were dis
 
 ### serverPath
 
-Multi-module MAven builds can appear as different servers in TeamServer. If you would like to discourage this behavior and would rather see all modules appear under the same server in TeamServer, then please set the `serverPath` property.
+Multi-module Maven builds can appear as different servers in TeamServer. If you would like to discourage this behavior and would rather see all modules appear under the same server in TeamServer, then please set the `serverPath` property.
 
 ### appVersion
 
