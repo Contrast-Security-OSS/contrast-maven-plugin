@@ -53,7 +53,7 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
     protected String jarPath;
 
     @Parameter(property = "appVersion")
-    protected String userSpecifiedAppVersion;
+    protected String appVersion;
 
     @Parameter(property = "skipArgLine")
     protected boolean skipArgLine;
