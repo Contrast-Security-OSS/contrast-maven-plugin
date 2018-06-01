@@ -33,13 +33,13 @@ In the `verify` phase, the plugin will check if any new vulnerabilities were dis
 
 | Parameter   | Required | Default    | Description                                                                       | Since |
 |-------------|----------|------------|-----------------------------------------------------------------------------------|-------|
-| username    | True     |            | Username in TeamServer                                                            |       |
+| username    | True     |            | Contrast username                                                            |       |
 | serviceKey  | True     |            | Service Key found in Organization Settings page                                   |       |
 | apiKey      | True     |            | API Key found in Organization Settings page                                       |       |
 | orgUuid     | True     |            | Organization UUID found in Organization Settings page                             |       |
 | appName     | True     |            | Name of the application as seen in the Contrast site                              |       |
-| appVersion  | False    | See below  | The appversion to report to TeamServer. See explanation below.                    |       |
-| apiUrl      | True     |            | API URL to your TeamServer instance                                               |       |
+| appVersion  | False    | See below  | The appversion to report to Contrast. See explanation below.                    |       |
+| apiUrl      | True     |            | API URL to your Contrast instance                                               |       |
 | serverName  | True     |            | Name of the server you set with -Dcontrast.server                                 |       |
 | serverPath  | False    |            | The server context path                                                           |    2.1|
 | minSeverity | False    | Medium     | Minimum severity level to verify (can be Note, Low, Medium, High or Critical)     |       |
@@ -51,13 +51,15 @@ In the `verify` phase, the plugin will check if any new vulnerabilities were dis
 
 ### serverPath
 
-Multi-module Maven builds can appear as different servers in TeamServer. If you would like to discourage this behavior and would rather see all modules appear under the same server in TeamServer, then please set the `serverPath` property.
+Multi-module Maven builds can appear as different servers in the Contrast UI. If you would like to discourage this behavior and would rather see all modules appear under the same server in Contrast, then please set the `serverPath` property.
+
+**You are strongly encouraged to add a serverPath if this build will be run in a CI environment such as Travis CI or Circle CI.** This will help with keeping your servers tidy in the Contrast UI. 
 
 ### appVersion
 
 When your app's integration tests are run, the Contrast agent can add an app version to its metadata so that vulnerabilites can be compared between app versions, CI builds, etc...
 
-We generate this app version as follows and in this order:
+We generate the app version as follows and in this order:
 
 * If you specify an appVersion in the properties, we'll use that without modification
 * If your build is running in TravisCI, we'll use appName-$TRAVIS_BUILD_NUMBER
