@@ -29,14 +29,14 @@ public class InstallAgentContrastMavenMojoTest {
 
    @Test
    public void testGenerateAppVersion() {
-        installMojo.userSpecifiedAppVersion = "mycustomversion";
+        installMojo.appVersion = "mycustomversion";
         installMojo.computedAppVersion = null;
         assertEquals("mycustomversion",installMojo.computeAppVersion(now));
    }
 
     @Test
     public void testGenerateAppVersionNoAppVersion() {
-        installMojo.userSpecifiedAppVersion = null;
+        installMojo.appVersion = null;
         installMojo.computedAppVersion = null;
         String expectedVersion = new SimpleDateFormat("yyyyMMddHHmmss").format(now);
         assertEquals("caddyshack-" + expectedVersion,installMojo.computeAppVersion(now));
@@ -45,7 +45,7 @@ public class InstallAgentContrastMavenMojoTest {
 
     @Test
     public void testGenerateAppVersionTravis() {
-        installMojo.userSpecifiedAppVersion = null;
+        installMojo.appVersion = null;
         installMojo.computedAppVersion = null;
         environmentVariables.set("TRAVIS_BUILD_NUMBER", "19");
         assertEquals("caddyshack-19",installMojo.computeAppVersion(now));
@@ -54,7 +54,7 @@ public class InstallAgentContrastMavenMojoTest {
 
     @Test
     public void testGenerateAppVersionCircle() {
-        installMojo.userSpecifiedAppVersion = null;
+        installMojo.appVersion = null;
         installMojo.computedAppVersion = null;
         environmentVariables.set("TRAVIS_BUILD_NUMBER", "circle");
         assertEquals("caddyshack-circle",installMojo.computeAppVersion(now));

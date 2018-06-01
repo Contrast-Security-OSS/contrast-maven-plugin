@@ -2,7 +2,6 @@ package com.contrastsecurity.maven.plugin;
 
 import com.contrastsecurity.sdk.ContrastSDK;
 import java.text.SimpleDateFormat;
-import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -34,8 +33,9 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
             return computedAppVersion;
         }
 
-        if (userSpecifiedAppVersion != null) {
-            computedAppVersion = userSpecifiedAppVersion;
+        if (appVersion != null) {
+            getLog().info("Using user-specified app version [" + appVersion + "]");
+            computedAppVersion = appVersion;
             return computedAppVersion;
         }
 
