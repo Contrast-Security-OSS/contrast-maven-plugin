@@ -132,7 +132,7 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
     private String generateTraceReport(Trace trace) {
         StringBuilder sb = new StringBuilder();
         sb.append("Trace: ");
-        sb.append(trace.getTitle());
+        sb.append(trace.getTitle().replaceAll("\\{\\{\\#unlicensed\\}\\}", "(").replaceAll("\\{\\{\\/unlicensed\\}\\}", ")"));
         sb.append("\nTrace Uuid: ");
         sb.append(trace.getUuid());
         sb.append("\nTrace Severity: ");
