@@ -70,7 +70,7 @@ We generate the app version as follows and in this order:
 
 ```xml
 <plugin>
-     <groupId>com.contrast</groupId>
+     <groupId>com.contrastsecurity</groupId>
      <artifactId>contrast-maven-plugin</artifactId>
      <executions>
          <execution>
