@@ -44,6 +44,12 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
         Traces traces;
 
         try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        try {
             traces = contrast.getTraces(orgUuid, applicationId, form);
         } catch (IOException e) {
             throw new MojoExecutionException("Unable to retrieve the traces.", e);
