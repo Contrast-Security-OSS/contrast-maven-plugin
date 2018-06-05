@@ -40,6 +40,9 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
     @Parameter(property = "appName", required = true)
     protected String appName;
 
+    @Parameter(property = "standalone")
+    protected boolean standalone;
+
     @Parameter(property = "minSeverity", defaultValue = "Medium")
     protected String minSeverity;
 

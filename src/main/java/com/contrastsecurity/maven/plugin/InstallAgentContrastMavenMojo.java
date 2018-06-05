@@ -79,12 +79,16 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
         StringBuilder argLineBuilder = new StringBuilder();
         argLineBuilder.append(currentArgLine);
         argLineBuilder.append(" -javaagent:").append(contrastAgentLocation);
-
-        argLineBuilder.append(" -Dcontrast.override.appname=").append(appName);
         argLineBuilder.append(" -Dcontrast.server=").append(serverName);
         argLineBuilder.append(" -Dcontrast.env=qa");
         argLineBuilder.append(" -Dcontrast.override.appversion=").append(computedAppVersion);
         argLineBuilder.append(" -Dcontrast.reporting.period=").append("200");
+
+        if(standalone) {
+            argLineBuilder.append(" -Dcontrast.standalone.appname=").append(appName);
+        } else {
+            argLineBuilder.append(" -Dcontrast.override.appname=").append(appName);
+        }
 
         if(!StringUtils.isEmpty(serverPath)) {
             argLineBuilder.append(" -Dcontrast.path=").append(serverPath);
