@@ -38,6 +38,7 @@ In the `verify` phase, the plugin will check if any new vulnerabilities were dis
 | apiKey      | True     |            | API Key found in Organization Settings page                                       |       |
 | orgUuid     | True     |            | Organization UUID found in Organization Settings page                             |       |
 | appName     | True     |            | Name of the application as seen in the Contrast site                              |       |
+| standalone  | False    | False      | Set this to true if this is a standalone app                                    |    2.2|
 | appVersion  | False    | See below  | The appversion to report to Contrast. See explanation below.                    |       |
 | apiUrl      | True     |            | API URL to your Contrast instance                                               |       |
 | serverName  | True     |            | Name of the server you set with -Dcontrast.server                                 |       |
@@ -70,7 +71,7 @@ We generate the app version as follows and in this order:
 
 ```xml
 <plugin>
-     <groupId>com.contrast</groupId>
+     <groupId>com.contrastsecurity</groupId>
      <artifactId>contrast-maven-plugin</artifactId>
      <executions>
          <execution>
