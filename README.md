@@ -92,7 +92,7 @@ We generate the app version as follows and in this order:
          <username>contrast_user</username>
          <apiKey>API_KEY_HERE</apiKey>
          <serviceKey>SERVICE_KEY_HERE</serviceKey>
-         <apiUrl>http://app.contrastsecurity.com/api</apiUrl>
+         <apiUrl>https://app.contrastsecurity.com/Contrast/api</apiUrl>
          <orgUuid>ORG_UID_HERE</orgUuid>
          <appName>Test Application</appName>
          <serverName>jenkins.slave1</serverName>
