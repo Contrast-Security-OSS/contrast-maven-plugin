@@ -10,6 +10,10 @@ New in 2.X:
 * App version can be generated using $TRAVIS_BUILD_NUMBER or $CIRCLE_BUILD_NUM
 * Source packaging changed to com.contrastsecurity.maven.plugin
 
+## An Example
+
+We have a working example up on a Spring Boot application here: https://github.com/Contrast-Security-OSS/vulnerable-spring-boot-application
+
 ## Documentation
 
 Always refer to Contrast's Open Docs site for the most up to date documentation: https://docs.contrastsecurity.com/tools-build.html#maven
