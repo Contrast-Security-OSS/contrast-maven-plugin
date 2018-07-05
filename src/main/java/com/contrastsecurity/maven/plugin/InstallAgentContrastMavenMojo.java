@@ -94,6 +94,10 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
             argLineBuilder.append(" -Dcontrast.path=").append(serverPath);
         }
 
+        if(!StringUtils.isEmpty(libTag)) {
+            argLineBuilder.append(" -Dinventory.tags=").append(libTag);
+        }
+
         String newArgLine = argLineBuilder.toString();
 
         getLog().info("Updated argLine is " + newArgLine);
