@@ -43,6 +43,9 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
     @Parameter(property = "standalone")
     protected boolean standalone;
 
+    @Parameter(property = "libTag")
+    protected String libTag;
+
     @Parameter(property = "minSeverity", defaultValue = "Medium")
     protected String minSeverity;
 
