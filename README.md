@@ -38,13 +38,13 @@ In the `verify` phase, the plugin will check if any new vulnerabilities were dis
 | Parameter   | Required | Default    | Description                                                                       | Since |
 |-------------|----------|------------|-----------------------------------------------------------------------------------|-------|
 | username    | True     |            | Contrast username                                                            |       |
-| serviceKey  | True     |            | Service Key found in Organization Settings page                                   |       |
-| apiKey      | True     |            | API Key found in Organization Settings page                                       |       |
-| orgUuid     | True     |            | Organization UUID found in Organization Settings page                             |       |
+| serviceKey  | True     |            | Service Key found in Your Account => Profile page => Your keys => Personal Keys                                   |       |
+| apiKey      | True     |            | Api Key found in Your Account => Profile page => Your keys => Organization Keys                                       |       |
+| orgUuid     | True     |            | Organization Uuid found in Your Account => Profile page => Your keys => Organization Keys                             |       |
 | appName     | True     |            | Name of the application as seen in the Contrast site                              |       |
 | standalone  | False    | False      | Set this to true if this is a standalone app                                    |    2.2|
 | appVersion  | False    | See below  | The appversion to report to Contrast. See explanation below.                    |       |
-| apiUrl      | True     |            | API URL to your Contrast instance                                               |       |
+| apiUrl      | True     |            | API URL to your Contrast instance found in Your Account => Profile page => Your keys => Organization Keys                                              |       |
 | serverName  | True     |            | Name of the server you set with -Dcontrast.server                                 |       |
 | serverPath  | False    |            | The server context path                                                           |    2.1|
 | minSeverity | False    | Medium     | Minimum severity level to verify (can be Note, Low, Medium, High or Critical)     |       |
