@@ -50,6 +50,7 @@ In the `verify` phase, the plugin will check if any new vulnerabilities were dis
 | minSeverity | False    | Medium     | Minimum severity level to verify (can be Note, Low, Medium, High or Critical)     |       |
 | jarPath     | False    |            | Path to contrast.jar if you already have one downloaded                           |       |
 | skipArgLine | False    | False      | If this is "true", the plugin will not alter the Maven argLine property in any way|    2.0|
+| profile     | False    |            | If this is set, the plugin will use the specified custom agent profile when downloading contrast.jar|    2.4|
 
 
 ## Option Details
