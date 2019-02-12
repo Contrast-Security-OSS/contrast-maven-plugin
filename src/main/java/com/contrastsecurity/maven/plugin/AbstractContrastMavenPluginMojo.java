@@ -55,6 +55,9 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
     @Parameter(property = "jarPath")
     protected String jarPath;
 
+    @Parameter(property = "profile")
+    protected String profile;
+
     @Parameter(property = "appVersion")
     protected String appVersion;
 
@@ -97,7 +100,11 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
             getLog().info("No jar path was configured. Downloading the latest contrast.jar...");
 
             try {
-                javaAgent = connection.getAgent(AgentType.JAVA, orgUuid);
+                if (profile != null) {
+                    javaAgent = connection.getAgent(AgentType.JAVA, orgUuid, profile);
+                } else {
+                    javaAgent = connection.getAgent(AgentType.JAVA, orgUuid);
+                }
             } catch (IOException e) {
                 throw new MojoExecutionException("\n\nWe couldn't download the Java agent from TeamServer with this user [" + username + "]. Please check that all your credentials are correct. If everything is correct, please contact Contrast Support. The error is:", e);
             } catch (UnauthorizedException e) {
