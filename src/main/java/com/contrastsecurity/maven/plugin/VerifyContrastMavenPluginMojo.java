@@ -32,13 +32,7 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
             serverIds = getServerId(contrast, applicationId);
         }
 
-        TraceFilterForm form = new TraceFilterForm();
-        form.setSeverities(getSeverityList(minSeverity));
-        form.setAppVersionTags(Collections.singletonList(computedAppVersion));
-
-        if (serverIds != null) {
-            form.setServerIds(serverIds);
-        }
+        TraceFilterForm form = getTraceFilterForm(serverIds);
 
         getLog().info("Sending vulnerability request to TeamServer.");
 
@@ -73,6 +67,16 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
         getLog().info("Finished verifying your application.");
     }
 
+    TraceFilterForm getTraceFilterForm(List<Long> serverIds) {
+        TraceFilterForm form = new TraceFilterForm();
+        form.setSeverities(getSeverityList(minSeverity));
+        form.setAppVersionTags(Collections.singletonList(computedAppVersion));
+        if (serverIds != null) {
+            form.setServerIds(serverIds);
+        }
+        return form;
+    }
+
     /** Retrieves the server id by server name
      *
      * @param sdk Contrast SDK object
@@ -85,7 +89,7 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
         serverFilterForm.setApplicationIds(Arrays.asList(applicationId));
 
         Servers servers;
-        List<Long> serverIds = null;
+        List<Long> serverIds;
 
         try {
             serverFilterForm.setQ(URLEncoder.encode(serverName, "UTF-8"));
