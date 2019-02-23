@@ -25,9 +25,15 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
 
         getLog().info("Agent downloaded.");
 
-        String applicationName = appName;
-        if (StringUtils.isBlank(appName) && StringUtils.isNotBlank(appId)) {
+        String applicationName;
+        if (StringUtils.isNotBlank(appId)) {
             applicationName = getAppName(contrast, appId);
+
+            if (StringUtils.isNotBlank(appName))
+                getLog().info("Using 'appId' property; 'appName' property is ignored.");
+
+        } else {
+            applicationName = appName;
         }
         project.getProperties().setProperty("argLine", buildArgLine(project.getProperties().getProperty("argLine"), applicationName));
     }

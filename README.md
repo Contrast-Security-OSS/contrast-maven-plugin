@@ -41,7 +41,8 @@ In the `verify` phase, the plugin will check if any new vulnerabilities were dis
 | serviceKey  | True     |            | Service Key found in Your Account => Profile page => Your keys => Personal Keys                                   |       |
 | apiKey      | True     |            | Api Key found in Your Account => Profile page => Your keys => Organization Keys                                       |       |
 | orgUuid     | True     |            | Organization Uuid found in Your Account => Profile page => Your keys => Organization Keys                             |       |
-| appName     | True     |            | Name of the application as seen in the Contrast site                              |       |
+| appName     | False    |            | Name of the application as seen in the Contrast site                              |       |
+| appId       | False    |            | Id of the application as seen in the Contrast site. Either app name or id is required. | 2.5 |
 | standalone  | False    | False      | Set this to true if this is a standalone app                                    |    2.2|
 | appVersion  | False    | See below  | The appversion to report to Contrast. See explanation below.                    |       |
 | apiUrl      | True     |            | API URL to your Contrast instance found in Your Account => Profile page => Your keys => Organization Keys                                              |       |
@@ -68,9 +69,9 @@ When your app's integration tests are run, the Contrast agent can add an app ver
 We generate the app version as follows and in this order:
 
 * If you specify an appVersion in the properties, we'll use that without modification
-* If your build is running in TravisCI, we'll use appName-$TRAVIS_BUILD_NUMBER
-* If your build is running in CircleCI, we'll use appName-$CIRCLE_BUILD_NUM
-* If no appVersion is specified, we'll generate one in the following format: appName-yyyyMMddHHmmss
+* If your build is running in TravisCI, we'll use appName-$TRAVIS_BUILD_NUMBER or appId-$TRAVIS_BUILD_NUMBER if appId property is used.
+* If your build is running in CircleCI, we'll use appName-$CIRCLE_BUILD_NUM or appId-$CIRCLE_BUILD_NUM.
+* If no appVersion is specified, we'll generate one in the following format: appName-yyyyMMddHHmmss or appId-yyyyMMddHHmmss.
 
 ## Example Configuration
 
@@ -100,6 +101,7 @@ We generate the app version as follows and in this order:
          <apiUrl>https://app.contrastsecurity.com/Contrast/api</apiUrl>
          <orgUuid>ORG_UID_HERE</orgUuid>
          <appName>Test Application</appName>
+         <appId>bc3028e6-82ac-410f-b9c7-13573d33cb94</appId>
          <serverName>jenkins.slave1</serverName>
          <minSeverity>High</minSeverity>
      </configuration>
