@@ -1,13 +1,13 @@
 package com.contrastsecurity.maven.plugin;
 
 import com.contrastsecurity.sdk.ContrastSDK;
-import java.text.SimpleDateFormat;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 
@@ -25,7 +25,11 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
 
         getLog().info("Agent downloaded.");
 
-        project.getProperties().setProperty("argLine", buildArgLine(project.getProperties().getProperty("argLine")));
+        String applicationName = appName;
+        if (StringUtils.isBlank(appName) && StringUtils.isNotBlank(appId)) {
+            applicationName = getAppName(contrast, appId);
+        }
+        project.getProperties().setProperty("argLine", buildArgLine(project.getProperties().getProperty("argLine"), applicationName));
     }
 
     public String computeAppVersion(Date currentDate) {
@@ -53,11 +57,20 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
             getLog().info("No CI build number detected, we'll use current timestamp.");
             appVersionQualifier = new SimpleDateFormat("yyyyMMddHHmmss").format(currentDate);
         }
-        computedAppVersion = appName + "-" + appVersionQualifier;
+        if (StringUtils.isNotBlank(appId)) {
+            computedAppVersion = appId + "-" + appVersionQualifier;
+        } else {
+            computedAppVersion = appName + "-" + appVersionQualifier;
+        }
+
         return computedAppVersion;
     }
 
     public String buildArgLine(String currentArgLine) {
+        return buildArgLine(currentArgLine, appName);
+    }
+
+    public String buildArgLine(String currentArgLine, String applicationName) {
 
         if(currentArgLine == null) {
             getLog().info("Current argLine is null");
@@ -84,13 +97,13 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
         argLineBuilder.append(" -Dcontrast.override.appversion=").append(computedAppVersion);
         argLineBuilder.append(" -Dcontrast.reporting.period=").append("200");
 
-        if(standalone) {
-            argLineBuilder.append(" -Dcontrast.standalone.appname=").append(appName);
+        if (standalone) {
+            argLineBuilder.append(" -Dcontrast.standalone.appname=").append(applicationName);
         } else {
-            argLineBuilder.append(" -Dcontrast.override.appname=").append(appName);
+            argLineBuilder.append(" -Dcontrast.override.appname=").append(applicationName);
         }
 
-        if(!StringUtils.isEmpty(serverPath)) {
+        if (!StringUtils.isEmpty(serverPath)) {
             argLineBuilder.append(" -Dcontrast.path=").append(serverPath);
         }
 
@@ -99,5 +112,4 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
         getLog().info("Updated argLine is " + newArgLine);
         return newArgLine.trim();
     }
-
 }

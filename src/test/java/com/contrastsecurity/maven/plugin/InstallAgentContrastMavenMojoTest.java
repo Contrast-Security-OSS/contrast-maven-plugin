@@ -1,13 +1,14 @@
 package com.contrastsecurity.maven.plugin;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
-import static org.junit.Assert.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import static org.junit.Assert.assertEquals;
 
 public class InstallAgentContrastMavenMojoTest {
     InstallAgentContrastMavenMojo installMojo;
@@ -59,6 +60,19 @@ public class InstallAgentContrastMavenMojoTest {
         environmentVariables.set("TRAVIS_BUILD_NUMBER", "circle");
         assertEquals("caddyshack-circle",installMojo.computeAppVersion(now));
         assertEquals("caddyshack-circle",installMojo.computeAppVersion(now));
+    }
+
+    @Test
+    public void testGenerateAppVersionAppId() {
+        String appId = "12345";
+        String travisBuildNumber = "travis";
+
+        installMojo.appVersion = null;
+        installMojo.computedAppVersion = null;
+        environmentVariables.set("TRAVIS_BUILD_NUMBER", travisBuildNumber);
+        installMojo.appId = appId;
+
+        assertEquals(appId + "-" + travisBuildNumber, installMojo.computeAppVersion(now));
     }
 
     @Test

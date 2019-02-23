@@ -2,8 +2,8 @@ package com.contrastsecurity.maven.plugin;
 
 import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.models.AgentType;
+import com.contrastsecurity.models.Applications;
 import com.contrastsecurity.sdk.ContrastSDK;
-import java.text.SimpleDateFormat;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
@@ -12,10 +12,8 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
-import java.awt.peer.SystemTrayPeer;
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 
 abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
 
@@ -37,8 +35,11 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
     @Parameter(property = "orgUuid", required = true)
     protected String orgUuid;
 
-    @Parameter(property = "appName", required = true)
+    @Parameter(property = "appName")
     protected String appName;
+
+    @Parameter(property = "appId")
+    protected String appId;
 
     @Parameter(property = "standalone")
     protected boolean standalone;
@@ -90,6 +91,19 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
         } catch (IllegalArgumentException e) {
             throw new MojoExecutionException("\n\nWe couldn't connect to TeamServer at this address [" + apiUrl + "]. The error is: ", e);
         }
+    }
+
+    String getAppName(ContrastSDK contrastSDK, String applicationId) throws MojoExecutionException {
+        Applications applications;
+        try {
+            applications = contrastSDK.getApplication(orgUuid, applicationId);
+        } catch (Exception e) {
+            throw new MojoExecutionException("\n\nUnable to retrieve the application list from TeamServer. Please check that TeamServer is running at this address [" + apiUrl + "]\n", e);
+        }
+        if (applications.getApplication() == null) {
+            throw new MojoExecutionException("\n\nApplication with id '" + applicationId + "' not found. Make sure this application appears in TeamServer under the 'Applications' tab.\n");
+        }
+        return applications.getApplication().getName();
     }
 
     File installJavaAgent(ContrastSDK connection) throws MojoExecutionException {

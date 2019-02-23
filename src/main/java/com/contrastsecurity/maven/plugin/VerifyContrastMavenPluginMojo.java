@@ -4,21 +4,14 @@ import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.http.RuleSeverity;
 import com.contrastsecurity.http.ServerFilterForm;
 import com.contrastsecurity.http.TraceFilterForm;
-import com.contrastsecurity.models.Application;
-import com.contrastsecurity.models.Applications;
-import com.contrastsecurity.models.Servers;
-import com.contrastsecurity.models.Trace;
-import com.contrastsecurity.models.Traces;
+import com.contrastsecurity.models.*;
 import com.contrastsecurity.sdk.ContrastSDK;
-import java.util.Collections;
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 @Mojo(name = "verify", requiresOnline = true)
 public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMojo {
@@ -30,7 +23,14 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
 
         getLog().info("Checking for new vulnerabilities for appVersion [" + computedAppVersion + "]");
 
-        String applicationId = getApplicationId(contrast, appName);
+        String applicationId;
+        if (StringUtils.isNotBlank(appId)) {
+            applicationId = appId;
+        } else if (StringUtils.isNotBlank(appName)) {
+            applicationId = getApplicationId(contrast, appName);
+        } else {
+            throw new MojoExecutionException("Either application id or name should be specified in plugin configuration.");
+        }
 
         long serverId = getServerId(contrast, applicationId);
 
@@ -132,6 +132,7 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
 
     /**
      * Creates a basic report for a Trace object
+     *
      * @param trace Trace object
      * @return String report
      */
