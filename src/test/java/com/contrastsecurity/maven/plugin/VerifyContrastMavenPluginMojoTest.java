@@ -1,5 +1,6 @@
 package com.contrastsecurity.maven.plugin;
 
+import com.contrastsecurity.http.RuleSeverity;
 import com.contrastsecurity.http.TraceFilterForm;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,6 +44,30 @@ public class VerifyContrastMavenPluginMojoTest {
         assertEquals((Long) server2, traceFilterForm.getServerIds().get(1));
         assertEquals((Long) server3, traceFilterForm.getServerIds().get(2));
 
+    }
+
+    @Test
+    public void testGetTraceFilterFormSeverities() {
+        verifyContrastMavenPluginMojo.minSeverity = "Note";
+        TraceFilterForm traceFilterForm = verifyContrastMavenPluginMojo.getTraceFilterForm(null);
+
+        assertEquals(5, traceFilterForm.getSeverities().size());
+        assertTrue(traceFilterForm.getSeverities().contains(RuleSeverity.NOTE));
+        assertTrue(traceFilterForm.getSeverities().contains(RuleSeverity.LOW));
+        assertTrue(traceFilterForm.getSeverities().contains(RuleSeverity.MEDIUM));
+        assertTrue(traceFilterForm.getSeverities().contains(RuleSeverity.HIGH));
+        assertTrue(traceFilterForm.getSeverities().contains(RuleSeverity.CRITICAL));
+    }
+
+    @Test
+    public void testGetTraceFilterFormAppVersionTags() {
+        String appVersion = "WebGoat-1";
+
+        verifyContrastMavenPluginMojo.computedAppVersion = appVersion;
+        TraceFilterForm traceFilterForm = verifyContrastMavenPluginMojo.getTraceFilterForm(null);
+
+        assertEquals(1, traceFilterForm.getAppVersionTags().size());
+        assertEquals(appVersion, traceFilterForm.getAppVersionTags().get(0));
     }
 
 }
