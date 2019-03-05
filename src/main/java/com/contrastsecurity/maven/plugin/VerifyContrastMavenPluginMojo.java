@@ -4,21 +4,15 @@ import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.http.RuleSeverity;
 import com.contrastsecurity.http.ServerFilterForm;
 import com.contrastsecurity.http.TraceFilterForm;
-import com.contrastsecurity.models.Application;
-import com.contrastsecurity.models.Applications;
-import com.contrastsecurity.models.Servers;
-import com.contrastsecurity.models.Trace;
-import com.contrastsecurity.models.Traces;
+import com.contrastsecurity.models.*;
 import com.contrastsecurity.sdk.ContrastSDK;
-import java.util.Collections;
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
+import java.net.URLEncoder;
+import java.util.*;
 
 @Mojo(name = "verify", requiresOnline = true)
 public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMojo {
@@ -32,12 +26,13 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
 
         String applicationId = getApplicationId(contrast, appName);
 
-        long serverId = getServerId(contrast, applicationId);
+        List<Long> serverIds = null;
 
-        TraceFilterForm form = new TraceFilterForm();
-        form.setSeverities(getSeverityList(minSeverity));
-        form.setAppVersionTags(Collections.singletonList(computedAppVersion));
-        form.setServerIds(Arrays.asList(serverId));
+        if (StringUtils.isNotBlank(serverName)) {
+            serverIds = getServerId(contrast, applicationId);
+        }
+
+        TraceFilterForm form = getTraceFilterForm(serverIds);
 
         getLog().info("Sending vulnerability request to TeamServer.");
 
@@ -72,22 +67,32 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
         getLog().info("Finished verifying your application.");
     }
 
+    TraceFilterForm getTraceFilterForm(List<Long> serverIds) {
+        TraceFilterForm form = new TraceFilterForm();
+        form.setSeverities(getSeverityList(minSeverity));
+        form.setAppVersionTags(Collections.singletonList(computedAppVersion));
+        if (serverIds != null) {
+            form.setServerIds(serverIds);
+        }
+        return form;
+    }
+
     /** Retrieves the server id by server name
      *
      * @param sdk Contrast SDK object
      * @param applicationId application id to filter on
-     * @return Long id of the server
+     * @return List<Long> id of the servers
      * @throws MojoExecutionException
      */
-    private long getServerId(ContrastSDK sdk, String applicationId) throws MojoExecutionException {
+    private List<Long> getServerId(ContrastSDK sdk, String applicationId) throws MojoExecutionException {
         ServerFilterForm serverFilterForm = new ServerFilterForm();
         serverFilterForm.setApplicationIds(Arrays.asList(applicationId));
-        serverFilterForm.setQ(serverName);
 
         Servers servers;
-        long serverId;
+        List<Long> serverIds;
 
         try {
+            serverFilterForm.setQ(URLEncoder.encode(serverName, "UTF-8"));
             servers = sdk.getServersWithFilter(orgUuid, serverFilterForm);
         } catch (IOException e) {
             throw new MojoExecutionException("Unable to retrieve the servers.", e);
@@ -96,12 +101,15 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
         }
 
         if (!servers.getServers().isEmpty()) {
-            serverId = servers.getServers().get(0).getServerId();
+            serverIds = new ArrayList<Long>();
+            for (Server server : servers.getServers()) {
+                serverIds.add(server.getServerId());
+            }
         } else {
             throw new MojoExecutionException("\n\nServer with name '" + serverName + "' not found. Make sure this server name appears in TeamServer under the 'Servers' tab.\n");
         }
 
-        return serverId;
+        return serverIds;
     }
 
     /** Retrieves the application id by application name; else null
