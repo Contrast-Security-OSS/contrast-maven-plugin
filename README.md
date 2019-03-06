@@ -68,9 +68,9 @@ When your app's integration tests are run, the Contrast agent can add an app ver
 
 We generate the app version as follows and in this order:
 
-* If you specify an appVersion in the properties, we'll use that without modification
-* If your build is running in TravisCI, we'll use appName-$TRAVIS_BUILD_NUMBER or appId-$TRAVIS_BUILD_NUMBER if appId property is used.
-* If your build is running in CircleCI, we'll use appName-$CIRCLE_BUILD_NUM or appId-$CIRCLE_BUILD_NUM.
+* If you specify an appVersion in the properties, we'll use that without modification.
+* If your build is running in TravisCI, we'll use appName-$TRAVIS_BUILD_NUMBER.
+* If your build is running in CircleCI, we'll use appName-$CIRCLE_BUILD_NUM.
 * If no appVersion is specified, we'll generate one in the following format: appName-yyyyMMddHHmmss or appId-yyyyMMddHHmmss.
 
 ## Example Configuration
