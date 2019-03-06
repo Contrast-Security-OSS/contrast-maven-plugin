@@ -28,8 +28,9 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
         if (StringUtils.isNotBlank(appId)) {
             applicationId = appId;
 
-            if (StringUtils.isNotBlank(appName))
+            if (StringUtils.isNotBlank(appName)) {
                 getLog().info("Using 'appId' property; 'appName' property is ignored.");
+            }
 
         } else if (StringUtils.isNotBlank(appName)) {
             applicationId = getApplicationId(contrast, appName);

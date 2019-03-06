@@ -28,9 +28,11 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
         String applicationName;
         if (StringUtils.isNotBlank(appId)) {
             applicationName = getAppName(contrast, appId);
+            retrievedAppName = applicationName;
 
-            if (StringUtils.isNotBlank(appName))
+            if (StringUtils.isNotBlank(appName)) {
                 getLog().info("Using 'appId' property; 'appName' property is ignored.");
+            }
 
         } else {
             applicationName = appName;
@@ -64,7 +66,7 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
             appVersionQualifier = new SimpleDateFormat("yyyyMMddHHmmss").format(currentDate);
         }
         if (StringUtils.isNotBlank(appId)) {
-            computedAppVersion = appId + "-" + appVersionQualifier;
+            computedAppVersion = retrievedAppName + "-" + appVersionQualifier;
         } else {
             computedAppVersion = appName + "-" + appVersionQualifier;
         }

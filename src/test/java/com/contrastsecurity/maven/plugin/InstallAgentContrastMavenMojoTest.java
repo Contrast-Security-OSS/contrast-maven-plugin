@@ -64,6 +64,7 @@ public class InstallAgentContrastMavenMojoTest {
 
     @Test
     public void testGenerateAppVersionAppId() {
+        String appName = "WebGoat";
         String appId = "12345";
         String travisBuildNumber = "travis";
 
@@ -71,8 +72,9 @@ public class InstallAgentContrastMavenMojoTest {
         installMojo.computedAppVersion = null;
         environmentVariables.set("TRAVIS_BUILD_NUMBER", travisBuildNumber);
         installMojo.appId = appId;
+        installMojo.retrievedAppName = appName;
 
-        assertEquals(appId + "-" + travisBuildNumber, installMojo.computeAppVersion(now));
+        assertEquals(appName + "-" + travisBuildNumber, installMojo.computeAppVersion(now));
     }
 
     @Test
