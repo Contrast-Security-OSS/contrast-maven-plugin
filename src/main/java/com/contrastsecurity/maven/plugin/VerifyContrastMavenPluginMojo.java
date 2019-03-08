@@ -35,7 +35,7 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
         } else if (StringUtils.isNotBlank(appName)) {
             applicationId = getApplicationId(contrast, appName);
         } else {
-            throw new MojoExecutionException("Either application id or name should be specified in plugin configuration.");
+            throw new MojoExecutionException("Either appId or appName should be specified in plugin configuration.");
         }
 
         List<Long> serverIds = null;
