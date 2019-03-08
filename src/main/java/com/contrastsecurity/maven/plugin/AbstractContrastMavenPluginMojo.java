@@ -76,8 +76,6 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
      */
     protected static String computedAppVersion;
 
-    protected String retrievedAppName;
-
     private static final String AGENT_NAME = "contrast.jar";
 
     public void execute() throws MojoExecutionException {

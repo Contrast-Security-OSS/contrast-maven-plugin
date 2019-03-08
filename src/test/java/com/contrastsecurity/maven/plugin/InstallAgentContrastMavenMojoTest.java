@@ -72,7 +72,7 @@ public class InstallAgentContrastMavenMojoTest {
         installMojo.computedAppVersion = null;
         environmentVariables.set("TRAVIS_BUILD_NUMBER", travisBuildNumber);
         installMojo.appId = appId;
-        installMojo.retrievedAppName = appName;
+        installMojo.applicationName = appName;
 
         assertEquals(appName + "-" + travisBuildNumber, installMojo.computeAppVersion(now));
     }

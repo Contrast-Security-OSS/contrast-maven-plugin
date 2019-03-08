@@ -13,6 +13,7 @@ import java.util.Date;
 
 @Mojo(name = "install", defaultPhase = LifecyclePhase.VALIDATE, requiresOnline = true)
 public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMojo {
+    String applicationName;
 
     public void execute() throws MojoExecutionException {
         getLog().info("Attempting to connect to configured TeamServer...");
@@ -25,10 +26,8 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
 
         getLog().info("Agent downloaded.");
 
-        String applicationName;
         if (StringUtils.isNotBlank(appId)) {
             applicationName = getAppName(contrast, appId);
-            retrievedAppName = applicationName;
 
             if (StringUtils.isNotBlank(appName)) {
                 getLog().info("Using 'appId' property; 'appName' property is ignored.");
@@ -66,7 +65,7 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
             appVersionQualifier = new SimpleDateFormat("yyyyMMddHHmmss").format(currentDate);
         }
         if (StringUtils.isNotBlank(appId)) {
-            computedAppVersion = retrievedAppName + "-" + appVersionQualifier;
+            computedAppVersion = applicationName + "-" + appVersionQualifier;
         } else {
             computedAppVersion = appName + "-" + appVersionQualifier;
         }
