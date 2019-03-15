@@ -50,7 +50,7 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
         Traces traces;
 
         try {
-            Thread.sleep(5000);
+            Thread.sleep(10000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -64,7 +64,7 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
         }
 
         if (traces != null && traces.getCount() > 0) {
-            getLog().info(traces.getCount() + " new vulnerability(s) were found. Printing vulnerability report.");
+            getLog().info(traces.getCount() + " new vulnerability(s) were found.");
 
             for (Trace trace: traces.getTraces()) {
                 getLog().info(generateTraceReport(trace));
