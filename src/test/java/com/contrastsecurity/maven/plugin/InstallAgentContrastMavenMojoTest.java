@@ -81,16 +81,15 @@ public class InstallAgentContrastMavenMojoTest {
     public void testBuildArgLine() {
         installMojo.computedAppVersion = "caddyshack-2";
         String currentArgLine = "";
-        String expectedArgLine = "-javaagent:/usr/local/bin/contrast.jar -Dcontrast.server=Bushwood -Dcontrast.env=qa -Dcontrast.override.appversion=caddyshack-2 -Dcontrast.reporting.period=200 -Dcontrast.override.appname=caddyshack";
+        String expectedArgLine = "-javaagent:/usr/local/bin/contrast.jar -Dcontrast.server=Bushwood -Dcontrast.env=qa -Dcontrast.override.appversion=caddyshack-2 -Dcontrast.reporting.period=200 -Dapplication.name=caddyshack";
         assertEquals(expectedArgLine, installMojo.buildArgLine(currentArgLine));
 
         installMojo.serverPath = "/home/tomcat/app/";
         currentArgLine = "";
-        expectedArgLine = "-javaagent:/usr/local/bin/contrast.jar -Dcontrast.server=Bushwood -Dcontrast.env=qa -Dcontrast.override.appversion=caddyshack-2 -Dcontrast.reporting.period=200 -Dcontrast.override.appname=caddyshack -Dcontrast.path=/home/tomcat/app/";
+        expectedArgLine = "-javaagent:/usr/local/bin/contrast.jar -Dcontrast.server=Bushwood -Dcontrast.env=qa -Dcontrast.override.appversion=caddyshack-2 -Dcontrast.reporting.period=200 -Dapplication.name=caddyshack -Dcontrast.path=/home/tomcat/app/";
         assertEquals(expectedArgLine, installMojo.buildArgLine(currentArgLine));
 
-        installMojo.standalone = true;
-        expectedArgLine = "-javaagent:/usr/local/bin/contrast.jar -Dcontrast.server=Bushwood -Dcontrast.env=qa -Dcontrast.override.appversion=caddyshack-2 -Dcontrast.reporting.period=200 -Dcontrast.standalone.appname=caddyshack -Dcontrast.path=/home/tomcat/app/";
+        expectedArgLine = "-javaagent:/usr/local/bin/contrast.jar -Dcontrast.server=Bushwood -Dcontrast.env=qa -Dcontrast.override.appversion=caddyshack-2 -Dcontrast.reporting.period=200 -Dapplication.name=caddyshack -Dcontrast.path=/home/tomcat/app/";
         assertEquals(expectedArgLine, installMojo.buildArgLine(currentArgLine));
     }
 
@@ -98,7 +97,7 @@ public class InstallAgentContrastMavenMojoTest {
     public void testBuildArgNull() {
         installMojo.computedAppVersion = "caddyshack-2";
         String currentArgLine = null;
-        String expectedArgLine = "-javaagent:/usr/local/bin/contrast.jar -Dcontrast.server=Bushwood -Dcontrast.env=qa -Dcontrast.override.appversion=caddyshack-2 -Dcontrast.reporting.period=200 -Dcontrast.override.appname=caddyshack";
+        String expectedArgLine = "-javaagent:/usr/local/bin/contrast.jar -Dcontrast.server=Bushwood -Dcontrast.env=qa -Dcontrast.override.appversion=caddyshack-2 -Dcontrast.reporting.period=200 -Dapplication.name=caddyshack";
         assertEquals(expectedArgLine, installMojo.buildArgLine(currentArgLine));
     }
 
@@ -106,7 +105,7 @@ public class InstallAgentContrastMavenMojoTest {
     public void testBuildArgLineAppend() {
         installMojo.computedAppVersion = "caddyshack-2";
         String currentArgLine = "-Xmx1024m";
-        String expectedArgLine = "-Xmx1024m -javaagent:/usr/local/bin/contrast.jar -Dcontrast.server=Bushwood -Dcontrast.env=qa -Dcontrast.override.appversion=caddyshack-2 -Dcontrast.reporting.period=200 -Dcontrast.override.appname=caddyshack";
+        String expectedArgLine = "-Xmx1024m -javaagent:/usr/local/bin/contrast.jar -Dcontrast.server=Bushwood -Dcontrast.env=qa -Dcontrast.override.appversion=caddyshack-2 -Dcontrast.reporting.period=200 -Dapplication.name=caddyshack";
         assertEquals(expectedArgLine, installMojo.buildArgLine(currentArgLine));
     }
 

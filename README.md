@@ -43,7 +43,6 @@ In the `verify` phase, the plugin will check if any new vulnerabilities were dis
 | orgUuid     | True     |            | Organization Uuid found in Your Account => Profile page => Your keys => Organization Keys                             |       |
 | appName     | False    |            | Name of the application as seen in the Contrast site                              |       |
 | appId       | False    |            | Id of the application as seen in the Contrast site. Either appId or appName is required. If both are specified, we'll use appId and ignore appName | 2.5 |
-| standalone  | False    | False      | Set this to true if this is a standalone app                                    |    2.2|
 | appVersion  | False    | See below  | The appversion to report to Contrast. See explanation below.                    |       |
 | apiUrl      | True     |            | API URL to your Contrast instance found in Your Account => Profile page => Your keys => Organization Keys                                              |       |
 | serverName  | True     |            | Name of the server you set with -Dcontrast.server                                 |       |
