@@ -18,6 +18,7 @@ import java.util.*;
 public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMojo {
 
     public void execute() throws MojoExecutionException {
+        verifyAppIdOrNameNotBlank();
         ContrastSDK contrast = connectToTeamServer();
 
         getLog().info("Successfully authenticated to TeamServer.");
@@ -32,10 +33,8 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
                 getLog().info("Using 'appId' property; 'appName' property is ignored.");
             }
 
-        } else if (StringUtils.isNotBlank(appName)) {
-            applicationId = getApplicationId(contrast, appName);
         } else {
-            throw new MojoExecutionException("Either appId or appName should be specified in plugin configuration.");
+            applicationId = getApplicationId(contrast, appName);
         }
 
         List<Long> serverIds = null;

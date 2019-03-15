@@ -16,6 +16,7 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
     String applicationName;
 
     public void execute() throws MojoExecutionException {
+        verifyAppIdOrNameNotBlank();
         getLog().info("Attempting to connect to configured TeamServer...");
 
         ContrastSDK contrast = connectToTeamServer();

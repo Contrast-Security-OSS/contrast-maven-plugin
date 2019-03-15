@@ -98,12 +98,24 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
         try {
             applications = contrastSDK.getApplication(orgUuid, applicationId);
         } catch (Exception e) {
-            throw new MojoExecutionException("\n\nUnable to retrieve the application list from TeamServer. Please check that TeamServer is running at this address [" + apiUrl + "]\n", e);
+            String logMessage;
+            if (e.getMessage().contains("403")) {
+                logMessage = "\n\n Unable to find the application on TeamServer with the id [" + applicationId + "]\n";
+            } else {
+                logMessage = "\n\n Unable to retrieve the application list from TeamServer. Please check that TeamServer is running at this address [" + apiUrl + "]\n";
+            }
+            throw new MojoExecutionException(logMessage, e);
         }
         if (applications.getApplication() == null) {
             throw new MojoExecutionException("\n\nApplication with id '" + applicationId + "' not found. Make sure this application appears in TeamServer under the 'Applications' tab.\n");
         }
         return applications.getApplication().getName();
+    }
+
+    void verifyAppIdOrNameNotBlank() throws MojoExecutionException {
+        if (StringUtils.isBlank(appId) && StringUtils.isBlank(appName)) {
+            throw new MojoExecutionException("Please specify appId or appName in the plugin configuration.");
+        }
     }
 
     File installJavaAgent(ContrastSDK connection) throws MojoExecutionException {
