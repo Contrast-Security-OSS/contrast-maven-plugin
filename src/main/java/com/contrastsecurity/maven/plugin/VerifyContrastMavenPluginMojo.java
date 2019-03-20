@@ -18,7 +18,7 @@ import java.util.*;
 public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMojo {
 
     public void execute() throws MojoExecutionException {
-        verifyAppIdOrNameNotBlank();
+        verifyParameters();
         ContrastSDK contrast = connectToTeamServer();
 
         getLog().info("Successfully authenticated to TeamServer.");
@@ -39,7 +39,13 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
 
         List<Long> serverIds = null;
 
-        if (StringUtils.isNotBlank(serverName)) {
+        if (StringUtils.isNotBlank(serverId)) {
+            if (StringUtils.isNotBlank(serverName)) {
+                getLog().info("Using 'serverId' property; 'serverName' property is ignored.");
+            }
+            serverIds = new ArrayList<Long>();
+            serverIds.add(Long.valueOf(serverId));
+        } else {
             serverIds = getServerId(contrast, applicationId);
         }
 
@@ -121,32 +127,6 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
         }
 
         return serverIds;
-    }
-
-    /** Retrieves the application id by application name; else null
-     *
-     * @param sdk Contrast SDK object
-     * @param applicationName application name to filter on
-     * @return String of the application
-     * @throws MojoExecutionException
-     */
-    private String getApplicationId(ContrastSDK sdk, String applicationName) throws MojoExecutionException {
-
-        Applications applications;
-
-        try {
-            applications = sdk.getApplications(orgUuid);
-        } catch (Exception e) {
-            throw new MojoExecutionException("\n\nUnable to retrieve the application list from TeamServer. Please check that TeamServer is running at this address [" + apiUrl + "]\n", e);
-        }
-
-        for(Application application: applications.getApplications()) {
-            if (applicationName.equals(application.getName())) {
-                return application.getId();
-            }
-        }
-
-        throw new MojoExecutionException("\n\nApplication with name '" + applicationName + "' not found. Make sure this server name appears in TeamServer under the 'Applications' tab.\n");
     }
 
     /**

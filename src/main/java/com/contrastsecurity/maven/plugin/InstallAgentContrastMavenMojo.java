@@ -16,7 +16,7 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
     String applicationName;
 
     public void execute() throws MojoExecutionException {
-        verifyAppIdOrNameNotBlank();
+        verifyParameters();
         getLog().info("Attempting to connect to configured TeamServer...");
 
         ContrastSDK contrast = connectToTeamServer();
@@ -26,6 +26,8 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
         File agentFile = installJavaAgent(contrast);
 
         getLog().info("Agent downloaded.");
+
+        String serverName2;
 
         if (StringUtils.isNotBlank(appId)) {
             applicationName = getAppName(contrast, appId);
@@ -37,7 +39,22 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
         } else {
             applicationName = appName;
         }
-        project.getProperties().setProperty("argLine", buildArgLine(project.getProperties().getProperty("argLine"), applicationName));
+
+        if (StringUtils.isNotBlank(serverId)) {
+            if (StringUtils.isNotBlank(serverName)) {
+                getLog().info("Using 'serverId' property; 'serverName' property is ignored.");
+            }
+            if (StringUtils.isNotBlank(appId)) {
+                serverName2 = getServerName(contrast, appId);
+            } else {
+                String applicationId = getApplicationId(contrast, appName);
+                serverName2 = getServerName(contrast, applicationId);
+            }
+        } else {
+            serverName2 = serverName;
+        }
+
+        project.getProperties().setProperty("argLine", buildArgLine(project.getProperties().getProperty("argLine"), applicationName, serverName2));
     }
 
     public String computeAppVersion(Date currentDate) {
@@ -75,10 +92,10 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
     }
 
     public String buildArgLine(String currentArgLine) {
-        return buildArgLine(currentArgLine, appName);
+        return buildArgLine(currentArgLine, appName, serverName);
     }
 
-    public String buildArgLine(String currentArgLine, String applicationName) {
+    public String buildArgLine(String currentArgLine, String applicationName, String serverName) {
 
         if(currentArgLine == null) {
             getLog().info("Current argLine is null");

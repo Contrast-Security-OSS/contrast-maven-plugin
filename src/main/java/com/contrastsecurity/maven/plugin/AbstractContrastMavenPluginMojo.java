@@ -1,8 +1,8 @@
 package com.contrastsecurity.maven.plugin;
 
 import com.contrastsecurity.exceptions.UnauthorizedException;
-import com.contrastsecurity.models.AgentType;
-import com.contrastsecurity.models.Applications;
+import com.contrastsecurity.http.ServerFilterForm;
+import com.contrastsecurity.models.*;
 import com.contrastsecurity.sdk.ContrastSDK;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -14,6 +14,7 @@ import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
 
@@ -47,8 +48,11 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
     @Parameter(property = "minSeverity", defaultValue = "Medium")
     protected String minSeverity;
 
-    @Parameter(property = "serverName", required = true)
+    @Parameter(property = "serverName")
     protected String serverName;
+
+    @Parameter(property = "serverId")
+    protected String serverId;
 
     @Parameter(property = "serverPath")
     protected String serverPath;
@@ -112,9 +116,68 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
         return applications.getApplication().getName();
     }
 
-    void verifyAppIdOrNameNotBlank() throws MojoExecutionException {
+    String getServerName(ContrastSDK contrastSDK, String applicationId) throws MojoExecutionException {
+        Servers servers;
+
+        ServerFilterForm filterForm = new ServerFilterForm();
+        ArrayList<String> applicationIds = new ArrayList<String>();
+        applicationIds.add(applicationId);
+        filterForm.setApplicationIds(applicationIds);
+
+        try {
+            servers = contrastSDK.getServersWithFilter(orgUuid, filterForm);
+        } catch (Exception e) {
+            String logMessage;
+            if (e.getMessage().contains("403")) {
+                logMessage = "\n\n Unable to find the server on TeamServer with the id [" + serverId + "]\n";
+            } else {
+                logMessage = "\n\n Unable to retrieve the server list from TeamServer. Please check that TeamServer is running at this address [" + apiUrl + "]\n";
+            }
+            throw new MojoExecutionException(logMessage, e);
+        }
+        if (servers.getServers() == null) {
+            throw new MojoExecutionException("\n\nServer with id '" + serverId + "' not found. Make sure this server appears in TeamServer under the 'Servers' tab.\n");
+        }
+        for (Server server : servers.getServers()) {
+            if (server.getServerId() == Long.valueOf(serverId)) {
+                return server.getName();
+            }
+        }
+        throw new MojoExecutionException("\n\nServer with id '" + serverId + "' not found. Make sure this server appears in TeamServer under the 'Servers' tab.\n");
+    }
+
+    /** Retrieves the application id by application name; else null
+     *
+     * @param sdk Contrast SDK object
+     * @param applicationName application name to filter on
+     * @return String of the application
+     * @throws MojoExecutionException
+     */
+    String getApplicationId(ContrastSDK sdk, String applicationName) throws MojoExecutionException {
+
+        Applications applications;
+
+        try {
+            applications = sdk.getApplications(orgUuid);
+        } catch (Exception e) {
+            throw new MojoExecutionException("\n\nUnable to retrieve the application list from TeamServer. Please check that TeamServer is running at this address [" + apiUrl + "]\n", e);
+        }
+
+        for(Application application: applications.getApplications()) {
+            if (applicationName.equals(application.getName())) {
+                return application.getId();
+            }
+        }
+
+        throw new MojoExecutionException("\n\nApplication with name '" + applicationName + "' not found. Make sure this server name appears in TeamServer under the 'Applications' tab.\n");
+    }
+
+    void verifyParameters() throws MojoExecutionException {
         if (StringUtils.isBlank(appId) && StringUtils.isBlank(appName)) {
             throw new MojoExecutionException("Please specify appId or appName in the plugin configuration.");
+        }
+        if (StringUtils.isBlank(serverName) && StringUtils.isBlank(serverId)) {
+            throw new MojoExecutionException("Please specify serverId or serverName in the plugin configuration.");
         }
     }
 
