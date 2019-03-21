@@ -46,7 +46,8 @@ In the `verify` phase, the plugin will check if any new vulnerabilities were dis
 | standalone  | False    | False      | Set this to true if this is a standalone app                                    |    2.2|
 | appVersion  | False    | See below  | The appversion to report to Contrast. See explanation below.                    |       |
 | apiUrl      | True     |            | API URL to your Contrast instance found in Your Account => Profile page => Your keys => Organization Keys                                              |       |
-| serverName  | True     |            | Name of the server you set with -Dcontrast.server                                 |       |
+| serverName  | False    |            | Name of the server you set with -Dcontrast.server                                 |       |
+| serverId    | False    |            | Id of the server as seen in the Contrast site. Either serverId or serverName is required. If both are specified, we'll use serverId and ignore serverName | 2.5 |
 | serverPath  | False    |            | The server context path                                                           |    2.1|
 | minSeverity | False    | Medium     | Minimum severity level to verify (can be Note, Low, Medium, High or Critical)     |       |
 | jarPath     | False    |            | Path to contrast.jar if you already have one downloaded                           |       |
@@ -103,6 +104,7 @@ We generate the app version as follows and in this order:
          <appName>Test Application</appName>
          <appId>bc3028e6-82ac-410f-b9c7-13573d33cb94</appId>
          <serverName>jenkins.slave1</serverName>
+         <serverId>5005</serverId>
          <minSeverity>High</minSeverity>
      </configuration>
 </plugin>
