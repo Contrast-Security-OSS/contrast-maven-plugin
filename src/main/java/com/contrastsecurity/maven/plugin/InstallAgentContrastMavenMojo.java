@@ -13,7 +13,8 @@ import java.util.Date;
 
 @Mojo(name = "install", defaultPhase = LifecyclePhase.VALIDATE, requiresOnline = true)
 public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMojo {
-    String applicationName;
+    String retrievedApplicationName;
+    String retrievedServerName;
 
     public void execute() throws MojoExecutionException {
         verifyParameters();
@@ -27,17 +28,21 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
 
         getLog().info("Agent downloaded.");
 
-        String serverName2;
+        retrieveAppAndServerName(contrast);
 
+        project.getProperties().setProperty("argLine", buildArgLine(project.getProperties().getProperty("argLine")));
+    }
+
+    void retrieveAppAndServerName(ContrastSDK contrast) throws MojoExecutionException {
         if (StringUtils.isNotBlank(appId)) {
-            applicationName = getAppName(contrast, appId);
+            retrievedApplicationName = getAppName(contrast, appId);
 
             if (StringUtils.isNotBlank(appName)) {
                 getLog().info("Using 'appId' property; 'appName' property is ignored.");
             }
 
         } else {
-            applicationName = appName;
+            retrievedApplicationName = appName;
         }
 
         if (StringUtils.isNotBlank(serverId)) {
@@ -45,16 +50,14 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
                 getLog().info("Using 'serverId' property; 'serverName' property is ignored.");
             }
             if (StringUtils.isNotBlank(appId)) {
-                serverName2 = getServerName(contrast, appId);
+                retrievedServerName = getServerName(contrast, appId);
             } else {
                 String applicationId = getApplicationId(contrast, appName);
-                serverName2 = getServerName(contrast, applicationId);
+                retrievedServerName = getServerName(contrast, applicationId);
             }
         } else {
-            serverName2 = serverName;
+            retrievedServerName = serverName;
         }
-
-        project.getProperties().setProperty("argLine", buildArgLine(project.getProperties().getProperty("argLine"), applicationName, serverName2));
     }
 
     public String computeAppVersion(Date currentDate) {
@@ -83,7 +86,7 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
             appVersionQualifier = new SimpleDateFormat("yyyyMMddHHmmss").format(currentDate);
         }
         if (StringUtils.isNotBlank(appId)) {
-            computedAppVersion = applicationName + "-" + appVersionQualifier;
+            computedAppVersion = retrievedApplicationName + "-" + appVersionQualifier;
         } else {
             computedAppVersion = appName + "-" + appVersionQualifier;
         }
@@ -92,10 +95,6 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
     }
 
     public String buildArgLine(String currentArgLine) {
-        return buildArgLine(currentArgLine, appName, serverName);
-    }
-
-    public String buildArgLine(String currentArgLine, String applicationName, String serverName) {
 
         if(currentArgLine == null) {
             getLog().info("Current argLine is null");
@@ -117,15 +116,15 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
         StringBuilder argLineBuilder = new StringBuilder();
         argLineBuilder.append(currentArgLine);
         argLineBuilder.append(" -javaagent:").append(contrastAgentLocation);
-        argLineBuilder.append(" -Dcontrast.server=").append(serverName);
+        argLineBuilder.append(" -Dcontrast.server=").append(retrievedServerName);
         argLineBuilder.append(" -Dcontrast.env=qa");
         argLineBuilder.append(" -Dcontrast.override.appversion=").append(computedAppVersion);
         argLineBuilder.append(" -Dcontrast.reporting.period=").append("200");
 
         if (standalone) {
-            argLineBuilder.append(" -Dcontrast.standalone.appname=").append(applicationName);
+            argLineBuilder.append(" -Dcontrast.standalone.appname=").append(retrievedApplicationName);
         } else {
-            argLineBuilder.append(" -Dcontrast.override.appname=").append(applicationName);
+            argLineBuilder.append(" -Dcontrast.override.appname=").append(retrievedApplicationName);
         }
 
         if (!StringUtils.isEmpty(serverPath)) {

@@ -1,5 +1,6 @@
 package com.contrastsecurity.maven.plugin;
 
+import org.apache.maven.plugin.MojoExecutionException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,6 +23,10 @@ public class InstallAgentContrastMavenMojoTest {
         installMojo = new InstallAgentContrastMavenMojo();
         installMojo.appName = "caddyshack";
         installMojo.serverName = "Bushwood";
+
+        installMojo.retrievedApplicationName = installMojo.appName;
+        installMojo.retrievedServerName = installMojo.serverName;
+
         installMojo.contrastAgentLocation = "/usr/local/bin/contrast.jar";
 
         now = new Date();
@@ -72,7 +77,7 @@ public class InstallAgentContrastMavenMojoTest {
         installMojo.computedAppVersion = null;
         environmentVariables.set("TRAVIS_BUILD_NUMBER", travisBuildNumber);
         installMojo.appId = appId;
-        installMojo.applicationName = appName;
+        installMojo.retrievedApplicationName = appName;
 
         assertEquals(appName + "-" + travisBuildNumber, installMojo.computeAppVersion(now));
     }
@@ -116,5 +121,32 @@ public class InstallAgentContrastMavenMojoTest {
         String currentArgLine = "-Xmx1024m";
         String expectedArgLine = "-Xmx1024m";
         assertEquals(expectedArgLine, installMojo.buildArgLine(currentArgLine));
+    }
+
+    @Test(expected = MojoExecutionException.class)
+    public void testVerifyParametersApp() throws MojoExecutionException {
+        installMojo.appName = null;
+        installMojo.appId = null;
+        installMojo.verifyParameters();
+    }
+
+    @Test(expected = MojoExecutionException.class)
+    public void testVerifyParametersServer() throws MojoExecutionException {
+        installMojo.serverName = null;
+        installMojo.serverId = null;
+        installMojo.verifyParameters();
+    }
+
+    @Test
+    public void testRetrieveAppAndServerName() throws MojoExecutionException {
+        installMojo.appId = null;
+        installMojo.serverId = null;
+        installMojo.retrievedApplicationName = null;
+        installMojo.retrievedServerName = null;
+
+        installMojo.retrieveAppAndServerName(null);
+
+        assertEquals(installMojo.appName, installMojo.retrievedApplicationName);
+        assertEquals(installMojo.serverName, installMojo.retrievedServerName);
     }
 }
