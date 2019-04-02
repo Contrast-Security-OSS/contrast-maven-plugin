@@ -1,8 +1,5 @@
 package com.contrastsecurity.maven.plugin;
 
-import com.contrastsecurity.models.Application;
-import com.contrastsecurity.models.Applications;
-import com.contrastsecurity.sdk.ContrastSDK;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -10,8 +7,6 @@ import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import static org.mockito.Mockito.*;
 
 import static org.junit.Assert.assertEquals;
 
@@ -34,42 +29,6 @@ public class InstallAgentContrastMavenMojoTest {
         environmentVariables.clear("TRAVIS_BUILD_NUMBER", "CIRCLE_BUILD_NUM");
     }
 
-//    @Test
-//    public void testComputeAppNameIdOnly() throws Exception {
-//        String expectedApplicationName = "expectedApplicationName";
-//        installMojo.appId = "sampleAppId";
-//        installMojo.orgUuid = "4";
-//
-//        ContrastSDK sdk = mock(ContrastSDK.class);
-//        Applications applications = mock(Applications.class);
-//        Application application = mock(Application.class);
-//
-//        when(application.getName()).thenReturn(expectedApplicationName);
-//        when(applications.getApplication()).thenReturn(application);
-//        when(sdk.getApplication(installMojo.orgUuid, installMojo.appId)).thenReturn(applications);
-//
-//        String actualAppName = installMojo.computeAppName(sdk);
-//        assertEquals(expectedApplicationName, actualAppName);
-//    }
-//
-//    @Test
-//    public void testComputeAppNameIdAndNameSpecified() throws Exception {
-//        String expectedApplicationName = "exampleAppName";
-//        installMojo.appId = "sampleAppId";
-//        installMojo.appName = "wrongAppName";
-//        installMojo.orgUuid = "4";
-//
-//        ContrastSDK sdk = mock(ContrastSDK.class);
-//        Applications applications = mock(Applications.class);
-//        Application application = mock(Application.class);
-//
-//        when(application.getName()).thenReturn(expectedApplicationName);
-//        when(applications.getApplication()).thenReturn(application);
-//        when(sdk.getApplication(installMojo.orgUuid, installMojo.appId)).thenReturn(applications);
-//
-//        String actualAppName = installMojo.computeAppName(sdk);
-//        assertEquals(expectedApplicationName, actualAppName);
-//    }
 
    @Test
    public void testGenerateAppVersion() {
