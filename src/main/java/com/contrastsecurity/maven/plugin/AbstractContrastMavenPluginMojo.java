@@ -100,7 +100,7 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
         // If they specified both an appName and an appId,
         // warn them that we're just going to use appId
         if(StringUtils.isNotBlank(appName) && StringUtils.isNotBlank(appId)) {
-            getLog().warn("\n\nYou specified an appId and an appName in the plugin setup");
+            getLog().warn("You specified an appId and an appName in the plugin setup");
             getLog().warn("We're going to ignore the appName and use the appId to find you application");
         }
 
@@ -148,6 +148,10 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
     }
 
     ContrastSDK connectToTeamServer() throws MojoExecutionException {
+        if(contrastSdk != null) {
+            return contrastSdk;
+        }
+
         try {
             if (!StringUtils.isEmpty(apiUrl)) {
                 return new ContrastSDK(username, serviceKey, apiKey, apiUrl);
