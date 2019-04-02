@@ -18,10 +18,7 @@ import java.util.*;
 public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMojo {
 
     public void execute() throws MojoExecutionException {
-        verifyAppIdOrNameNotBlank();
-        ContrastSDK contrast = connectToTeamServer();
-
-        getLog().info("Successfully authenticated to TeamServer.");
+        init();
 
         getLog().info("Checking for new vulnerabilities for appVersion [" + computedAppVersion + "]");
 
@@ -34,13 +31,13 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
             }
 
         } else {
-            applicationId = getApplicationId(contrast, appName);
+            applicationId = getApplicationId(contrastSdk, appName);
         }
 
         List<Long> serverIds = null;
 
         if (StringUtils.isNotBlank(serverName)) {
-            serverIds = getServerId(contrast, applicationId);
+            serverIds = getServerId(contrastSdk, applicationId);
         }
 
         TraceFilterForm form = getTraceFilterForm(serverIds);
@@ -56,7 +53,7 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
         }
 
         try {
-            traces = contrast.getTraces(orgUuid, applicationId, form);
+            traces = contrastSdk.getTraces(orgUuid, applicationId, form);
         } catch (IOException e) {
             throw new MojoExecutionException("Unable to retrieve the traces.", e);
         } catch (UnauthorizedException e) {

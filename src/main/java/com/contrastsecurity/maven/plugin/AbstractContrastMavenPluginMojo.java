@@ -4,6 +4,8 @@ import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.models.AgentType;
 import com.contrastsecurity.models.Applications;
 import com.contrastsecurity.sdk.ContrastSDK;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
@@ -67,18 +69,82 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
 
     protected String contrastAgentLocation;
 
-    /*
-     * As near as I can tell, there doesn't appear to be any way
-     * to share data between Mojo phases. However, we need to compute
-     * the appVersion in the install phase and then use the computedAppVersion
-     * in the verify phase. Setting the field to static is the only
-     * way I found for it to work
-     */
-    protected static String computedAppVersion;
+    protected String computedAppVersion;
+    protected String computedAppName;
+    protected ContrastSDK contrastSdk;
 
     private static final String AGENT_NAME = "contrast.jar";
 
     public void execute() throws MojoExecutionException {
+    }
+
+    public void init() throws MojoExecutionException {
+        verifyAppIdOrNameNotBlank();
+        getLog().info("Connecting to Contrast");
+        contrastSdk = connectToTeamServer();
+        computedAppName = computeAppName(contrastSdk);
+        computedAppVersion = computeAppVersion(new Date());
+    }
+
+    public String computeAppName(ContrastSDK sdk) throws MojoExecutionException {
+
+        if (computedAppName != null) {
+            return computedAppName;
+        }
+
+        // If they set an appName and not an appId, then we're done
+        if(StringUtils.isNotBlank(appName) && StringUtils.isBlank(appId)) {
+            return appName;
+        }
+
+        // If they specified both an appName and an appId,
+        // warn them that we're just going to use appId
+        if(StringUtils.isNotBlank(appName) && StringUtils.isNotBlank(appId)) {
+            getLog().warn("\n\nYou specified an appId and an appName in the plugin setup");
+            getLog().warn("We're going to ignore the appName and use the appId to find you application");
+        }
+
+        //If we've made it here, then the user specified an appId
+        //Let's get the appName from Contrast
+        if (StringUtils.isNotBlank(appId)) {
+            return getAppNameFromContrast(sdk, appId);
+        }
+
+        throw new MojoExecutionException("\n\nCould not figure out what appName to use");
+    }
+
+    public String computeAppVersion(Date currentDate) {
+        if (computedAppVersion != null) {
+            return computedAppVersion;
+        }
+
+        if (appVersion != null) {
+            getLog().info("Using user-specified app version [" + appVersion + "]");
+            computedAppVersion = appVersion;
+            return computedAppVersion;
+        }
+
+        String travisBuildNumber = System.getenv("TRAVIS_BUILD_NUMBER");
+        String circleBuildNum = System.getenv("CIRCLE_BUILD_NUM");
+
+        String appVersionQualifier = "";
+        if(travisBuildNumber != null) {
+            getLog().info("Build is running in TravisCI. We'll use TRAVIS_BUILD_NUMBER [" + travisBuildNumber + "]");
+            appVersionQualifier = travisBuildNumber;
+        } else if (circleBuildNum != null) {
+            getLog().info("Build is running in CircleCI. We'll use CIRCLE_BUILD_NUM [" + circleBuildNum + "]");
+            appVersionQualifier = circleBuildNum;
+        } else {
+            getLog().info("No CI build number detected, we'll use current timestamp.");
+            appVersionQualifier = new SimpleDateFormat("yyyyMMddHHmmss").format(currentDate);
+        }
+        if (StringUtils.isNotBlank(appId)) {
+            computedAppVersion = computedAppName + "-" + appVersionQualifier;
+        } else {
+            computedAppVersion = computedAppName + "-" + appVersionQualifier;
+        }
+
+        return computedAppVersion;
     }
 
     ContrastSDK connectToTeamServer() throws MojoExecutionException {
@@ -93,7 +159,7 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
         }
     }
 
-    String getAppName(ContrastSDK contrastSDK, String applicationId) throws MojoExecutionException {
+    String getAppNameFromContrast(ContrastSDK contrastSDK, String applicationId) throws MojoExecutionException {
         Applications applications;
         try {
             applications = contrastSDK.getApplication(orgUuid, applicationId);
@@ -112,7 +178,7 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
         return applications.getApplication().getName();
     }
 
-    void verifyAppIdOrNameNotBlank() throws MojoExecutionException {
+    public void verifyAppIdOrNameNotBlank() throws MojoExecutionException {
         if (StringUtils.isBlank(appId) && StringUtils.isBlank(appName)) {
             throw new MojoExecutionException("Please specify appId or appName in the plugin configuration.");
         }

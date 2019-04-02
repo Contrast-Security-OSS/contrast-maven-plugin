@@ -1,5 +1,8 @@
 package com.contrastsecurity.maven.plugin;
 
+import com.contrastsecurity.models.Application;
+import com.contrastsecurity.models.Applications;
+import com.contrastsecurity.sdk.ContrastSDK;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -7,6 +10,8 @@ import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import static org.mockito.Mockito.*;
 
 import static org.junit.Assert.assertEquals;
 
@@ -18,15 +23,53 @@ public class InstallAgentContrastMavenMojoTest {
     public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         installMojo = new InstallAgentContrastMavenMojo();
         installMojo.appName = "caddyshack";
         installMojo.serverName = "Bushwood";
         installMojo.contrastAgentLocation = "/usr/local/bin/contrast.jar";
+        installMojo.init();
 
         now = new Date();
         environmentVariables.clear("TRAVIS_BUILD_NUMBER", "CIRCLE_BUILD_NUM");
     }
+
+//    @Test
+//    public void testComputeAppNameIdOnly() throws Exception {
+//        String expectedApplicationName = "expectedApplicationName";
+//        installMojo.appId = "sampleAppId";
+//        installMojo.orgUuid = "4";
+//
+//        ContrastSDK sdk = mock(ContrastSDK.class);
+//        Applications applications = mock(Applications.class);
+//        Application application = mock(Application.class);
+//
+//        when(application.getName()).thenReturn(expectedApplicationName);
+//        when(applications.getApplication()).thenReturn(application);
+//        when(sdk.getApplication(installMojo.orgUuid, installMojo.appId)).thenReturn(applications);
+//
+//        String actualAppName = installMojo.computeAppName(sdk);
+//        assertEquals(expectedApplicationName, actualAppName);
+//    }
+//
+//    @Test
+//    public void testComputeAppNameIdAndNameSpecified() throws Exception {
+//        String expectedApplicationName = "exampleAppName";
+//        installMojo.appId = "sampleAppId";
+//        installMojo.appName = "wrongAppName";
+//        installMojo.orgUuid = "4";
+//
+//        ContrastSDK sdk = mock(ContrastSDK.class);
+//        Applications applications = mock(Applications.class);
+//        Application application = mock(Application.class);
+//
+//        when(application.getName()).thenReturn(expectedApplicationName);
+//        when(applications.getApplication()).thenReturn(application);
+//        when(sdk.getApplication(installMojo.orgUuid, installMojo.appId)).thenReturn(applications);
+//
+//        String actualAppName = installMojo.computeAppName(sdk);
+//        assertEquals(expectedApplicationName, actualAppName);
+//    }
 
    @Test
    public void testGenerateAppVersion() {
@@ -37,6 +80,7 @@ public class InstallAgentContrastMavenMojoTest {
 
     @Test
     public void testGenerateAppVersionNoAppVersion() {
+        installMojo.computedAppName = "caddyshack";
         installMojo.appVersion = null;
         installMojo.computedAppVersion = null;
         String expectedVersion = new SimpleDateFormat("yyyyMMddHHmmss").format(now);
@@ -46,6 +90,7 @@ public class InstallAgentContrastMavenMojoTest {
 
     @Test
     public void testGenerateAppVersionTravis() {
+        installMojo.computedAppName = "caddyshack";
         installMojo.appVersion = null;
         installMojo.computedAppVersion = null;
         environmentVariables.set("TRAVIS_BUILD_NUMBER", "19");
@@ -55,6 +100,7 @@ public class InstallAgentContrastMavenMojoTest {
 
     @Test
     public void testGenerateAppVersionCircle() {
+        installMojo.computedAppName = "caddyshack";
         installMojo.appVersion = null;
         installMojo.computedAppVersion = null;
         environmentVariables.set("TRAVIS_BUILD_NUMBER", "circle");
@@ -64,21 +110,18 @@ public class InstallAgentContrastMavenMojoTest {
 
     @Test
     public void testGenerateAppVersionAppId() {
-        String appName = "WebGoat";
-        String appId = "12345";
         String travisBuildNumber = "travis";
 
+        installMojo.computedAppName = "WebGoat";
         installMojo.appVersion = null;
         installMojo.computedAppVersion = null;
         environmentVariables.set("TRAVIS_BUILD_NUMBER", travisBuildNumber);
-        installMojo.appId = appId;
-        installMojo.applicationName = appName;
-
-        assertEquals(appName + "-" + travisBuildNumber, installMojo.computeAppVersion(now));
+        assertEquals(installMojo.computedAppName + "-" + travisBuildNumber, installMojo.computeAppVersion(now));
     }
 
     @Test
     public void testBuildArgLine() {
+        installMojo.computedAppName = "caddyshack";
         installMojo.computedAppVersion = "caddyshack-2";
         String currentArgLine = "";
         String expectedArgLine = "-javaagent:/usr/local/bin/contrast.jar -Dcontrast.server=Bushwood -Dcontrast.env=qa -Dcontrast.override.appversion=caddyshack-2 -Dcontrast.reporting.period=200 -Dcontrast.override.appname=caddyshack";
@@ -96,6 +139,7 @@ public class InstallAgentContrastMavenMojoTest {
 
     @Test
     public void testBuildArgNull() {
+        installMojo.computedAppName = "caddyshack";
         installMojo.computedAppVersion = "caddyshack-2";
         String currentArgLine = null;
         String expectedArgLine = "-javaagent:/usr/local/bin/contrast.jar -Dcontrast.server=Bushwood -Dcontrast.env=qa -Dcontrast.override.appversion=caddyshack-2 -Dcontrast.reporting.period=200 -Dcontrast.override.appname=caddyshack";
@@ -104,6 +148,7 @@ public class InstallAgentContrastMavenMojoTest {
 
     @Test
     public void testBuildArgLineAppend() {
+        installMojo.computedAppName = "caddyshack";
         installMojo.computedAppVersion = "caddyshack-2";
         String currentArgLine = "-Xmx1024m";
         String expectedArgLine = "-Xmx1024m -javaagent:/usr/local/bin/contrast.jar -Dcontrast.server=Bushwood -Dcontrast.env=qa -Dcontrast.override.appversion=caddyshack-2 -Dcontrast.reporting.period=200 -Dcontrast.override.appname=caddyshack";
