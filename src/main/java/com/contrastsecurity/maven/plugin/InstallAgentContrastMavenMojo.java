@@ -8,12 +8,31 @@ import org.apache.maven.plugins.annotations.Mojo;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 
 @Mojo(name = "install", defaultPhase = LifecyclePhase.VALIDATE, requiresOnline = true)
 public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMojo {
     String applicationName;
+
+    static Map<String, String> environmentToSessionMetadata = new TreeMap<String, String>();
+    static {
+        //Jenkins git plugin environment variables
+        environmentToSessionMetadata.put("GIT_BRANCH", "branchName");
+        environmentToSessionMetadata.put("GIT_COMMITTER_NAME", "committer");
+        environmentToSessionMetadata.put("GIT_COMMIT", "commitHash");
+        environmentToSessionMetadata.put("GIT_URL", "repository");
+        environmentToSessionMetadata.put("GIT_URL_1", "repository");
+
+        //CI build number environment variables
+        environmentToSessionMetadata.put("BUILD_NUMBER", "buildNumber");
+        environmentToSessionMetadata.put("TRAVIS_BUILD_NUMBER", "buildNumber");
+        environmentToSessionMetadata.put("CIRCLE_BUILD_NUM", "buildNumber");
+    }
 
     public void execute() throws MojoExecutionException {
         verifyAppIdOrNameNotBlank();
@@ -74,6 +93,20 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
         return computedAppVersion;
     }
 
+    public String computeSessionMetadata() {
+        List<String> metadata = new ArrayList<String>();
+
+        for(Map.Entry<String, String> entry: environmentToSessionMetadata.entrySet()) {
+            String environmentValue = System.getenv(entry.getKey());
+
+            if (environmentValue != null) {
+                metadata.add(String.format("%s=%s", entry.getValue(), environmentValue));
+            }
+        }
+
+        return StringUtils.join(metadata, ", ");
+    }
+
     public String buildArgLine(String currentArgLine) {
         return buildArgLine(currentArgLine, appName);
     }
@@ -104,6 +137,11 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
         argLineBuilder.append(" -Dcontrast.env=qa");
         argLineBuilder.append(" -Dcontrast.override.appversion=").append(computedAppVersion);
         argLineBuilder.append(" -Dcontrast.reporting.period=").append("200");
+
+        String sessionMetadata = computeSessionMetadata();
+        if (!sessionMetadata.isEmpty()) {
+            argLineBuilder.append(" -Dcontrast.application.session_metadata='").append(sessionMetadata).append("'");
+        }
 
         if (standalone) {
             argLineBuilder.append(" -Dcontrast.standalone.appname=").append(applicationName);
