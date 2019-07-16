@@ -104,7 +104,7 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
             }
         }
 
-        return StringUtils.join(metadata, ", ");
+        return StringUtils.join(metadata, ",");
     }
 
     public String buildArgLine(String currentArgLine) {

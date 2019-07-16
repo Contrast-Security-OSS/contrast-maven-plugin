@@ -83,24 +83,24 @@ public class InstallAgentContrastMavenMojoTest {
         assertEquals("branchName=develop", installMojo.computeSessionMetadata());
 
         environmentVariables.set("GIT_COMMITTER_NAME", "boh");
-        assertEquals("branchName=develop, committer=boh", installMojo.computeSessionMetadata());
+        assertEquals("branchName=develop,committer=boh", installMojo.computeSessionMetadata());
 
         environmentVariables.set("GIT_COMMIT", "deadbeef");
-        assertEquals("branchName=develop, commitHash=deadbeef, committer=boh", installMojo.computeSessionMetadata());
+        assertEquals("branchName=develop,commitHash=deadbeef,committer=boh", installMojo.computeSessionMetadata());
 
         environmentVariables.set("GIT_URL", "https://github.com/Contrast-Security-OSS/contrast-maven-plugin.git");
-        assertEquals("branchName=develop, commitHash=deadbeef, committer=boh, repository=https://github.com/Contrast-Security-OSS/contrast-maven-plugin.git", installMojo.computeSessionMetadata());
+        assertEquals("branchName=develop,commitHash=deadbeef,committer=boh,repository=https://github.com/Contrast-Security-OSS/contrast-maven-plugin.git", installMojo.computeSessionMetadata());
 
         environmentVariables.set("BUILD_NUMBER", "123");
-        assertEquals("buildNumber=123, branchName=develop, commitHash=deadbeef, committer=boh, repository=https://github.com/Contrast-Security-OSS/contrast-maven-plugin.git", installMojo.computeSessionMetadata());
+        assertEquals("buildNumber=123,branchName=develop,commitHash=deadbeef,committer=boh,repository=https://github.com/Contrast-Security-OSS/contrast-maven-plugin.git", installMojo.computeSessionMetadata());
 
         environmentVariables.clear("BUILD_NUMBER");
         environmentVariables.set("CIRCLE_BUILD_NUM", "12345");
-        assertEquals("buildNumber=12345, branchName=develop, commitHash=deadbeef, committer=boh, repository=https://github.com/Contrast-Security-OSS/contrast-maven-plugin.git", installMojo.computeSessionMetadata());
+        assertEquals("buildNumber=12345,branchName=develop,commitHash=deadbeef,committer=boh,repository=https://github.com/Contrast-Security-OSS/contrast-maven-plugin.git", installMojo.computeSessionMetadata());
 
         environmentVariables.clear("CIRCLE_BUILD_NUM");
         environmentVariables.set("TRAVIS_BUILD_NUMBER", "54321");
-        assertEquals("branchName=develop, commitHash=deadbeef, committer=boh, repository=https://github.com/Contrast-Security-OSS/contrast-maven-plugin.git, buildNumber=54321", installMojo.computeSessionMetadata());
+        assertEquals("branchName=develop,commitHash=deadbeef,committer=boh,repository=https://github.com/Contrast-Security-OSS/contrast-maven-plugin.git,buildNumber=54321", installMojo.computeSessionMetadata());
     }
 
     @Test
