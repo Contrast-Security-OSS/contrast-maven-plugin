@@ -118,6 +118,11 @@ public class InstallAgentContrastMavenMojoTest {
         installMojo.standalone = true;
         expectedArgLine = "-javaagent:/usr/local/bin/contrast.jar -Dcontrast.server=Bushwood -Dcontrast.env=qa -Dcontrast.override.appversion=caddyshack-2 -Dcontrast.reporting.period=200 -Dcontrast.standalone.appname=caddyshack -Dcontrast.path=/home/tomcat/app/";
         assertEquals(expectedArgLine, installMojo.buildArgLine(currentArgLine));
+
+        environmentVariables.set("BUILD_NUMBER", "123");
+        environmentVariables.set("GIT_COMMITTER_NAME", "boh");
+        expectedArgLine = "-javaagent:/usr/local/bin/contrast.jar -Dcontrast.server=Bushwood -Dcontrast.env=qa -Dcontrast.override.appversion=caddyshack-2 -Dcontrast.reporting.period=200 -Dcontrast.application.session_metadata='buildNumber=123,committer=boh' -Dcontrast.standalone.appname=caddyshack -Dcontrast.path=/home/tomcat/app/";
+        assertEquals(expectedArgLine, installMojo.buildArgLine(currentArgLine));
     }
 
     @Test
