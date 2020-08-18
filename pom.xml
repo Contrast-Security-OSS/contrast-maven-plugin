@@ -69,7 +69,8 @@
         <dependency>
             <groupId>com.contrastsecurity</groupId>
             <artifactId>contrast-sdk-java</artifactId>
-            <version>2.9</version>
+            <!--TODO: Fix me before merging-->
+            <version>2.15-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>

@@ -114,9 +114,9 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
 
         try {
             if (!StringUtils.isEmpty(apiUrl)) {
-                return new ContrastSDK(username, serviceKey, apiKey, apiUrl, proxy);
+                return new ContrastSDK.Builder(username, serviceKey, apiKey).withApiUrl(apiUrl).withProxy(proxy).build();
             } else {
-                return new ContrastSDK(username, serviceKey, apiKey, "https://app.contrastsecurity.com/Contrast/api", proxy);
+                return new ContrastSDK.Builder(username, serviceKey, apiKey).withProxy(proxy).build();
             }
         } catch (IllegalArgumentException e) {
             throw new MojoExecutionException("\n\nWe couldn't connect to TeamServer at this address [" + apiUrl + "]. The error is: ", e);
