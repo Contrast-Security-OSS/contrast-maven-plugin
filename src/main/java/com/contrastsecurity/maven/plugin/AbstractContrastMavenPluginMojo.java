@@ -11,14 +11,22 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Settings;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.Authenticator;
+import java.net.InetSocketAddress;
+import java.net.PasswordAuthentication;
+import java.net.Proxy;
 
 abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
 
     @Component
     protected MavenProject project;
+
+    @Component
+    protected Settings settings;
 
     @Parameter(property = "username", required = true)
     protected String username;
@@ -82,11 +90,33 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
     }
 
     ContrastSDK connectToTeamServer() throws MojoExecutionException {
+        Proxy proxy = Proxy.NO_PROXY;
+        final org.apache.maven.settings.Proxy proxySettings = settings.getActiveProxy();
+        if (proxySettings != null) {
+            getLog().debug(String.format("Using a proxy %s:%s",  proxySettings.getHost(), proxySettings.getPort()));
+            proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxySettings.getHost(), proxySettings.getPort()));
+
+            if (proxySettings.getUsername() != null || proxySettings.getPassword() != null) {
+                Authenticator.setDefault(new Authenticator() {
+                    @Override
+                    protected PasswordAuthentication getPasswordAuthentication() {
+                        if (getRequestorType() == RequestorType.PROXY &&
+                                getRequestingHost().equalsIgnoreCase(proxySettings.getHost()) &&
+                                proxySettings.getPort() == getRequestingPort()) {
+                            return new PasswordAuthentication(proxySettings.getUsername(), proxySettings.getPassword() == null ? null : proxySettings.getPassword().toCharArray());
+                        } else {
+                            return null;
+                        }
+                    }
+                });
+            }
+        }
+
         try {
             if (!StringUtils.isEmpty(apiUrl)) {
-                return new ContrastSDK(username, serviceKey, apiKey, apiUrl);
+                return new ContrastSDK.Builder(username, serviceKey, apiKey).withApiUrl(apiUrl).withProxy(proxy).build();
             } else {
-                return new ContrastSDK(username, serviceKey, apiKey);
+                return new ContrastSDK.Builder(username, serviceKey, apiKey).withProxy(proxy).build();
             }
         } catch (IllegalArgumentException e) {
             throw new MojoExecutionException("\n\nWe couldn't connect to TeamServer at this address [" + apiUrl + "]. The error is: ", e);
