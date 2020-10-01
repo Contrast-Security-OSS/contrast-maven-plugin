@@ -52,7 +52,7 @@ In the `verify` phase, the plugin will check if any new vulnerabilities were dis
 | jarPath     | False    |            | Path to contrast.jar if you already have one downloaded                           |       |
 | skipArgLine | False    | False      | If this is "true", the plugin will not alter the Maven argLine property in any way|    2.0|
 | profile     | False    |            | If this is set, the plugin will use the specified custom agent profile when downloading contrast.jar|    2.4|
-| useProxy   | False    | False      | Override proxy settings from settings.xml | 2.8|
+| useProxy   | False    | False      | Override proxy settings from maven settings.xml | 2.8|
 | proxyHost  | False    |            | Required if useProxy is true. The host of the proxy | 2.8|
 | proxyPort  | False    |            | Required if useProxy is true. The port of the proxy | 2.8|
 
