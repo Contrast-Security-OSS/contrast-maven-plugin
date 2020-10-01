@@ -73,6 +73,17 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
     @Parameter(property = "skipArgLine")
     protected boolean skipArgLine;
 
+    //true = Override proxy from settings and use args
+    @Parameter(property = "useProxy")
+    protected boolean useProxy;
+
+    @Parameter(property = "proxyHost")
+    protected String proxyHost;
+
+    @Parameter(property = "proxyPort")
+    protected int proxyPort;
+
+
     protected String contrastAgentLocation;
 
     /*
@@ -92,7 +103,14 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
     ContrastSDK connectToTeamServer() throws MojoExecutionException {
         Proxy proxy = Proxy.NO_PROXY;
         final org.apache.maven.settings.Proxy proxySettings = settings.getActiveProxy();
-        if (proxySettings != null) {
+        if(useProxy) {
+            getLog().debug(String.format("Using a proxy %s:%s", proxyHost, proxyPort));
+            if(proxyHost != null && proxyPort != 0){
+                proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+            } else {
+                throw new MojoExecutionException("When useProxy is true, proxyHost and proxyPort is required.");
+            }
+        }else if (proxySettings != null) {
             getLog().debug(String.format("Using a proxy %s:%s",  proxySettings.getHost(), proxySettings.getPort()));
             proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxySettings.getHost(), proxySettings.getPort()));
 
