@@ -52,6 +52,9 @@ In the `verify` phase, the plugin will check if any new vulnerabilities were dis
 | jarPath     | False    |            | Path to contrast.jar if you already have one downloaded                           |       |
 | skipArgLine | False    | False      | If this is "true", the plugin will not alter the Maven argLine property in any way|    2.0|
 | profile     | False    |            | If this is set, the plugin will use the specified custom agent profile when downloading contrast.jar|    2.4|
+| useProxy   | False    | False      | Override proxy settings from settings.xml | 2.8|
+| proxyHost  | False    |            | Required if useProxy is true. The host of the proxy | 2.8|
+| proxyPort  | False    |            | Required if useProxy is true. The port of the proxy | 2.8|
 
 
 ## Option Details
@@ -104,6 +107,9 @@ We generate the app version as follows and in this order:
          <appId>bc3028e6-82ac-410f-b9c7-13573d33cb94</appId>
          <serverName>jenkins.slave1</serverName>
          <minSeverity>High</minSeverity>
+         <useProxy>true</useProxy>
+         <proxyHost>localhost</proxyHost>
+         <proxyPort>8060</proxyPort>
      </configuration>
 </plugin>
 ```
