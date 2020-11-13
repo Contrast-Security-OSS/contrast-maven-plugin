@@ -45,6 +45,9 @@ In the `verify` phase, the plugin will check if any new vulnerabilities were dis
 | appId       | False    |            | Id of the application as seen in the Contrast site. Either appId or appName is required. If both are specified, we'll use appId and ignore appName | 2.5 |
 | standalone  | False    | False      | Set this to true if this is a standalone app                                    |    2.2|
 | appVersion  | False    | See below  | The appversion to report to Contrast. See explanation below.                    |       |
+| applicationSessionMetadata | False | | Comma-separated name=value pairs for your application session metadata | 2.9 |
+| applicationTags            | False | | Comma-separated values to tag the application | 2.9 |
+| environment | False | "QA" | The name of the environment (Development/QA/Production | 2.9 |
 | apiUrl      | True     |            | API URL to your Contrast instance found in Your Account => Profile page => Your keys => Organization Keys                                              |       |
 | serverName  | True     |            | Name of the server you set with -Dcontrast.server                                 |       |
 | serverPath  | False    |            | The server context path                                                           |    2.1|
@@ -105,11 +108,14 @@ We generate the app version as follows and in this order:
          <orgUuid>ORG_UID_HERE</orgUuid>
          <appName>Test Application</appName>
          <appId>bc3028e6-82ac-410f-b9c7-13573d33cb94</appId>
-         <serverName>jenkins.slave1</serverName>
+         <serverName>jenkins.server</serverName>
          <minSeverity>High</minSeverity>
          <useProxy>true</useProxy>
          <proxyHost>localhost</proxyHost>
          <proxyPort>8060</proxyPort>
+         <environment>Development</environment>
+         <applicationTags>${user.name},spring</applicationTags>
+         <applicationSessionMetadata>version=${build.number}</applicationSessionMetadata>
      </configuration>
 </plugin>
 ```
