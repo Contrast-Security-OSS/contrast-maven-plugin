@@ -132,7 +132,11 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
         argLineBuilder.append(currentArgLine);
         argLineBuilder.append(" -javaagent:").append(contrastAgentLocation);
         argLineBuilder.append(" -Dcontrast.server=").append(serverName);
-        argLineBuilder.append(" -Dcontrast.env=qa");
+        if (environment != null) {
+            argLineBuilder.append(" -Dcontrast.env=").append(environment);
+        } else {
+            argLineBuilder.append(" -Dcontrast.env=qa");
+        }
         argLineBuilder.append(" -Dcontrast.override.appversion=").append(computedAppVersion);
         argLineBuilder.append(" -Dcontrast.reporting.period=").append("200");
 
@@ -149,6 +153,14 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
 
         if (!StringUtils.isEmpty(serverPath)) {
             argLineBuilder.append(" -Dcontrast.path=").append(serverPath);
+        }
+
+        if (!StringUtils.isEmpty(applicationSessionMetadata)) {
+            argLineBuilder.append(" -Dcontrast.application.session_metadata='").append(applicationSessionMetadata).append("'");
+        }
+
+        if (!StringUtils.isEmpty(applicationTags)) {
+            argLineBuilder.append(" -Dcontrast.application.tags=").append(applicationTags);
         }
 
         String newArgLine = argLineBuilder.toString();

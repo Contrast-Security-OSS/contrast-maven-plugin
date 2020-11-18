@@ -58,6 +58,9 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
     @Parameter(property = "serverName", required = true)
     protected String serverName;
 
+    @Parameter(property = "environment")
+    protected String environment;
+
     @Parameter(property = "serverPath")
     protected String serverPath;
 
@@ -83,6 +86,11 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
     @Parameter(property = "proxyPort")
     protected int proxyPort;
 
+    @Parameter(property = "applicationTags")
+    protected String applicationTags;
+
+    @Parameter(property = "applicationSessionMetadata")
+    protected String applicationSessionMetadata;
 
     protected String contrastAgentLocation;
 
