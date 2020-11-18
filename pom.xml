@@ -30,9 +30,9 @@
     </distributionManagement>
 
     <scm>
-        <connection>scm:git:https://github.com:Contrast-Security-OSS/contrast-maven-plugin.git</connection>
-        <url>scm:git:https://github.com:Contrast-Security-OSS/contrast-maven-plugin.git</url>
-        <developerConnection>scm:git:https://github.com:Contrast-Security-OSS/contrast-maven-plugin.git</developerConnection>
+        <connection>scm:git:https://github.com/Contrast-Security-OSS/contrast-maven-plugin.git</connection>
+        <url>scm:git:https://github.com/Contrast-Security-OSS/contrast-maven-plugin.git</url>
+        <developerConnection>scm:git:https://github.com/Contrast-Security-OSS/contrast-maven-plugin.git</developerConnection>
     </scm>
 
     <name>Contrast Maven Plugin</name>
