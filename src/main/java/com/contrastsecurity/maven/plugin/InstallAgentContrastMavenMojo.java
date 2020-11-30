@@ -2,6 +2,7 @@ package com.contrastsecurity.maven.plugin;
 
 import com.contrastsecurity.sdk.ContrastSDK;
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -55,6 +56,23 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
             applicationName = appName;
         }
         project.getProperties().setProperty("argLine", buildArgLine(project.getProperties().getProperty("argLine"), applicationName));
+
+        for (Plugin plugin : (List<Plugin>)project.getBuildPlugins()) {
+            if ("org.springframework.boot".equals(plugin.getGroupId()) && "spring-boot-maven-plugin".equals(plugin.getArtifactId())) {
+                getLog().debug("Found the spring-boot-maven-plugin, with configuration:");
+                String configuration = plugin.getConfiguration().toString();
+                getLog().debug(configuration);
+                if (configuration.contains("${argLine}")) {
+                 getLog().info("Skipping set of -Drun.jvmArguments as it references ${argLine}");
+                } else {
+                    String jvmArguments = buildArgLine(project.getProperties().getProperty("run.jvmArguments"), applicationName);
+                    getLog().info(String.format("Setting -Drun.jvmArguments=%s", jvmArguments));
+                    project.getProperties().setProperty("run.jvmArguments", jvmArguments);
+                }
+
+                break;
+            }
+        }
     }
 
     public String computeAppVersion(Date currentDate) {
