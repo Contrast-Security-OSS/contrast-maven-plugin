@@ -24,7 +24,7 @@ This Maven plugin can be used to allow Contrast to discover vulnerabilities in y
 
 The `install` goal of the plugin is used to download the agent to the /target directory.
 
-The plugin will edit maven's `argLine` property to launch the JVM with the Contrast agent.
+The plugin will edit maven's `argLine` property to launch the JVM with the Contrast agent. If the Spring Boot Maven Plugin is detected, the `run.jvmArguments` property will also be edited to load Contrast.
 
 In the `verify` phase, the plugin will check if any new vulnerabilities were discovered during the test phases. The build will fail if any serious vulnerabilities are discovered.
 
@@ -53,7 +53,7 @@ In the `verify` phase, the plugin will check if any new vulnerabilities were dis
 | serverPath  | False    |            | The server context path                                                           |    2.1|
 | minSeverity | False    | Medium     | Minimum severity level to verify (can be Note, Low, Medium, High or Critical)     |       |
 | jarPath     | False    |            | Path to contrast.jar if you already have one downloaded                           |       |
-| skipArgLine | False    | False      | If this is "true", the plugin will not alter the Maven argLine property in any way|    2.0|
+| skipArgLine | False    | False      | If this is "true", the plugin will not alter the Maven argLine or run.jvmArguments properties in any way|    2.0|
 | profile     | False    |            | If this is set, the plugin will use the specified custom agent profile when downloading contrast.jar|    2.4|
 | useProxy   | False    | False      | Override proxy settings from maven settings.xml | 2.8|
 | proxyHost  | False    |            | Required if useProxy is true. The host of the proxy | 2.8|
