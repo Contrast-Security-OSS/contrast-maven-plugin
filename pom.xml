@@ -50,8 +50,8 @@
         <versions.maven-javadoc-plugin>3.0.0</versions.maven-javadoc-plugin>
         <versions.maven-gpg-plugin>1.6</versions.maven-gpg-plugin>
         <versions.nexus-staging-maven-plugin>1.6.8</versions.nexus-staging-maven-plugin>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>7</maven.compiler.source>
+        <maven.compiler.target>7</maven.compiler.target>
     </properties>
 
     <dependencies>
