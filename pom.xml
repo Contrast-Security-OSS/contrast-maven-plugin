@@ -80,7 +80,7 @@
         <dependency>
             <groupId>com.contrastsecurity</groupId>
             <artifactId>contrast-sdk-java</artifactId>
-            <version>2.21</version>
+            <version>2.22</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
@@ -99,7 +99,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
-                <version>3.2</version>
+                <version>3.6.0</version>
                 <configuration>
                     <goalPrefix>contrast</goalPrefix>
                     <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
