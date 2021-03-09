@@ -14,7 +14,7 @@
 
     <groupId>com.contrastsecurity</groupId>
     <artifactId>contrast-maven-plugin</artifactId>
-    <version>2.12-SNAPSHOT</version>
+    <version>2.12</version>
     <packaging>maven-plugin</packaging>
 
     <organization>
@@ -37,7 +37,7 @@
         <connection>scm:git:https://github.com/Contrast-Security-OSS/contrast-maven-plugin.git</connection>
         <url>scm:git:https://github.com/Contrast-Security-OSS/contrast-maven-plugin.git</url>
         <developerConnection>scm:git:https://github.com/Contrast-Security-OSS/contrast-maven-plugin.git</developerConnection>
-      <tag>HEAD</tag>
+      <tag>contrast-maven-plugin-2.12</tag>
   </scm>
 
     <name>Contrast Maven Plugin</name>
