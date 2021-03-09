@@ -4,11 +4,17 @@
 
 This document refers to version 2.X of the Contrast Maven Plugin. Behavior has changed a bit since the latest 1.X release.
 
-New in 2.X:
+New in 2.0:
 
 * Vulnerabilities now reconciled using an app version instead of a timestamp
 * App version can be generated using $TRAVIS_BUILD_NUMBER or $CIRCLE_BUILD_NUM
 * Source packaging changed to com.contrastsecurity.maven.plugin
+
+New in 2.12:
+
+* Builds with JDK 8, 11, and 15
+* Targets JRE 7
+* Maven version > 3.6.1 (Released April 2019) is required to build the plugin
 
 ## An Example
 
