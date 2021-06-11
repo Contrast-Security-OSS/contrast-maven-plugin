@@ -8,10 +8,6 @@
         <version>7</version>
     </parent>
 
-    <prerequisites>
-        <maven>3.6.1</maven>
-    </prerequisites>
-
     <groupId>com.contrastsecurity</groupId>
     <artifactId>contrast-maven-plugin</artifactId>
     <version>2.13-SNAPSHOT</version>
