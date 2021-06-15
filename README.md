@@ -26,7 +26,7 @@ Always refer to Contrast's Open Docs site for the most up to date documentation:
 
 ## Usage
 
-This Maven plugin can be used to allow Contrast to discover vulnerabilities in your application during your integration or verification tests. 
+This Maven plugin can be used to allow Contrast to discover vulnerabilities in your application during your integration or verification tests.
 
 The `install` goal of the plugin is used to download the agent to the /target directory.
 
@@ -72,7 +72,7 @@ In the `verify` phase, the plugin will check if any new vulnerabilities were dis
 
 Multi-module Maven builds can appear as different servers in the Contrast UI. If you would like to discourage this behavior and would rather see all modules appear under the same server in Contrast, then please set the `serverPath` property.
 
-**You are strongly encouraged to add a serverPath if this build will be run in a CI environment such as Travis CI or Circle CI.** This will help with keeping your servers tidy in the Contrast UI. 
+**You are strongly encouraged to add a serverPath if this build will be run in a CI environment such as Travis CI or Circle CI.** This will help with keeping your servers tidy in the Contrast UI.
 
 ### appVersion
 
