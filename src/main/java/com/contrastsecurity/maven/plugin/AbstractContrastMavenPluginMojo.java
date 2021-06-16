@@ -37,6 +37,8 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
   @Parameter(property = "apiUrl")
   protected String apiUrl;
 
+  // TODO[JG] must this be required? If a user is only in one org, can we look it up for them based
+  // on the API Key instead of making them enter this extra configuration data?
   @Parameter(property = "orgUuid", required = true)
   protected String orgUuid;
 
@@ -52,6 +54,7 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
   @Parameter(property = "minSeverity", defaultValue = "Medium")
   protected String minSeverity;
 
+  // TODO[JG] why is this required?
   @Parameter(property = "serverName", required = true)
   protected String serverName;
 

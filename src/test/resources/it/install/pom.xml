@@ -57,15 +57,14 @@
           </execution>
         </executions>
         <configuration>
-          <username>${env.CONTRAST_MAVEN_USERNAME}</username>
-          <apiKey>${env.CONTRAST_MAVEN_APIKEY}</apiKey>
-          <serviceKey>${env.CONTRAST_MAVEN_SERVICEKEY}</serviceKey>
-          <apiUrl>${env.CONTRAST_MAVEN_TEAMSERVERURL}</apiUrl>
+          <username>${contrast.api.user_name}</username>
+          <apiKey>${contrast.api.api_key}</apiKey>
+          <serviceKey>${contrast.api.service_key}</serviceKey>
+          <apiUrl>${contrast.api.url}</apiUrl>
           <orgUuid>${env.CONTRAST_MAVEN_ORGUUID}</orgUuid>
-          <appName>provider-directory</appName>
-          <serverName>venus</serverName>
-          <serverPath>/provider</serverPath>
-          <minSeverity>Note</minSeverity>
+          <appName>spring-test-application</appName>
+          <serverName>spring-test-application-ci</serverName>
+          <orgUuid>org-uuid</orgUuid>
         </configuration>
       </plugin>
     </plugins>
