@@ -116,12 +116,12 @@
       <version>4.13.2</version>
       <scope>test</scope>
     </dependency>
-<!--    <dependency>-->
-<!--      <groupId>org.junit.vintage</groupId>-->
-<!--      <artifactId>junit-vintage-engine</artifactId>-->
-<!--      <version>${junit-vintage-engine.version}</version>-->
-<!--      <scope>test</scope>-->
-<!--    </dependency>-->
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>${junit-vintage-engine.version}</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>com.github.stefanbirkner</groupId>
       <artifactId>system-rules</artifactId>
@@ -386,6 +386,32 @@
 
   </build>
   <profiles>
+    <profile>
+      <id>end-to-end-test</id>
+      <!--
+      This profile runs the integration tests with an external Contrast system instead of a stub.
+      Developers configure the connection to the external system using Contrast environment
+      variables for connecting to a
+      -->
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <artifactId>maven-failsafe-plugin</artifactId>
+              <configuration>
+                <systemProperties>
+                  <contrast.api.url>${env.CONTRAST__API__URL}</contrast.api.url>
+                  <contrast.api.user_name>${env.CONTRAST__API__USER_NAME}</contrast.api.user_name>
+                  <contrast.api.api_key>${env.CONTRAST__API__API_KEY}</contrast.api.api_key>
+                  <contrast.api.service_key>${env.CONTRAST__API__SERVICE_KEY}</contrast.api.service_key>
+                  <contrast.api.organization>${env.CONTRAST__API__ORGANIZATION}</contrast.api.organization>
+                </systemProperties>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
     <profile>
       <id>release</id>
       <build>

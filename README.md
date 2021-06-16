@@ -147,3 +147,33 @@ apply the formatting before committing changes using the Maven plugin:
 ```shell
 ./mvnw spotless:apply
 ```
+
+
+### End-to-End Testing
+
+By default, the integration tests simulate the Contrast API using a stub web server. Developers can
+change this behavior to test with an actual Contrast instance instead of the stub.
+
+First, configure your environment with standard Contrast connection environment variables.
+
+```shell
+export CONTRAST__API__URL=https://app.contrastsecurity.com/Contrast/api
+export CONTRAST__API__USER_NAME=<your-user-name>
+export CONTRAST__API__API_KEY=<your-api-key>
+export CONTRAST__API__SERVICE_KEY=<your-service-key>
+export CONTRAST__API__ORGANIZATION=<your-organization-id>
+```
+
+You may find it useful to store the environment variable configuration in a file so that you can
+easily include it in your environment
+
+```shell
+. ~/contrast.env
+```
+
+Having configured the environment, you can run the integration tests with hte `end-to-end-test`
+profile active:
+
+```shell
+./mvnw -Pend-to-end-test verify
+```

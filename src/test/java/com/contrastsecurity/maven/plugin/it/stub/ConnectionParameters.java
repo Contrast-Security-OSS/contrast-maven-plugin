@@ -18,12 +18,15 @@ public abstract class ConnectionParameters {
 
   public abstract String serviceKey();
 
+  public abstract String organization();
+
   public final Properties toProperties() {
     final Properties properties = new Properties();
     properties.setProperty("contrast.api.url", url());
     properties.setProperty("contrast.api.user_name", username());
     properties.setProperty("contrast.api.api_key", apiKey());
     properties.setProperty("contrast.api.service_key", serviceKey());
+    properties.setProperty("contrast.api.organization", organization());
     return properties;
   }
 
@@ -37,6 +40,8 @@ public abstract class ConnectionParameters {
     public abstract Builder apiKey(String value);
 
     public abstract Builder serviceKey(String value);
+
+    public abstract Builder organization(String value);
 
     public abstract ConnectionParameters build();
   }

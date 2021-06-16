@@ -37,8 +37,8 @@ abstract class AbstractContrastMavenPluginMojo extends AbstractMojo {
   @Parameter(property = "apiUrl")
   protected String apiUrl;
 
-  // TODO[JG] must this be required? If a user is only in one org, can we look it up for them based
-  // on the API Key instead of making them enter this extra configuration data?
+  // TODO[JG] must this be required? If a user is only in one org, we can look it up using the
+  // endpoint /ng/profile/organizations
   @Parameter(property = "orgUuid", required = true)
   protected String orgUuid;
 

@@ -35,5 +35,6 @@ final class InstallAgentContrastAgentMojoIT {
     verifier.executeGoal("verify");
 
     verifier.verifyErrorFreeLog();
+    verifier.assertFilePresent("target/contrast.jar");
   }
 }

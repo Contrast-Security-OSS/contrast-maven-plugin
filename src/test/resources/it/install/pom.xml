@@ -16,16 +16,6 @@
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
 
-  <repositories>
-    <repository>
-      <id>test-repository</id>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <url>file://${contrast.test-repository}</url>
-    </repository>
-  </repositories>
-
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -54,17 +44,17 @@
             <goals>
               <goal>install</goal>
             </goals>
+            <phase>pre-integration-test</phase>
           </execution>
         </executions>
         <configuration>
           <username>${contrast.api.user_name}</username>
+          <orgUuid>${contrast.api.organization}</orgUuid>
           <apiKey>${contrast.api.api_key}</apiKey>
           <serviceKey>${contrast.api.service_key}</serviceKey>
           <apiUrl>${contrast.api.url}</apiUrl>
-          <orgUuid>${env.CONTRAST_MAVEN_ORGUUID}</orgUuid>
           <appName>spring-test-application</appName>
           <serverName>spring-test-application-ci</serverName>
-          <orgUuid>org-uuid</orgUuid>
         </configuration>
       </plugin>
     </plugins>

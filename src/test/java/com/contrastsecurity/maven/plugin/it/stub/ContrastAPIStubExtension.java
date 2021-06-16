@@ -1,5 +1,6 @@
 package com.contrastsecurity.maven.plugin.it.stub;
 
+import java.util.Optional;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -41,7 +42,36 @@ public final class ContrastAPIStubExtension
     return context
         .getStore(NAMESPACE)
         .getOrComputeIfAbsent(
-            "server", ignored -> ContrastAPI.createFromEnvironment(), ContrastAPI.class);
+            "server", ignored -> createFromConfiguration(context), ContrastAPI.class);
+  }
+
+  private static ContrastAPI createFromConfiguration(final ExtensionContext context) {
+    final Optional<String> url = context.getConfigurationParameter("contrast.api.url");
+    final Optional<String> username = context.getConfigurationParameter("contrast.api.user_name");
+    final Optional<String> apiKey = context.getConfigurationParameter("contrast.api.api_key");
+    final Optional<String> serviceKey =
+        context.getConfigurationParameter("contrast.api.service_key");
+    final Optional<String> organization =
+        context.getConfigurationParameter("contrast.api.organization");
+
+    if (url.isPresent()
+        && username.isPresent()
+        && apiKey.isPresent()
+        && serviceKey.isPresent()
+        && organization.isPresent()) {
+      context.publishReportEntry(
+          "end-to-end testing enabled: using provided Contrast API connection instead of the stub");
+      final ConnectionParameters connection =
+          ConnectionParameters.builder()
+              .url(url.get())
+              .username(username.get())
+              .apiKey(apiKey.get())
+              .serviceKey(serviceKey.get())
+              .organization(organization.get())
+              .build();
+      return new RealContrastAPI(connection);
+    }
+    return new FakeContrastAPI();
   }
 
   private static final Namespace NAMESPACE = Namespace.create(ContrastAPIStubExtension.class);
