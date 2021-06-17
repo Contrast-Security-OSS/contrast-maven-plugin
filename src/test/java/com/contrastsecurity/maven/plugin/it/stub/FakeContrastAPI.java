@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
+/** Starts a JDK HTTP server that serves as a stubbed {@link ContrastAPI} */
 final class FakeContrastAPI implements ContrastAPI {
 
   private HttpServer server;

@@ -9,21 +9,35 @@ import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
+/**
+ * JUnit 5 test extension that provides test authors with a stubbed instance of the Contrast API.
+ */
 public final class ContrastAPIStubExtension
     implements ParameterResolver, BeforeEachCallback, AfterEachCallback {
 
+  /**
+   * Starts the {@link ContrastAPI}
+   *
+   * @param context JUnit context
+   */
   @Override
-  public void beforeEach(final ExtensionContext context) throws Exception {
+  public void beforeEach(final ExtensionContext context) {
     final ContrastAPI contrast = getContrastAPI(context);
     contrast.start();
   }
 
+  /**
+   * Stops the {@link ContrastAPI}
+   *
+   * @param context JUnit context
+   */
   @Override
-  public void afterEach(final ExtensionContext context) throws Exception {
+  public void afterEach(final ExtensionContext context) {
     final ContrastAPI contrast = getContrastAPI(context);
     contrast.stop();
   }
 
+  /** @return true if the parameter is of type {@link ContrastAPI} */
   @Override
   public boolean supportsParameter(
       final ParameterContext parameterContext, final ExtensionContext extensionContext)
@@ -31,6 +45,7 @@ public final class ContrastAPIStubExtension
     return parameterContext.getParameter().getType() == ContrastAPI.class;
   }
 
+  /** @return the {@link ContrastAPI} in the current test context */
   @Override
   public Object resolveParameter(
       final ParameterContext parameterContext, final ExtensionContext extensionContext)
@@ -38,6 +53,7 @@ public final class ContrastAPIStubExtension
     return getContrastAPI(extensionContext);
   }
 
+  /** @return new or existing {@link ContrastAPI} in the current test context */
   private static ContrastAPI getContrastAPI(final ExtensionContext context) {
     return context
         .getStore(NAMESPACE)
@@ -45,7 +61,13 @@ public final class ContrastAPIStubExtension
             "server", ignored -> createFromConfiguration(context), ContrastAPI.class);
   }
 
+  /**
+   * @param context the current JUnit {@link ExtensionContext}
+   * @return {@link ExternalContrastAPI} if Contrast connection properties are provided, otherwise a
+   *     {@link FakeContrastAPI}
+   */
   private static ContrastAPI createFromConfiguration(final ExtensionContext context) {
+    // gather configuration parameters from the current context
     final Optional<String> url = context.getConfigurationParameter("contrast.api.url");
     final Optional<String> username = context.getConfigurationParameter("contrast.api.user_name");
     final Optional<String> apiKey = context.getConfigurationParameter("contrast.api.api_key");
@@ -54,6 +76,7 @@ public final class ContrastAPIStubExtension
     final Optional<String> organization =
         context.getConfigurationParameter("contrast.api.organization");
 
+    // if all connection parameters are present, then use end-to-end testing mode
     if (url.isPresent()
         && username.isPresent()
         && apiKey.isPresent()
@@ -69,8 +92,9 @@ public final class ContrastAPIStubExtension
               .serviceKey(serviceKey.get())
               .organization(organization.get())
               .build();
-      return new RealContrastAPI(connection);
+      return new ExternalContrastAPI(connection);
     }
+    // default case, use a fake Contrast API
     return new FakeContrastAPI();
   }
 
