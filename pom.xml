@@ -359,6 +359,7 @@
           <configuration>
             <!-- never use legacy JUnit tests for new integration tests -->
             <classpathDependencyExcludes>
+              <classpathDependencyExclude>junit:junit</classpathDependencyExclude>
               <classpathDependencyExclude>org.junit.vintage:junit-vintage-engine</classpathDependencyExclude>
             </classpathDependencyExcludes>
           </configuration>
