@@ -56,7 +56,7 @@ public abstract class ConnectionParameters {
 
     public abstract Builder serviceKey(String value);
 
-    public abstract Builder organization(String value);
+    public abstract Builder organizationID(String value);
 
     public abstract ConnectionParameters build();
   }

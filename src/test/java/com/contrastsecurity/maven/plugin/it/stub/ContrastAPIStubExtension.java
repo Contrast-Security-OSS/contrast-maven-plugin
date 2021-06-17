@@ -90,7 +90,7 @@ public final class ContrastAPIStubExtension
               .username(username.get())
               .apiKey(apiKey.get())
               .serviceKey(serviceKey.get())
-              .organization(organization.get())
+              .organizationID(organization.get())
               .build();
       return new ExternalContrastAPI(connection);
     }

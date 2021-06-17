@@ -51,7 +51,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <contrast.test-repository>${project.build.directory}/test-repository</contrast.test-repository>
     <junit-jupiter.version>5.7.2</junit-jupiter.version>
-    <junit-vintage-engine.version>5.6.2</junit-vintage-engine.version>
+    <junit-vintage-engine.version>5.7.2</junit-vintage-engine.version>
     <auto-value.version>1.6.3</auto-value.version>
   </properties>
 
@@ -111,15 +111,15 @@
     </dependency>
     <!-- TODO[JG] Migrate from JUnit 4 -->
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.13.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.junit.vintage</groupId>
       <artifactId>junit-vintage-engine</artifactId>
       <version>${junit-vintage-engine.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -252,7 +252,7 @@
         <executions>
           <execution>
             <id>install-to-test-repository</id>
-            <phase>package</phase>
+            <phase>pre-integration-test</phase>
             <goals>
               <goal>copy</goal>
             </goals>
@@ -272,6 +272,27 @@
               </artifactItems>
               <outputDirectory>
                 ${contrast.test-repository}/com/contrastsecurity/${project.artifactId}/${project.version}
+              </outputDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>retrieve-agent-for-testing</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>com.contrastsecurity</groupId>
+                  <artifactId>contrast-agent</artifactId>
+                  <!-- practically any version will satisfy the needs of the test -->
+                  <version>3.8.5.20387</version>
+                </artifactItem>
+              </artifactItems>
+              <stripVersion>true</stripVersion>
+              <outputDirectory>
+                ${project.build.testOutputDirectory}
               </outputDirectory>
             </configuration>
           </execution>
@@ -335,6 +356,12 @@
         <plugin>
           <artifactId>maven-failsafe-plugin</artifactId>
           <version>2.22.2</version>
+          <configuration>
+            <!-- never use legacy JUnit tests for new integration tests -->
+            <classpathDependencyExcludes>
+              <classpathDependencyExclude>org.junit.vintage:junit-vintage-engine</classpathDependencyExclude>
+            </classpathDependencyExcludes>
+          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
@@ -403,8 +430,10 @@
                   <contrast.api.url>${env.CONTRAST__API__URL}</contrast.api.url>
                   <contrast.api.user_name>${env.CONTRAST__API__USER_NAME}</contrast.api.user_name>
                   <contrast.api.api_key>${env.CONTRAST__API__API_KEY}</contrast.api.api_key>
-                  <contrast.api.service_key>${env.CONTRAST__API__SERVICE_KEY}</contrast.api.service_key>
-                  <contrast.api.organization>${env.CONTRAST__API__ORGANIZATION}</contrast.api.organization>
+                  <contrast.api.service_key>${env.CONTRAST__API__SERVICE_KEY}
+                  </contrast.api.service_key>
+                  <contrast.api.organization>${env.CONTRAST__API__ORGANIZATION}
+                  </contrast.api.organization>
                 </systemProperties>
               </configuration>
             </plugin>
