@@ -95,7 +95,7 @@ public final class ContrastAPIStubExtension
       return new ExternalContrastAPI(connection);
     }
     // default case, use a fake Contrast API
-    return new FakeContrastAPI();
+    return new WireMockContrastAPI();
   }
 
   private static final Namespace NAMESPACE = Namespace.create(ContrastAPIStubExtension.class);
