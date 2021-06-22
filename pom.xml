@@ -46,8 +46,13 @@
     application
   </description>
   <url>https://docs.contrastsecurity.com/en/maven.html</url>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <contrast.test-repository>${project.build.directory}/test-repository</contrast.test-repository>
+    <junit-jupiter.version>5.7.2</junit-jupiter.version>
+    <junit-vintage-engine.version>5.7.2</junit-vintage-engine.version>
+    <auto-value.version>1.6.3</auto-value.version>
   </properties>
 
   <dependencies>
@@ -68,12 +73,6 @@
       <version>3.0.24</version>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.13.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>com.contrastsecurity</groupId>
       <artifactId>contrast-sdk-java</artifactId>
       <version>2.22</version>
@@ -91,13 +90,66 @@
       <version>2.2.1</version>
     </dependency>
     <dependency>
+      <groupId>com.google.auto.value</groupId>
+      <artifactId>auto-value-annotations</artifactId>
+      <version>${auto-value.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- TEST DEPENDENCIES -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit-jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit-jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- TODO[JG] Migrate from JUnit 4 -->
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>${junit-vintage-engine.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>com.github.stefanbirkner</groupId>
       <artifactId>system-rules</artifactId>
       <version>1.17.0</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-verifier</artifactId>
+      <version>1.2</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
+
   <build>
+
+    <resources>
+      <!-- filter poms in integration test directory to replace plugin version -->
+      <resource>
+        <directory>src/test/resources/it</directory>
+        <filtering>true</filtering>
+        <targetPath>${project.build.directory}/test-classes/it</targetPath>
+        <includes>
+          <include>**/pom.xml</include>
+        </includes>
+      </resource>
+    </resources>
+
     <plugins>
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
@@ -137,8 +189,15 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
+          <source>1.8</source>
+          <target>1.8</target>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>com.google.auto.value</groupId>
+              <artifactId>auto-value</artifactId>
+              <version>${auto-value.version}</version>
+            </path>
+          </annotationProcessorPaths>
         </configuration>
       </plugin>
       <plugin>
@@ -189,6 +248,73 @@
         </executions>
       </plugin>
       <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>install-to-test-repository</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>${project.groupId}</groupId>
+                  <artifactId>${project.artifactId}</artifactId>
+                  <version>${project.version}</version>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>${project.groupId}</groupId>
+                  <artifactId>${project.artifactId}</artifactId>
+                  <version>${project.version}</version>
+                  <type>pom</type>
+                </artifactItem>
+              </artifactItems>
+              <outputDirectory>
+                ${contrast.test-repository}/com/contrastsecurity/${project.artifactId}/${project.version}
+              </outputDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>retrieve-agent-for-testing</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>com.contrastsecurity</groupId>
+                  <artifactId>contrast-agent</artifactId>
+                  <!-- practically any version will satisfy the needs of the test -->
+                  <version>3.8.5.20387</version>
+                </artifactItem>
+              </artifactItems>
+              <stripVersion>true</stripVersion>
+              <outputDirectory>
+                ${project.build.testOutputDirectory}
+              </outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <systemProperties>
+            <contrast.test-repository>${contrast.test-repository}</contrast.test-repository>
+          </systemProperties>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-release-plugin</artifactId>
       </plugin>
       <plugin>
@@ -204,6 +330,7 @@
         </executions>
       </plugin>
     </plugins>
+
     <pluginManagement>
       <plugins>
         <plugin>
@@ -229,6 +356,13 @@
         <plugin>
           <artifactId>maven-failsafe-plugin</artifactId>
           <version>2.22.2</version>
+          <configuration>
+            <!-- never use legacy JUnit tests for new integration tests -->
+            <classpathDependencyExcludes>
+              <classpathDependencyExclude>junit:junit</classpathDependencyExclude>
+              <classpathDependencyExclude>org.junit.vintage:junit-vintage-engine</classpathDependencyExclude>
+            </classpathDependencyExcludes>
+          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
@@ -277,43 +411,35 @@
         </plugin>
       </plugins>
     </pluginManagement>
+
   </build>
   <profiles>
     <profile>
-      <id>run-its</id>
+      <id>end-to-end-test</id>
+      <!--
+      This profile runs the integration tests with an external Contrast system instead of a stub.
+      Developers configure the connection to the external system using Contrast environment
+      variables for connecting to a
+      -->
       <build>
-        <!-- TODO remove -->
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-invoker-plugin</artifactId>
-            <version>1.7</version>
-            <configuration>
-              <debug>true</debug>
-              <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
-              <pomIncludes>
-                <pomInclude>*/pom.xml</pomInclude>
-              </pomIncludes>
-              <postBuildHookScript>verify</postBuildHookScript>
-              <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
-              <settingsFile>src/it/settings.xml</settingsFile>
-              <goals>
-                <goal>clean</goal>
-                <goal>test-compile</goal>
-              </goals>
-            </configuration>
-            <executions>
-              <execution>
-                <id>integration-test</id>
-                <goals>
-                  <goal>install</goal>
-                  <goal>integration-test</goal>
-                  <goal>verify</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <artifactId>maven-failsafe-plugin</artifactId>
+              <configuration>
+                <systemProperties>
+                  <contrast.api.url>${env.CONTRAST__API__URL}</contrast.api.url>
+                  <contrast.api.user_name>${env.CONTRAST__API__USER_NAME}</contrast.api.user_name>
+                  <contrast.api.api_key>${env.CONTRAST__API__API_KEY}</contrast.api.api_key>
+                  <contrast.api.service_key>${env.CONTRAST__API__SERVICE_KEY}
+                  </contrast.api.service_key>
+                  <contrast.api.organization>${env.CONTRAST__API__ORGANIZATION}
+                  </contrast.api.organization>
+                </systemProperties>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
       </build>
     </profile>
     <profile>
