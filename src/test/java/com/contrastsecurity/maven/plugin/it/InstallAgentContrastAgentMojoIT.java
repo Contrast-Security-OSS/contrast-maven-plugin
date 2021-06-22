@@ -30,9 +30,9 @@ import org.junit.jupiter.api.Test;
  * plan to make breaking changes to this goal imminently. This functional test serves mainly as a
  * guiding example for future functional tests.
  */
+@ContrastAPIStub
 final class InstallAgentContrastAgentMojoIT {
 
-  @ContrastAPIStub
   @Test
   public void test(final ContrastAPI contrast) throws IOException, VerificationException {
     // GIVEN a spring-boot project that uses the plugin

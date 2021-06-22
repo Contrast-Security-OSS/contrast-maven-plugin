@@ -1,8 +1,8 @@
 package com.contrastsecurity.maven.plugin.it.stub;
 
 import java.util.Optional;
-import org.junit.jupiter.api.extension.AfterEachCallback;
-import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
 import org.junit.jupiter.api.extension.ParameterContext;
@@ -13,7 +13,7 @@ import org.junit.jupiter.api.extension.ParameterResolver;
  * JUnit 5 test extension that provides test authors with a stubbed instance of the Contrast API.
  */
 public final class ContrastAPIStubExtension
-    implements ParameterResolver, BeforeEachCallback, AfterEachCallback {
+    implements ParameterResolver, BeforeAllCallback, AfterAllCallback {
 
   /**
    * Starts the {@link ContrastAPI}
@@ -21,7 +21,7 @@ public final class ContrastAPIStubExtension
    * @param context JUnit context
    */
   @Override
-  public void beforeEach(final ExtensionContext context) {
+  public void beforeAll(final ExtensionContext context) {
     final ContrastAPI contrast = getContrastAPI(context);
     contrast.start();
   }
@@ -32,7 +32,7 @@ public final class ContrastAPIStubExtension
    * @param context JUnit context
    */
   @Override
-  public void afterEach(final ExtensionContext context) {
+  public void afterAll(final ExtensionContext context) {
     final ContrastAPI contrast = getContrastAPI(context);
     contrast.stop();
   }

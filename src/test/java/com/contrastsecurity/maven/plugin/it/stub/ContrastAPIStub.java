@@ -19,7 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
  * </pre>
  */
 @Documented
-@Target(ElementType.METHOD)
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @ExtendWith(ContrastAPIStubExtension.class)
 public @interface ContrastAPIStub {}
