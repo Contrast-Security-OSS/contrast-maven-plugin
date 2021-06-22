@@ -77,7 +77,7 @@ final class FakeContrastAPI implements ContrastAPI {
     server.stop(0);
   }
 
-  public static HttpHandler status(final int status) {
+  private static HttpHandler status(final int status) {
     return exchange -> {
       // ideally we would use response length -1 according to the HttpServer JavaDoc, but it's not
       // working as expected
@@ -101,7 +101,7 @@ final class FakeContrastAPI implements ContrastAPI {
     return new BufferedInputStream(is);
   }
 
-  public static HttpHandler authenticatedEndpoint(HttpHandler handler) {
+  private static HttpHandler authenticatedEndpoint(HttpHandler handler) {
     // local pair class for iterating over common header verification logic
     class ExpectedHeader {
       final String name;
@@ -133,7 +133,7 @@ final class FakeContrastAPI implements ContrastAPI {
     };
   }
 
-  public static void downloadAgent(final HttpExchange exchange) {
+  private static void downloadAgent(final HttpExchange exchange) {
     // read the contrast-agent.jar into memory, because we need to know the size of the content that
     // we'll send over the wire since we are not using chunked responses with this simple JDK HTTP
     // server
