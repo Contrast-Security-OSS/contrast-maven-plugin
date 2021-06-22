@@ -11,11 +11,11 @@ import org.junit.Test;
 
 public class VerifyContrastMavenPluginMojoTest {
 
-  VerifyContrastMavenPluginMojo verifyContrastMavenPluginMojo;
+  ContrastVerifyMojo verifyContrastMavenPluginMojo;
 
   @Before
   public void setUp() {
-    verifyContrastMavenPluginMojo = new VerifyContrastMavenPluginMojo();
+    verifyContrastMavenPluginMojo = new ContrastVerifyMojo();
     verifyContrastMavenPluginMojo.minSeverity = "Medium";
   }
 

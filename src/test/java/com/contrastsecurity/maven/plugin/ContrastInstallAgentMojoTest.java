@@ -9,15 +9,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
-public class InstallAgentContrastMavenMojoTest {
-  InstallAgentContrastMavenMojo installMojo;
+public class ContrastInstallAgentMojoTest {
+  ContrastInstallAgentMojo installMojo;
   Date now;
 
   @Rule public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
 
   @Before
   public void setUp() {
-    installMojo = new InstallAgentContrastMavenMojo();
+    installMojo = new ContrastInstallAgentMojo();
     installMojo.appName = "caddyshack";
     installMojo.serverName = "Bushwood";
     installMojo.contrastAgentLocation = "/usr/local/bin/contrast.jar";

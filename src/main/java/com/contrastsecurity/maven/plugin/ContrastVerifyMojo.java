@@ -4,17 +4,30 @@ import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.http.RuleSeverity;
 import com.contrastsecurity.http.ServerFilterForm;
 import com.contrastsecurity.http.TraceFilterForm;
-import com.contrastsecurity.models.*;
+import com.contrastsecurity.models.Application;
+import com.contrastsecurity.models.Applications;
+import com.contrastsecurity.models.Server;
+import com.contrastsecurity.models.Servers;
+import com.contrastsecurity.models.Trace;
+import com.contrastsecurity.models.Traces;
 import com.contrastsecurity.sdk.ContrastSDK;
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 
 @Mojo(name = "verify", requiresOnline = true)
-public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMojo {
+public class ContrastVerifyMojo extends AbstractAssessMojo {
+
+  @Parameter(property = "minSeverity", defaultValue = "Medium")
+  String minSeverity;
 
   public void execute() throws MojoExecutionException {
     verifyAppIdOrNameNotBlank();
