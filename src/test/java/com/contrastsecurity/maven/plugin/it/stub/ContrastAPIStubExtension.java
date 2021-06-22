@@ -24,6 +24,7 @@ public final class ContrastAPIStubExtension
   public void beforeAll(final ExtensionContext context) {
     final ContrastAPI contrast = getContrastAPI(context);
     contrast.start();
+    context.publishReportEntry("Contrast stub started " + contrast.connection().url());
   }
 
   /**
