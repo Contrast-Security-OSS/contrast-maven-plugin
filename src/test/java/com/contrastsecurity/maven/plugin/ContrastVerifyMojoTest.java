@@ -1,6 +1,9 @@
 package com.contrastsecurity.maven.plugin;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import com.contrastsecurity.http.RuleSeverity;
 import com.contrastsecurity.http.TraceFilterForm;
@@ -9,9 +12,9 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-public class VerifyContrastMavenPluginMojoTest {
+public class ContrastVerifyMojoTest {
 
-  ContrastVerifyMojo verifyContrastMavenPluginMojo;
+  private ContrastVerifyMojo verifyContrastMavenPluginMojo;
 
   @Before
   public void setUp() {
@@ -27,10 +30,10 @@ public class VerifyContrastMavenPluginMojoTest {
 
   @Test
   public void testGetTraceFilterForm() {
-    List<Long> serverIds = new ArrayList<Long>();
-    long server1 = 123l;
-    long server2 = 456l;
-    long server3 = 789l;
+    List<Long> serverIds = new ArrayList<>();
+    long server1 = 123L;
+    long server2 = 456L;
+    long server3 = 789L;
 
     serverIds.add(server1);
     serverIds.add(server2);
@@ -61,7 +64,7 @@ public class VerifyContrastMavenPluginMojoTest {
   public void testGetTraceFilterFormAppVersionTags() {
     String appVersion = "WebGoat-1";
 
-    verifyContrastMavenPluginMojo.computedAppVersion = appVersion;
+    AbstractAssessMojo.computedAppVersion = appVersion;
     TraceFilterForm traceFilterForm = verifyContrastMavenPluginMojo.getTraceFilterForm(null);
 
     assertEquals(1, traceFilterForm.getAppVersionTags().size());

@@ -11,27 +11,34 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.settings.Settings;
 
+/**
+ * Abstract mojo for mojos that need to connect to Contrast. Handles authentication, organization
+ * selection (multi-tenancy), and proxy configuration.
+ *
+ * <p>Extensions of this class use the {@link #connectToContrast()} to obtain an instance of the
+ * {@link ContrastSDK} with which they can make requests to Contrast.
+ */
 abstract class AbstractContrastMojo extends AbstractMojo {
 
   @Parameter(defaultValue = "${settings}", readonly = true)
-  protected Settings settings;
+  private Settings settings;
 
   @Parameter(property = "username", required = true)
-  protected String username;
+  private String username;
 
   @Parameter(property = "apiKey", required = true)
-  protected String apiKey;
+  private String apiKey;
 
   @Parameter(property = "serviceKey", required = true)
-  protected String serviceKey;
+  private String serviceKey;
 
   @Parameter(property = "apiUrl")
-  protected String apiUrl;
+  private String apiUrl;
 
   // TODO[JG] must this be required? If a user is only in one org, we can look it up using the
   // endpoint /ng/profile/organizations
   @Parameter(property = "orgUuid", required = true)
-  protected String orgUuid;
+  private String orgUuid;
 
   // true = Override proxy from settings and use args
   @Parameter(property = "useProxy")
@@ -43,18 +50,56 @@ abstract class AbstractContrastMojo extends AbstractMojo {
   @Parameter(property = "proxyPort")
   private int proxyPort;
 
-  /*
-   * As near as I can tell, there doesn't appear to be any way
-   * to share data between Mojo phases. However, we need to compute
-   * the appVersion in the install phase and then use the computedAppVersion
-   * in the verify phase. Setting the field to static is the only
-   * way I found for it to work
+  /** @return Contrast username */
+  String getUsername() {
+    return username;
+  }
+
+  /** @return Contrast API Key */
+  String getApiKey() {
+    return apiKey;
+  }
+
+  /** @return Contrast Service Key */
+  String getServiceKey() {
+    return serviceKey;
+  }
+
+  /** @return Contrast API URL e.g. https://app.contrastsecurity.com/Contrast/api */
+  String getApiUrl() {
+    return apiUrl;
+  }
+
+  /** @return Contrast Organization ID */
+  String getOrganizationID() {
+    return orgUuid;
+  }
+
+  /**
+   * @return new ContrastSDK configured to connect with the authentication and proxy parameters
+   *     defined by this abstract mojo
+   * @throws MojoExecutionException when fails to connect to Contrast
    */
-  protected static String computedAppVersion;
+  ContrastSDK connectToContrast() throws MojoExecutionException {
+    Proxy proxy = getProxy();
 
-  public void execute() throws MojoExecutionException {}
+    try {
+      if (!StringUtils.isEmpty(apiUrl)) {
+        return new ContrastSDK.Builder(username, serviceKey, apiKey)
+            .withApiUrl(apiUrl)
+            .withProxy(proxy)
+            .build();
+      } else {
+        return new ContrastSDK.Builder(username, serviceKey, apiKey).withProxy(proxy).build();
+      }
+    } catch (IllegalArgumentException e) {
+      throw new MojoExecutionException(
+          "\n\nWe couldn't connect to Contrast at this address [" + apiUrl + "]. The error is: ",
+          e);
+    }
+  }
 
-  Proxy getProxy() throws MojoExecutionException {
+  private Proxy getProxy() throws MojoExecutionException {
     Proxy proxy = Proxy.NO_PROXY;
     final org.apache.maven.settings.Proxy proxySettings = settings.getActiveProxy();
     if (useProxy) {
@@ -97,24 +142,5 @@ abstract class AbstractContrastMojo extends AbstractMojo {
     }
 
     return proxy;
-  }
-
-  ContrastSDK connectToTeamServer() throws MojoExecutionException {
-    Proxy proxy = getProxy();
-
-    try {
-      if (!StringUtils.isEmpty(apiUrl)) {
-        return new ContrastSDK.Builder(username, serviceKey, apiKey)
-            .withApiUrl(apiUrl)
-            .withProxy(proxy)
-            .build();
-      } else {
-        return new ContrastSDK.Builder(username, serviceKey, apiKey).withProxy(proxy).build();
-      }
-    } catch (IllegalArgumentException e) {
-      throw new MojoExecutionException(
-          "\n\nWe couldn't connect to TeamServer at this address [" + apiUrl + "]. The error is: ",
-          e);
-    }
   }
 }

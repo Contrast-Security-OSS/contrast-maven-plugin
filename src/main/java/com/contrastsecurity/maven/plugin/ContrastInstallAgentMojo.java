@@ -58,7 +58,7 @@ public class ContrastInstallAgentMojo extends AbstractAssessMojo {
 
   String applicationName;
 
-  static Map<String, String> environmentToSessionMetadata = new TreeMap<String, String>();
+  static Map<String, String> environmentToSessionMetadata = new TreeMap<>();
 
   static {
     // Jenkins git plugin environment variables
@@ -78,21 +78,21 @@ public class ContrastInstallAgentMojo extends AbstractAssessMojo {
     verifyAppIdOrNameNotBlank();
     getLog().info("Attempting to connect to Contrast and install the Java agent.");
 
-    ContrastSDK contrast = connectToTeamServer();
+    ContrastSDK contrast = connectToContrast();
 
     File agentFile = installJavaAgent(contrast);
 
     getLog().info("Agent downloaded.");
 
-    if (StringUtils.isNotBlank(appId)) {
-      applicationName = getAppName(contrast, appId);
+    if (StringUtils.isNotBlank(getAppId())) {
+      applicationName = getAppName(contrast, getAppId());
 
-      if (StringUtils.isNotBlank(appName)) {
+      if (StringUtils.isNotBlank(getAppName())) {
         getLog().info("Using 'appId' property; 'appName' property is ignored.");
       }
 
     } else {
-      applicationName = appName;
+      applicationName = getAppName();
     }
     project
         .getProperties()
@@ -125,19 +125,16 @@ public class ContrastInstallAgentMojo extends AbstractAssessMojo {
       throws MojoExecutionException {
     Applications applications;
     try {
-      applications = contrastSDK.getApplication(orgUuid, applicationId);
+      final String organizationID = getOrganizationID();
+      applications = contrastSDK.getApplication(organizationID, applicationId);
     } catch (Exception e) {
       String logMessage;
       if (e.getMessage().contains("403")) {
         logMessage =
-            "\n\n Unable to find the application on TeamServer with the id ["
-                + applicationId
-                + "]\n";
+            "\n\n Unable to find the application on Contrast with the id [" + applicationId + "]\n";
       } else {
         logMessage =
-            "\n\n Unable to retrieve the application list from TeamServer. Please check that TeamServer is running at this address ["
-                + apiUrl
-                + "]\n";
+            "\n\n Unable to retrieve the application list from Contrast. Please check Contrast connection configuration\n";
       }
       throw new MojoExecutionException(logMessage, e);
     }
@@ -145,7 +142,7 @@ public class ContrastInstallAgentMojo extends AbstractAssessMojo {
       throw new MojoExecutionException(
           "\n\nApplication with id '"
               + applicationId
-              + "' not found. Make sure this application appears in TeamServer under the 'Applications' tab.\n");
+              + "' not found. Make sure this application appears in Contrast under the 'Applications' tab.\n");
     }
     return applications.getApplication().getName();
   }
@@ -164,7 +161,7 @@ public class ContrastInstallAgentMojo extends AbstractAssessMojo {
     String travisBuildNumber = System.getenv("TRAVIS_BUILD_NUMBER");
     String circleBuildNum = System.getenv("CIRCLE_BUILD_NUM");
 
-    String appVersionQualifier = "";
+    final String appVersionQualifier;
     if (travisBuildNumber != null) {
       getLog()
           .info(
@@ -181,17 +178,17 @@ public class ContrastInstallAgentMojo extends AbstractAssessMojo {
       getLog().info("No CI build number detected, we'll use current timestamp.");
       appVersionQualifier = new SimpleDateFormat("yyyyMMddHHmmss").format(currentDate);
     }
-    if (StringUtils.isNotBlank(appId)) {
+    if (StringUtils.isNotBlank(getAppId())) {
       computedAppVersion = applicationName + "-" + appVersionQualifier;
     } else {
-      computedAppVersion = appName + "-" + appVersionQualifier;
+      computedAppVersion = getAppName() + "-" + appVersionQualifier;
     }
 
     return computedAppVersion;
   }
 
   String computeSessionMetadata() {
-    List<String> metadata = new ArrayList<String>();
+    List<String> metadata = new ArrayList<>();
 
     for (Map.Entry<String, String> entry : environmentToSessionMetadata.entrySet()) {
       String environmentValue = System.getenv(entry.getKey());
@@ -205,7 +202,7 @@ public class ContrastInstallAgentMojo extends AbstractAssessMojo {
   }
 
   String buildArgLine(String currentArgLine) {
-    return buildArgLine(currentArgLine, appName);
+    return buildArgLine(currentArgLine, getAppName());
   }
 
   String buildArgLine(String currentArgLine, String applicationName) {
@@ -232,7 +229,7 @@ public class ContrastInstallAgentMojo extends AbstractAssessMojo {
     StringBuilder argLineBuilder = new StringBuilder();
     argLineBuilder.append(currentArgLine);
     argLineBuilder.append(" -javaagent:").append(contrastAgentLocation);
-    argLineBuilder.append(" -Dcontrast.server=").append(serverName);
+    argLineBuilder.append(" -Dcontrast.server=").append(getServerName());
     if (environment != null) {
       argLineBuilder.append(" -Dcontrast.env=").append(environment);
     } else {
@@ -283,21 +280,20 @@ public class ContrastInstallAgentMojo extends AbstractAssessMojo {
     if (StringUtils.isEmpty(jarPath)) {
       getLog().info("No jar path was configured. Downloading the latest contrast.jar...");
 
+      final String organizationID = getOrganizationID();
       try {
         if (profile != null) {
-          javaAgent = connection.getAgent(AgentType.JAVA, orgUuid, profile);
+          javaAgent = connection.getAgent(AgentType.JAVA, organizationID, profile);
         } else {
-          javaAgent = connection.getAgent(AgentType.JAVA, orgUuid);
+          javaAgent = connection.getAgent(AgentType.JAVA, organizationID);
         }
       } catch (IOException e) {
         throw new MojoExecutionException(
-            "\n\nWe couldn't download the Java agent from TeamServer with this user ["
-                + username
-                + "]. Please check that all your credentials are correct. If everything is correct, please contact Contrast Support. The error is:",
+            "\n\nCouldn't download the Java agent from Contrast. Please check that all your credentials are correct. If everything is correct, please contact Contrast Support. The error is:",
             e);
       } catch (UnauthorizedException e) {
         throw new MojoExecutionException(
-            "\n\nWe contacted TeamServer successfully but couldn't authorize with the credentials you provided. The error is:",
+            "\n\nWe contacted Contrast successfully but couldn't authorize with the credentials you provided. The error is:",
             e);
       }
 

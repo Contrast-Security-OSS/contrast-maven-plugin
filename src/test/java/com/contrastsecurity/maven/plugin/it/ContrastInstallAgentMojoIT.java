@@ -31,14 +31,13 @@ import org.junit.jupiter.api.Test;
  * guiding example for future functional tests.
  */
 @ContrastAPIStub
-final class InstallAgentContrastAgentMojoIT {
+final class ContrastInstallAgentMojoIT {
 
   @Test
   public void test(final ContrastAPI contrast) throws IOException, VerificationException {
     // GIVEN a spring-boot project that uses the plugin
     final File projectDir =
-        ResourceExtractor.simpleExtractResources(
-            InstallAgentContrastAgentMojoIT.class, "/it/install");
+        ResourceExtractor.simpleExtractResources(ContrastInstallAgentMojoIT.class, "/it/install");
 
     final Verifier verifier = new Verifier(projectDir.getAbsolutePath());
     final String testRepository =
