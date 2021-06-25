@@ -23,86 +23,107 @@ abstract class AbstractContrastMojo extends AbstractMojo {
   @Parameter(defaultValue = "${settings}", readonly = true)
   private Settings settings;
 
-  @Parameter(property = "username", required = true)
-  private String username;
+  /**
+   * User name for communicating with Contrast. Agent users lack permissions required by this
+   * plugin. <a href="https://docs.contrastsecurity.com/en/personal-keys.html">Find your personal
+   * keys</a>
+   */
+  @Parameter(alias = "username", required = true)
+  private String userName;
 
+  /**
+   * API Key for communicating with Contrast. <a
+   * href="https://docs.contrastsecurity.com/en/personal-keys.html">Find your personal keys</a>
+   */
   @Parameter(property = "apiKey", required = true)
   private String apiKey;
 
+  /**
+   * Service Key for communicating with Contrast. <a
+   * href="https://docs.contrastsecurity.com/en/personal-keys.html">Find your personal keys</a>
+   */
   @Parameter(property = "serviceKey", required = true)
   private String serviceKey;
 
-  @Parameter(alias = "apiUrl")
+  /** Contrast API URL */
+  @Parameter(alias = "apiUrl", defaultValue = "https://app.contrastsecurity.com/Contrast")
   private String url;
 
+  /**
+   * Unique ID for the Contrast Organization to which the plugin reports results. <a
+   * href="https://docs.contrastsecurity.com/en/personal-keys.html">Find your Organization ID</a>
+   */
   // TODO[JG] must this be required? If a user is only in one org, we can look it up using the
   // endpoint /ng/profile/organizations
   @Parameter(alias = "orgUuid", required = true)
   private String organizationID;
 
-  // true = Override proxy from settings and use args
-  @Parameter(property = "useProxy")
+  /**
+   * When true, will override Maven's proxy settings with Contrast Maven plugin specific proxy
+   * configuration
+   *
+   * @deprecated in a future release, we will remove the proprietary proxy configuration in favor of
+   *     standard Maven proxy configuration
+   */
+  @Parameter(property = "useProxy", defaultValue = "false")
   private boolean useProxy;
 
+  /**
+   * Proxy host used to communicate to Contrast when {@code useProxy} is true
+   *
+   * @deprecated in a future release, we will remove the proprietary proxy configuration in favor of
+   *     standard Maven proxy configuration
+   */
   @Parameter(property = "proxyHost")
   private String proxyHost;
 
+  /**
+   * Proxy port used to communicate to Contrast when {@code useProxy} is true
+   *
+   * @deprecated in a future release, we will remove the proprietary proxy configuration in favor of
+   *     standard Maven proxy configuration
+   */
   @Parameter(property = "proxyPort")
   private int proxyPort;
 
-  /** @return Contrast username */
-  String getUsername() {
-    return username;
+  String getUserName() {
+    return userName;
   }
 
-  /** seam for testing */
-  void setUsername(final String username) {
-    this.username = username;
+  void setUserName(final String userName) {
+    this.userName = userName;
   }
 
-  /** @return Contrast API Key */
   String getApiKey() {
     return apiKey;
   }
 
-  /** seam for testing */
   void setApiKey(final String apiKey) {
     this.apiKey = apiKey;
   }
 
-  /** @return Contrast Service Key */
   String getServiceKey() {
     return serviceKey;
   }
 
-  /** seam for testing */
   void setServiceKey(final String serviceKey) {
     this.serviceKey = serviceKey;
   }
 
-  /** @return Contrast API URL e.g. https://app.contrastsecurity.com/Contrast/api */
   String getURL() {
     return url;
   }
 
-  /** seam for testing */
   void setURL(final String url) {
     this.url = url;
   }
 
-  /** @return Contrast Organization ID */
   String getOrganizationID() {
     return organizationID;
   }
 
-  /** seam for testing */
   void setOrganizationID(final String organizationID) {
     this.organizationID = organizationID;
-  }
-
-  /** seam for testing */
-  void setSettings(final Settings settings) {
-    this.settings = settings;
   }
 
   /**
@@ -115,12 +136,12 @@ abstract class AbstractContrastMojo extends AbstractMojo {
 
     try {
       if (!StringUtils.isEmpty(url)) {
-        return new ContrastSDK.Builder(username, serviceKey, apiKey)
+        return new ContrastSDK.Builder(userName, serviceKey, apiKey)
             .withApiUrl(url)
             .withProxy(proxy)
             .build();
       } else {
-        return new ContrastSDK.Builder(username, serviceKey, apiKey).withProxy(proxy).build();
+        return new ContrastSDK.Builder(userName, serviceKey, apiKey).withProxy(proxy).build();
       }
     } catch (IllegalArgumentException e) {
       throw new MojoExecutionException(

@@ -2,51 +2,40 @@ package com.contrastsecurity.maven.plugin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.contrastsecurity.maven.plugin.it.stub.ConnectionParameters;
-import com.contrastsecurity.maven.plugin.it.stub.ContrastAPI;
-import com.contrastsecurity.maven.plugin.it.stub.ContrastAPIStub;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.jar.JarOutputStream;
-import java.util.zip.ZipEntry;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.settings.Settings;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import java.net.MalformedURLException;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-@ContrastAPIStub
+/** Unit tests for {@link ContrastScanMojo} */
 final class ContrastScanMojoTest {
 
-  @Test
-  void upload_file_test(final ContrastAPI contrast, @TempDir final Path temp)
-      throws IOException, MojoExecutionException {
-    // GIVEN some temporary jar file
-    final File jar = Files.createTempFile(temp, "my-application", ".jar").toFile();
-    try (JarOutputStream jos = new JarOutputStream(new FileOutputStream(jar))) {
-      jos.putNextEntry(new ZipEntry("Main.class"));
-    }
-    // AND scan mojo is configured to communicate with fake Contrast API
-    final ContrastScanMojo scan = new ContrastScanMojo();
-    final ConnectionParameters connection = contrast.connection();
-    scan.setURL(connection.url());
-    scan.setApiKey(connection.apiKey());
-    scan.setServiceKey(connection.serviceKey());
-    scan.setUsername(connection.username());
-    scan.setOrganizationID(connection.organizationID());
-    scan.setProjectID("31e5c292-72fd-425b-a822-c26d13867304");
-    scan.setSettings(new Settings());
-    scan.initialize();
+  /**
+   * Contrast MOJOs tolerate a variety of HTTP paths in the URL configuration. Regardless of the
+   * path that the user has configured, the {@link ContrastScanMojo#createClickableScanURL(Scan)}
+   * method should generate the same URL
+   */
+  @ValueSource(
+      strings = {
+        "https://app.contrastsecurity.com/",
+        "https://app.contrastsecurity.com/Contrast",
+        "https://app.contrastsecurity.com/Contrast/api",
+        "https://app.contrastsecurity.com/Contrast/api/"
+      })
+  @ParameterizedTest
+  void it_generates_clickable_url(final String url) throws MalformedURLException {
+    // GIVEN a scan mojo with known URL, organization ID, and project ID
+    final ContrastScanMojo mojo = new ContrastScanMojo();
+    mojo.setURL(url);
+    mojo.setOrganizationID("organization-id");
+    mojo.setProjectID("project-id");
 
-    // WHEN upload file as a new code artifact
-    final File file =
-        new File(
-            "./target/test-classes/it/spring-boot/target/spring-test-application-0.0.1-SNAPSHOT.jar");
-    final CodeArtifact artifact = scan.uploadCodeArtifact(file);
+    // WHEN generate URL for the user to click-through to display the scan in their browser
+    final Scan scan = new Scan("scan-id");
+    final String clickableScanURL = mojo.createClickableScanURL(scan).toExternalForm();
 
-    // THEN returns new artifact
-    assertThat(artifact.getID()).isNotNull();
+    // THEN outputs expected URL
+    assertThat(clickableScanURL)
+        .isEqualTo(
+            "https://app.contrastsecurity.com/Contrast/static/ng/index.html#/organization-id/scans/project-id/scans/scan-id");
   }
 }

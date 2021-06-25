@@ -64,7 +64,7 @@
     <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>
       <artifactId>maven-plugin-annotations</artifactId>
-      <version>3.5.1</version>
+      <version>3.6.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -100,6 +100,12 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit-jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
       <version>${junit-jupiter.version}</version>
       <scope>test</scope>
     </dependency>
@@ -366,7 +372,8 @@
             <!-- never use legacy JUnit tests for new integration tests -->
             <classpathDependencyExcludes>
               <classpathDependencyExclude>junit:junit</classpathDependencyExclude>
-              <classpathDependencyExclude>org.junit.vintage:junit-vintage-engine</classpathDependencyExclude>
+              <classpathDependencyExclude>org.junit.vintage:junit-vintage-engine
+              </classpathDependencyExclude>
             </classpathDependencyExcludes>
           </configuration>
         </plugin>
@@ -417,8 +424,14 @@
         </plugin>
       </plugins>
     </pluginManagement>
-
   </build>
+  <reporting>
+    <plugins>
+      <plugin>
+        <artifactId>maven-plugin-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
   <profiles>
     <profile>
       <id>end-to-end-test</id>

@@ -25,6 +25,11 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
+/**
+ * Analyzes the Maven project's artifact with Contrast Scan to provide security insights
+ *
+ * @since 2.13
+ */
 @Mojo(
     name = "scan",
     defaultPhase = LifecyclePhase.INTEGRATION_TEST,
@@ -35,20 +40,31 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
   @Parameter(defaultValue = "${project}", readonly = true)
   private MavenProject project;
 
-  /** TODO[JAVA-3297] replace this with "project" */
+  /**
+   * Contrast Scan project unique ID to which the plugin runs new Scans. This will be replaced
+   * imminently with a project name
+   */
+  // TODO[JAVA-3297] replace this with "project"
   @Parameter(required = true)
   private String projectID;
 
+  /**
+   * File path to the Java artifact to upload for scanning. By default, uses the path to this
+   * module's Maven artifact produced in the {@code package} phase.
+   */
   @Parameter(name = "artifactPath")
   private File artifact;
 
-  // TODO[JG] pick default value
-  @Parameter(name = "label", defaultValue = "maven")
+  /** A label to distinguish this scan from others in your project */
+  @Parameter(name = "label", defaultValue = "${project.version}")
   private String label;
 
   private ContrastSDK contrast;
 
-  /** seam for testing */
+  String getProjectID() {
+    return projectID;
+  }
+
   void setProjectID(final String projectID) {
     this.projectID = projectID;
   }
@@ -62,7 +78,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
           file
               + " does not exist. Make sure to bind the scan goal to a phase that will execute after the artifact to scan has been built");
     }
-    getLog().info("Submitting " + file + " to Contrast Scan");
+    getLog().info("Submitting " + file.getName() + " to Contrast Scan");
     final CodeArtifact artifact;
     try {
       artifact = uploadCodeArtifact(file);
@@ -79,7 +95,6 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
       throw new MojoExecutionException(
           "Failed to start scan for code artifact " + artifact.getID(), e);
     }
-    // https://teamserver-staging.contsec.com/Contrast/static/ng/index.html#/6fb73b19-37de-44e2-8ac8-0a8de2707048/scans/31e5c292-72fd-425b-a822-c26d13867304/scans/465c272c-f5ae-4f2c-8183-b663d0c5aaa4
     final URL clickableScanURL;
     try {
       clickableScanURL = createClickableScanURL(scan);
@@ -110,13 +125,18 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     contrast = connectToContrast();
   }
 
-  private URL createClickableScanURL(final Scan scan) throws MalformedURLException {
-    final String url = getURL();
-    final String base = url.substring(0, url.lastIndexOf("/"));
-    final String scanURL =
+  /**
+   * visible for testing
+   *
+   * @return Contrast browser application URL for users to click-through and see their scan results
+   */
+  URL createClickableScanURL(final Scan scan) throws MalformedURLException {
+    final URL url = new URL(getURL());
+    final String path =
         String.join(
             "/",
-            base,
+            "",
+            "Contrast",
             "static",
             "ng",
             "index.html#",
@@ -125,7 +145,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
             projectID,
             "scans",
             scan.getID());
-    return new URL(scanURL);
+    return new URL(url.getProtocol(), url.getHost(), url.getPort(), path);
   }
 
   /**
@@ -188,8 +208,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     }
     final int rc = connection.getResponseCode();
     if (rc != 201) {
-      // TODO[JG] consider a different exception type
-      throw new IOException("Contrast returned status code " + rc);
+      throw new ContrastException(rc, "Failed to upload code artifact to Contrast Scan");
     }
     // TODO[JG] JAVA-3298 this GSON usage will be encapsulated in the Contrast SDK
     final Gson gson = new Gson();
@@ -202,6 +221,9 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
   }
 
   private Scan startScan(final StartScanRequest request) throws UnauthorizedException, IOException {
+    // TODO[JG] JAVA-3298 unlike requests made with ContrastSDK.makeConnection, requests made with
+    // ContrastSDK.makeRequest must have their path prepended with "/". This complexity will migrate
+    // to the SDK
     final String path =
         String.join(
             "/", "", "sast", "organizations", getOrganizationID(), "projects", projectID, "scans");
