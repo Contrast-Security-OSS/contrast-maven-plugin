@@ -134,6 +134,12 @@
       <version>1.2</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>3.20.2</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -424,6 +430,20 @@
       <build>
         <pluginManagement>
           <plugins>
+            <plugin>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <configuration>
+                <systemProperties>
+                  <contrast.api.url>${env.CONTRAST__API__URL}</contrast.api.url>
+                  <contrast.api.user_name>${env.CONTRAST__API__USER_NAME}</contrast.api.user_name>
+                  <contrast.api.api_key>${env.CONTRAST__API__API_KEY}</contrast.api.api_key>
+                  <contrast.api.service_key>${env.CONTRAST__API__SERVICE_KEY}
+                  </contrast.api.service_key>
+                  <contrast.api.organization>${env.CONTRAST__API__ORGANIZATION}
+                  </contrast.api.organization>
+                </systemProperties>
+              </configuration>
+            </plugin>
             <plugin>
               <artifactId>maven-failsafe-plugin</artifactId>
               <configuration>

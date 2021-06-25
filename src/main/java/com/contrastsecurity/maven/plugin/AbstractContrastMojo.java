@@ -32,13 +32,13 @@ abstract class AbstractContrastMojo extends AbstractMojo {
   @Parameter(property = "serviceKey", required = true)
   private String serviceKey;
 
-  @Parameter(property = "apiUrl")
-  private String apiUrl;
+  @Parameter(alias = "apiUrl")
+  private String url;
 
   // TODO[JG] must this be required? If a user is only in one org, we can look it up using the
   // endpoint /ng/profile/organizations
-  @Parameter(property = "orgUuid", required = true)
-  private String orgUuid;
+  @Parameter(alias = "orgUuid", required = true)
+  private String organizationID;
 
   // true = Override proxy from settings and use args
   @Parameter(property = "useProxy")
@@ -55,9 +55,19 @@ abstract class AbstractContrastMojo extends AbstractMojo {
     return username;
   }
 
+  /** seam for testing */
+  void setUsername(final String username) {
+    this.username = username;
+  }
+
   /** @return Contrast API Key */
   String getApiKey() {
     return apiKey;
+  }
+
+  /** seam for testing */
+  void setApiKey(final String apiKey) {
+    this.apiKey = apiKey;
   }
 
   /** @return Contrast Service Key */
@@ -65,14 +75,34 @@ abstract class AbstractContrastMojo extends AbstractMojo {
     return serviceKey;
   }
 
+  /** seam for testing */
+  void setServiceKey(final String serviceKey) {
+    this.serviceKey = serviceKey;
+  }
+
   /** @return Contrast API URL e.g. https://app.contrastsecurity.com/Contrast/api */
-  String getApiUrl() {
-    return apiUrl;
+  String getURL() {
+    return url;
+  }
+
+  /** seam for testing */
+  void setURL(final String url) {
+    this.url = url;
   }
 
   /** @return Contrast Organization ID */
   String getOrganizationID() {
-    return orgUuid;
+    return organizationID;
+  }
+
+  /** seam for testing */
+  void setOrganizationID(final String organizationID) {
+    this.organizationID = organizationID;
+  }
+
+  /** seam for testing */
+  void setSettings(final Settings settings) {
+    this.settings = settings;
   }
 
   /**
@@ -84,9 +114,9 @@ abstract class AbstractContrastMojo extends AbstractMojo {
     Proxy proxy = getProxy();
 
     try {
-      if (!StringUtils.isEmpty(apiUrl)) {
+      if (!StringUtils.isEmpty(url)) {
         return new ContrastSDK.Builder(username, serviceKey, apiKey)
-            .withApiUrl(apiUrl)
+            .withApiUrl(url)
             .withProxy(proxy)
             .build();
       } else {
@@ -94,8 +124,7 @@ abstract class AbstractContrastMojo extends AbstractMojo {
       }
     } catch (IllegalArgumentException e) {
       throw new MojoExecutionException(
-          "\n\nWe couldn't connect to Contrast at this address [" + apiUrl + "]. The error is: ",
-          e);
+          "\n\nWe couldn't connect to Contrast at this address [" + url + "]. The error is: ", e);
     }
   }
 

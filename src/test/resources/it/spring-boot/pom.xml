@@ -46,6 +46,14 @@
             </goals>
             <phase>pre-integration-test</phase>
           </execution>
+          <execution>
+            <goals>
+              <goal>scan</goal>
+            </goals>
+            <configuration>
+              <projectID>31e5c292-72fd-425b-a822-c26d13867304</projectID>
+            </configuration>
+          </execution>
         </executions>
         <configuration>
           <username>${contrast.api.user_name}</username>
