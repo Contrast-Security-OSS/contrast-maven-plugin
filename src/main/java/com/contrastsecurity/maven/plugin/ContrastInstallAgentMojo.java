@@ -125,7 +125,7 @@ public class ContrastInstallAgentMojo extends AbstractAssessMojo {
       throws MojoExecutionException {
     Applications applications;
     try {
-      final String organizationID = getOrganizationID();
+      final String organizationID = getOrganizationId();
       applications = contrastSDK.getApplication(organizationID, applicationId);
     } catch (Exception e) {
       String logMessage;
@@ -280,7 +280,7 @@ public class ContrastInstallAgentMojo extends AbstractAssessMojo {
     if (StringUtils.isEmpty(jarPath)) {
       getLog().info("No jar path was configured. Downloading the latest contrast.jar...");
 
-      final String organizationID = getOrganizationID();
+      final String organizationID = getOrganizationId();
       try {
         if (profile != null) {
           javaAgent = connection.getAgent(AgentType.JAVA, organizationID, profile);

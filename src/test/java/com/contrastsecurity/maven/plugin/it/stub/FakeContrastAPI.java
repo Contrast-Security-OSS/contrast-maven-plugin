@@ -39,6 +39,9 @@ final class FakeContrastAPI implements ContrastAPI {
     server.createContext(
         "/ng/" + ORGANIZATION_ID + "/agents/default/java",
         authenticatedEndpoint(FakeContrastAPI::downloadAgent));
+    server.createContext(
+        "/sast/organizations/" + ORGANIZATION_ID + "/projects",
+        authenticatedEndpoint(FakeContrastAPI::projects));
 
     server.setExecutor(Executors.newSingleThreadExecutor());
     try {
@@ -155,6 +158,25 @@ final class FakeContrastAPI implements ContrastAPI {
       exchange.sendResponseHeaders(200, jar.length);
       exchange.getResponseBody().write(jar);
     } catch (IOException e) {
+      throw new UncheckedIOException("Failed to send response", e);
+    }
+  }
+
+  private static void projects(final HttpExchange exchange) {
+    final String path = exchange.getRequestURI().getPath();
+    final String json =
+        "{\n"
+            + "    \"id\": \"2f35cd90-b73e-44c5-8bb0-533afdbb07d5\",\n"
+            + "    \"organizationId\": \"d89d9103-89c7-4a74-968e-a8b93ea8f7bb\",\n"
+            + "    \"projectId\": \"02faf17f-0db6-4d0f-b6dc-0d9c00473ff2\",\n"
+            + "    \"filename\": \"spring-async.war\",\n"
+            + "    \"createdTime\": \"2021-06-08T15:46:03.748+00:00\"\n"
+            + "}";
+    final byte[] body = json.getBytes(StandardCharsets.UTF_8);
+    try {
+      exchange.sendResponseHeaders(201, body.length);
+      exchange.getResponseBody().write(body);
+    } catch (final IOException e) {
       throw new UncheckedIOException("Failed to send response", e);
     }
   }

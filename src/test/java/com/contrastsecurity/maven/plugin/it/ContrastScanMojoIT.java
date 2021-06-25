@@ -3,6 +3,7 @@ package com.contrastsecurity.maven.plugin.it;
 import com.contrastsecurity.maven.plugin.it.stub.ContrastAPI;
 import com.contrastsecurity.maven.plugin.it.stub.ContrastAPIStub;
 import java.io.IOException;
+import java.util.Arrays;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ final class ContrastScanMojoIT {
     final Verifier verifier = Verifiers.springBoot(contrast.connection());
 
     // WHEN execute the "verify" goal
+    verifier.setCliOptions(Arrays.asList("--activate-profiles", "scan"));
     verifier.executeGoal("verify");
 
     // THEN plugin submits the spring-boot application artifact for scanning

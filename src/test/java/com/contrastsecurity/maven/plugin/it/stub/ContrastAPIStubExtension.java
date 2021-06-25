@@ -75,7 +75,7 @@ public final class ContrastAPIStubExtension
     final Optional<String> serviceKey =
         context.getConfigurationParameter("contrast.api.service_key");
     final Optional<String> organization =
-        context.getConfigurationParameter("contrast.api.organization");
+        context.getConfigurationParameter("contrast.api.organization_id");
 
     // if all connection parameters are present, then use end-to-end testing mode
     if (url.isPresent()

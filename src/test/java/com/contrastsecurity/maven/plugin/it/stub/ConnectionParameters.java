@@ -41,7 +41,7 @@ public abstract class ConnectionParameters {
     properties.setProperty("contrast.api.user_name", username());
     properties.setProperty("contrast.api.api_key", apiKey());
     properties.setProperty("contrast.api.service_key", serviceKey());
-    properties.setProperty("contrast.api.organization", organizationID());
+    properties.setProperty("contrast.api.organization_id", organizationID());
     return properties;
   }
 

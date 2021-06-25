@@ -46,18 +46,10 @@
             </goals>
             <phase>pre-integration-test</phase>
           </execution>
-          <execution>
-            <goals>
-              <goal>scan</goal>
-            </goals>
-            <configuration>
-              <projectID>31e5c292-72fd-425b-a822-c26d13867304</projectID>
-            </configuration>
-          </execution>
         </executions>
         <configuration>
           <username>${contrast.api.user_name}</username>
-          <orgUuid>${contrast.api.organization}</orgUuid>
+          <organizationId>${contrast.api.organization_id}</organizationId>
           <apiKey>${contrast.api.api_key}</apiKey>
           <serviceKey>${contrast.api.service_key}</serviceKey>
           <apiUrl>${contrast.api.url}</apiUrl>
@@ -67,4 +59,28 @@
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>scan</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>@project.groupId@</groupId>
+            <artifactId>@project.artifactId@</artifactId>
+            <version>@project.version@</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>scan</goal>
+                </goals>
+                <configuration>
+                  <projectID>31e5c292-72fd-425b-a822-c26d13867304</projectID>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

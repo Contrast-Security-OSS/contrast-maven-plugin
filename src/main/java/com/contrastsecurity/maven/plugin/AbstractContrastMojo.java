@@ -56,7 +56,7 @@ abstract class AbstractContrastMojo extends AbstractMojo {
   // TODO[JG] must this be required? If a user is only in one org, we can look it up using the
   // endpoint /ng/profile/organizations
   @Parameter(alias = "orgUuid", required = true)
-  private String organizationID;
+  private String organizationId;
 
   /**
    * When true, will override Maven's proxy settings with Contrast Maven plugin specific proxy
@@ -118,12 +118,12 @@ abstract class AbstractContrastMojo extends AbstractMojo {
     this.url = url;
   }
 
-  String getOrganizationID() {
-    return organizationID;
+  String getOrganizationId() {
+    return organizationId;
   }
 
-  void setOrganizationID(final String organizationID) {
-    this.organizationID = organizationID;
+  void setOrganizationId(final String organizationId) {
+    this.organizationId = organizationId;
   }
 
   /**

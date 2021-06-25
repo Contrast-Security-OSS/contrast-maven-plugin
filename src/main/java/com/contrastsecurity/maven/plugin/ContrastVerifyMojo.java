@@ -68,7 +68,7 @@ public class ContrastVerifyMojo extends AbstractAssessMojo {
     }
 
     try {
-      final String organizationID = getOrganizationID();
+      final String organizationID = getOrganizationId();
       traces = contrast.getTraces(organizationID, applicationId, form);
     } catch (IOException e) {
       throw new MojoExecutionException("Unable to retrieve the traces.", e);
@@ -118,7 +118,7 @@ public class ContrastVerifyMojo extends AbstractAssessMojo {
     Servers servers;
     List<Long> serverIds;
 
-    final String organizationID = getOrganizationID();
+    final String organizationID = getOrganizationId();
     try {
       serverFilterForm.setQ(URLEncoder.encode(getServerName(), "UTF-8"));
       servers = sdk.getServersWithFilter(organizationID, serverFilterForm);
@@ -156,7 +156,7 @@ public class ContrastVerifyMojo extends AbstractAssessMojo {
 
     Applications applications;
 
-    final String organizationID = getOrganizationID();
+    final String organizationID = getOrganizationId();
     try {
       applications = sdk.getApplications(organizationID);
     } catch (Exception e) {

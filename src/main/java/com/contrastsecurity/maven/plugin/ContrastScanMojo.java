@@ -140,7 +140,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
             "static",
             "ng",
             "index.html#",
-            getOrganizationID(),
+            getOrganizationId(),
             "scans",
             projectID,
             "scans",
@@ -163,7 +163,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
             "api",
             "sast",
             "organizations",
-            getOrganizationID(),
+            getOrganizationId(),
             "projects",
             projectID,
             "code-artifacts");
@@ -226,7 +226,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     // to the SDK
     final String path =
         String.join(
-            "/", "", "sast", "organizations", getOrganizationID(), "projects", projectID, "scans");
+            "/", "", "sast", "organizations", getOrganizationId(), "projects", projectID, "scans");
     // TODO[JG] JAVA-3298 this GSON usage will be encapsulated in the Contrast SDK
     final Gson gson = new Gson();
     final String json = gson.toJson(request);
