@@ -40,8 +40,15 @@ final class FakeContrastAPI implements ContrastAPI {
         "/ng/" + ORGANIZATION_ID + "/agents/default/java",
         authenticatedEndpoint(FakeContrastAPI::downloadAgent));
     server.createContext(
-        "/sast/organizations/" + ORGANIZATION_ID + "/projects",
+        "/api/sast/organizations/" + ORGANIZATION_ID + "/projects",
         authenticatedEndpoint(FakeContrastAPI::projects));
+    server.createContext(
+        "/api/sast/organizations/"
+            + ORGANIZATION_ID
+            + "/projects/"
+            + PROJECT_ID
+            + "/code-artifacts",
+        authenticatedEndpoint(FakeContrastAPI::uploadCodeArtifact));
 
     server.setExecutor(Executors.newSingleThreadExecutor());
     try {
@@ -163,7 +170,6 @@ final class FakeContrastAPI implements ContrastAPI {
   }
 
   private static void projects(final HttpExchange exchange) {
-    final String path = exchange.getRequestURI().getPath();
     final String json =
         "{\n"
             + "    \"id\": \"2f35cd90-b73e-44c5-8bb0-533afdbb07d5\",\n"
@@ -181,10 +187,43 @@ final class FakeContrastAPI implements ContrastAPI {
     }
   }
 
+  private static void uploadCodeArtifact(final HttpExchange exchange) {
+    final byte[] buffer = new byte[4096];
+    try (InputStream is = exchange.getRequestBody()) {
+      //noinspection StatementWithEmptyBody
+      while (is.read(buffer) >= 0) {}
+    } catch (final IOException e) {
+      throw new UncheckedIOException("Failed to read request", e);
+    }
+    final String json =
+        "{\n"
+            + "    \"id\": \""
+            + CODE_ARTIFACT_ID
+            + "\",\n"
+            + "    \"organizationId\": \""
+            + ORGANIZATION_ID
+            + "\",\n"
+            + "    \"projectId\": \""
+            + PROJECT_ID
+            + "\",\n"
+            + "    \"filename\": \"spring-async.war\",\n"
+            + "    \"createdTime\": \"2021-06-08T15:46:03.748+00:00\"\n"
+            + "}";
+    final byte[] body = json.getBytes(StandardCharsets.UTF_8);
+    try {
+      exchange.sendResponseHeaders(201, body.length);
+      exchange.getResponseBody().write(body);
+    } catch (final IOException e) {
+      throw new UncheckedIOException("Failed to send response", e);
+    }
+  }
+
   private static final String USER_NAME = "test-user";
   private static final String API_KEY = "test-api-key";
   private static final String SERVICE_KEY = "test-service-key";
   private static final String ORGANIZATION_ID = "organization-id";
+  private static final String PROJECT_ID = "project-id";
+  private static final String CODE_ARTIFACT_ID = "code-artifact-id";
   public static final String AUTHORIZATION =
       Base64.getEncoder()
           .encodeToString((USER_NAME + ":" + SERVICE_KEY).getBytes(StandardCharsets.US_ASCII));

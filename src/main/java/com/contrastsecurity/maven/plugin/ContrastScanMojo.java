@@ -167,8 +167,9 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
             "projects",
             projectID,
             "code-artifacts");
-    final String boundary = "---ContrastFormBoundary" + ThreadLocalRandom.current().nextLong();
+    final String boundary = "ContrastFormBoundary" + ThreadLocalRandom.current().nextLong();
     final HttpURLConnection connection = contrast.makeConnection(url, "POST");
+    connection.setUseCaches(false);
     connection.setDoOutput(true);
     connection.setDoInput(true);
     connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
@@ -176,35 +177,30 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
         PrintWriter writer =
             new PrintWriter(new OutputStreamWriter(os, StandardCharsets.US_ASCII), false)) {
       writer
-          .append("---")
+          .append("--")
           .append(boundary)
           .append(LINE_FEED)
           .append("Content-Disposition: form-data; name=\"filename\"; filename=\"")
           .append(file.getName())
-          .append("\"")
+          .append('"')
           .append(LINE_FEED)
           .append("Content-Type: ")
           .append(HttpURLConnection.guessContentTypeFromName(file.getName()))
           .append(LINE_FEED)
+          .append("Content-Transfer-Encoding: binary")
+          .append(LINE_FEED)
           .append(LINE_FEED)
           .flush();
       try (BufferedInputStream is = new BufferedInputStream(new FileInputStream(file))) {
-        final byte[] buffer = new byte[4096];
+        final byte[] buffer = new byte[2048];
         int read;
         while ((read = is.read(buffer)) != -1) {
           os.write(buffer, 0, read);
         }
+        os.flush();
       }
-      writer
-          .append("---")
-          .append(boundary)
-          .append("--")
-          .append(LINE_FEED)
-          .append(LINE_FEED)
-          .append("--")
-          .append(boundary)
-          .append("--")
-          .flush();
+      writer.flush();
+      writer.append("--").append(boundary).append("--").append(LINE_FEED).flush();
     }
     final int rc = connection.getResponseCode();
     if (rc != 201) {

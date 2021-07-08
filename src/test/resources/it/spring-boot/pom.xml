@@ -74,7 +74,7 @@
                   <goal>scan</goal>
                 </goals>
                 <configuration>
-                  <projectID>31e5c292-72fd-425b-a822-c26d13867304</projectID>
+                  <projectID>project-id</projectID>
                 </configuration>
               </execution>
             </executions>
