@@ -78,7 +78,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
               + " does not exist. Make sure to bind the scan goal to a phase that will execute after the artifact to scan has been built");
     }
     final NewCodeArtifactRequest codeArtifactRequest = NewCodeArtifactRequest.of(projectId, file);
-    getLog().info("Submitting " + file.getFileName() + " to Contrast Scan");
+    getLog().info("Uploading " + file.getFileName() + " to Contrast Scan");
 
     // create new code artifact
     final CodeArtifact artifact;
@@ -116,14 +116,9 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
           "Error building clickable Scan URL. Please contact support@contrastsecurity.com for help",
           e);
     }
+    getLog().info("Starting scan with label " + label);
     getLog()
-        .info(
-            "Scanning "
-                + file.getFileName()
-                + " with label "
-                + label
-                + ", results "
-                + clickableScanURL.toExternalForm());
+        .info("Contrast Scan results will be available at " + clickableScanURL.toExternalForm());
   }
 
   /**

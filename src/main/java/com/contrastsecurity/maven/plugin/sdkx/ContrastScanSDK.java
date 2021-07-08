@@ -50,6 +50,7 @@ public final class ContrastScanSDK {
    * @param request parameters for creating the new code artifact
    * @return new {@link CodeArtifact} from Contrast
    * @throws IOException when an IO error occurs while uploading the file
+   * @throws UnauthorizedException when Contrast rejects this request as unauthorized
    */
   public CodeArtifact createCodeArtifact(
       final String organizationId, final NewCodeArtifactRequest request)
