@@ -4,11 +4,9 @@ import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.http.HttpMethod;
 import com.contrastsecurity.http.MediaType;
 import com.contrastsecurity.sdk.ContrastSDK;
-import com.contrastsecurity.utils.ContrastSDKUtils;
 import com.google.gson.Gson;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -16,13 +14,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.concurrent.ThreadLocalRandom;
@@ -154,42 +146,6 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
             "scans",
             scan.getID());
     return new URL(url.getProtocol(), url.getHost(), url.getPort(), path);
-  }
-
-  @SuppressWarnings("Since15")
-  CodeArtifact uploadCodeArtifactJDK11(File file) throws IOException {
-    final HttpClient http = HttpClient.newHttpClient();
-    final String url =
-        String.join(
-            "/",
-            getURL(),
-            "api",
-            "sast",
-            "organizations",
-            getOrganizationId(),
-            "projects",
-            projectID,
-            "code-artifacts");
-    final HttpRequest request =
-        HttpRequest.newBuilder()
-            .uri(URI.create(url))
-            .header("API-Key", getApiKey())
-            .header(
-                "Authorization",
-                ContrastSDKUtils.makeAuthorizationToken(getUserName(), getServiceKey()))
-            .POST(BodyPublishers.ofFile(file.toPath()))
-            .build();
-    final HttpResponse<InputStream> response;
-    try {
-      response = http.send(request, BodyHandlers.ofInputStream());
-    } catch (final InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw new IOException("Interrupted while receiving data", e);
-    }
-    final Gson gson = new Gson();
-    try (InputStreamReader reader = new InputStreamReader(response.body())) {
-      return gson.fromJson(reader, CodeArtifact.class);
-    }
   }
 
   /**
