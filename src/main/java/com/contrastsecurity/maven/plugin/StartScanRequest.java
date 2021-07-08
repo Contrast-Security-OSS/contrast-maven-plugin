@@ -1,23 +1,21 @@
 package com.contrastsecurity.maven.plugin;
 
-import com.google.gson.annotations.SerializedName;
 import java.util.Objects;
 
 /** TODO[JG] JAVA-3298 move this to the Contrast Java SDK and flesh it out */
 public final class StartScanRequest {
 
-  @SerializedName("codeArtifactId")
-  private final String codeArtifactID;
+  private final String codeArtifactId;
 
   private final String label;
 
-  public StartScanRequest(final String codeArtifactID, final String label) {
-    this.codeArtifactID = Objects.requireNonNull(codeArtifactID);
+  public StartScanRequest(final String codeArtifactId, final String label) {
+    this.codeArtifactId = Objects.requireNonNull(codeArtifactId);
     this.label = Objects.requireNonNull(label);
   }
 
-  public String getCodeArtifactID() {
-    return codeArtifactID;
+  public String getCodeArtifactId() {
+    return codeArtifactId;
   }
 
   public String getLabel() {

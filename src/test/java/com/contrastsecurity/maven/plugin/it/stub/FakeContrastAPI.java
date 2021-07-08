@@ -35,9 +35,8 @@ final class FakeContrastAPI implements ContrastAPI {
     final InetSocketAddress address = new InetSocketAddress("localhost", 0);
 
     // register stub handlers
-    server.createContext("/", status(204));
     server.createContext(
-        "/ng/" + ORGANIZATION_ID + "/agents/default/java",
+        "/api/ng/" + ORGANIZATION_ID + "/agents/default/java",
         authenticatedEndpoint(FakeContrastAPI::downloadAgent));
     server.createContext(
         "/api/sast/organizations/" + ORGANIZATION_ID + "/projects",
@@ -72,7 +71,7 @@ final class FakeContrastAPI implements ContrastAPI {
       throw new IllegalStateException("server not yet initialized, must call start() first");
     }
     final InetSocketAddress address = server.getAddress();
-    final String url = "http://" + address.getHostName() + ":" + address.getPort();
+    final String url = "http://" + address.getHostName() + ":" + address.getPort() + "/api";
     return ConnectionParameters.builder()
         .url(url)
         .username(USER_NAME)
@@ -148,6 +147,7 @@ final class FakeContrastAPI implements ContrastAPI {
   }
 
   private static void downloadAgent(final HttpExchange exchange) {
+    discardRequest(exchange);
     // read the contrast-agent.jar into memory, because we need to know the size of the content that
     // we'll send over the wire since we are not using chunked responses with this simple JDK HTTP
     // server

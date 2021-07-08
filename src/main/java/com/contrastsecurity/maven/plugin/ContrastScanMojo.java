@@ -4,6 +4,7 @@ import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.http.HttpMethod;
 import com.contrastsecurity.http.MediaType;
 import com.contrastsecurity.sdk.ContrastSDK;
+import com.contrastsecurity.utils.ContrastSDKUtils;
 import com.google.gson.Gson;
 import java.io.File;
 import java.io.IOException;
@@ -45,7 +46,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
    */
   // TODO[JAVA-3297] replace this with "project"
   @Parameter(required = true)
-  private String projectID;
+  private String projectId;
 
   /**
    * File path to the Java artifact to upload for scanning. By default, uses the path to this
@@ -60,12 +61,12 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
 
   private ContrastSDK contrast;
 
-  String getProjectID() {
-    return projectID;
+  String getProjectId() {
+    return projectId;
   }
 
-  void setProjectID(final String projectID) {
-    this.projectID = projectID;
+  void setProjectId(final String projectId) {
+    this.projectId = projectId;
   }
 
   @Override
@@ -85,7 +86,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     } catch (final IOException e) {
       throw new MojoExecutionException("Failed to upload artifact to Contrast Scan", e);
     }
-    final StartScanRequest request = new StartScanRequest(artifact.getID(), label);
+    final StartScanRequest request = new StartScanRequest(artifact.getId(), label);
     final Scan scan;
     try {
       scan = startScan(request);
@@ -93,7 +94,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
       throw new MojoExecutionException("Failed to authenticate to Contrast", e);
     } catch (final IOException e) {
       throw new MojoExecutionException(
-          "Failed to start scan for code artifact " + artifact.getID(), e);
+          "Failed to start scan for code artifact " + artifact.getId(), e);
     }
     final URL clickableScanURL;
     try {
@@ -142,9 +143,9 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
             "index.html#",
             getOrganizationId(),
             "scans",
-            projectID,
+            projectId,
             "scans",
-            scan.getID());
+            scan.getId());
     return new URL(url.getProtocol(), url.getHost(), url.getPort(), path);
   }
 
@@ -159,13 +160,12 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     final String url =
         String.join(
             "/",
-            getURL(),
-            "api",
+            ContrastSDKUtils.ensureApi(getURL()),
             "sast",
             "organizations",
             getOrganizationId(),
             "projects",
-            projectID,
+            projectId,
             "code-artifacts");
     final String boundary = "ContrastFormBoundary" + ThreadLocalRandom.current().nextLong();
     final String header =
@@ -185,8 +185,6 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     final long contentLength = header.length() + file.length() + footer.length();
 
     final HttpURLConnection connection = contrast.makeConnection(url, "POST");
-    connection.setConnectTimeout(10000);
-    connection.setReadTimeout(10000);
     connection.setDoOutput(true);
     connection.setDoInput(true);
     connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
@@ -216,15 +214,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     // to the SDK
     final String path =
         String.join(
-            "/",
-            "",
-            "api",
-            "sast",
-            "organizations",
-            getOrganizationId(),
-            "projects",
-            projectID,
-            "scans");
+            "/", "", "sast", "organizations", getOrganizationId(), "projects", projectId, "scans");
     // TODO[JG] JAVA-3298 this GSON usage will be encapsulated in the Contrast SDK
     final Gson gson = new Gson();
     final String json = gson.toJson(request);

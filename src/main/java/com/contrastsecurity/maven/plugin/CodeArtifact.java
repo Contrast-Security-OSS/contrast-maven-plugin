@@ -5,7 +5,7 @@ public class CodeArtifact {
 
   private String id;
 
-  public String getID() {
+  public String getId() {
     return id;
   }
 }

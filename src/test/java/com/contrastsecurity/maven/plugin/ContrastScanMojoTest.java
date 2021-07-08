@@ -27,7 +27,7 @@ final class ContrastScanMojoTest {
     final ContrastScanMojo mojo = new ContrastScanMojo();
     mojo.setURL(url);
     mojo.setOrganizationId("organization-id");
-    mojo.setProjectID("project-id");
+    mojo.setProjectId("project-id");
 
     // WHEN generate URL for the user to click-through to display the scan in their browser
     final Scan scan = new Scan("scan-id");

@@ -11,7 +11,7 @@ public final class Scan {
     this.id = Objects.requireNonNull(id);
   }
 
-  public String getID() {
+  public String getId() {
     return id;
   }
 }
