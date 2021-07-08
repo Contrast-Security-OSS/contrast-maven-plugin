@@ -4,11 +4,11 @@ import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.http.HttpMethod;
 import com.contrastsecurity.http.MediaType;
 import com.contrastsecurity.sdk.ContrastSDK;
+import com.contrastsecurity.utils.ContrastSDKUtils;
 import com.google.gson.Gson;
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -16,8 +16,15 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpRequest.BodyPublishers;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.concurrent.ThreadLocalRandom;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -80,6 +87,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     }
     getLog().info("Submitting " + file.getName() + " to Contrast Scan");
     final CodeArtifact artifact;
+
     try {
       artifact = uploadCodeArtifact(file);
     } catch (final IOException e) {
@@ -148,6 +156,42 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     return new URL(url.getProtocol(), url.getHost(), url.getPort(), path);
   }
 
+  @SuppressWarnings("Since15")
+  CodeArtifact uploadCodeArtifactJDK11(File file) throws IOException {
+    final HttpClient http = HttpClient.newHttpClient();
+    final String url =
+        String.join(
+            "/",
+            getURL(),
+            "api",
+            "sast",
+            "organizations",
+            getOrganizationId(),
+            "projects",
+            projectID,
+            "code-artifacts");
+    final HttpRequest request =
+        HttpRequest.newBuilder()
+            .uri(URI.create(url))
+            .header("API-Key", getApiKey())
+            .header(
+                "Authorization",
+                ContrastSDKUtils.makeAuthorizationToken(getUserName(), getServiceKey()))
+            .POST(BodyPublishers.ofFile(file.toPath()))
+            .build();
+    final HttpResponse<InputStream> response;
+    try {
+      response = http.send(request, BodyHandlers.ofInputStream());
+    } catch (final InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new IOException("Interrupted while receiving data", e);
+    }
+    final Gson gson = new Gson();
+    try (InputStreamReader reader = new InputStreamReader(response.body())) {
+      return gson.fromJson(reader, CodeArtifact.class);
+    }
+  }
+
   /**
    * visible for testing
    *
@@ -168,39 +212,36 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
             projectID,
             "code-artifacts");
     final String boundary = "ContrastFormBoundary" + ThreadLocalRandom.current().nextLong();
+    final String header =
+        "--"
+            + boundary
+            + LINE_FEED
+            + "Content-Disposition: form-data; name=\"filename\"; filename=\""
+            + file.getName()
+            + '"'
+            + LINE_FEED
+            + "Content-Type: application/java-archive"
+            + LINE_FEED
+            + "Content-Transfer-Encoding: binary"
+            + LINE_FEED
+            + LINE_FEED;
+    final String footer = LINE_FEED + "--" + boundary + "--" + LINE_FEED;
+    final long contentLength = header.length() + file.length() + footer.length();
+
     final HttpURLConnection connection = contrast.makeConnection(url, "POST");
-    connection.setUseCaches(false);
+    connection.setConnectTimeout(10000);
+    connection.setReadTimeout(10000);
     connection.setDoOutput(true);
     connection.setDoInput(true);
     connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+    connection.setFixedLengthStreamingMode(contentLength);
     try (OutputStream os = connection.getOutputStream();
         PrintWriter writer =
-            new PrintWriter(new OutputStreamWriter(os, StandardCharsets.US_ASCII), false)) {
-      writer
-          .append("--")
-          .append(boundary)
-          .append(LINE_FEED)
-          .append("Content-Disposition: form-data; name=\"filename\"; filename=\"")
-          .append(file.getName())
-          .append('"')
-          .append(LINE_FEED)
-          .append("Content-Type: ")
-          .append(HttpURLConnection.guessContentTypeFromName(file.getName()))
-          .append(LINE_FEED)
-          .append("Content-Transfer-Encoding: binary")
-          .append(LINE_FEED)
-          .append(LINE_FEED)
-          .flush();
-      try (BufferedInputStream is = new BufferedInputStream(new FileInputStream(file))) {
-        final byte[] buffer = new byte[2048];
-        int read;
-        while ((read = is.read(buffer)) != -1) {
-          os.write(buffer, 0, read);
-        }
-        os.flush();
-      }
-      writer.flush();
-      writer.append("--").append(boundary).append("--").append(LINE_FEED).flush();
+            new PrintWriter(new OutputStreamWriter(os, StandardCharsets.US_ASCII), true)) {
+      writer.append(header).flush();
+      Files.copy(file.toPath(), os);
+      os.flush();
+      writer.append(footer).flush();
     }
     final int rc = connection.getResponseCode();
     if (rc != 201) {
@@ -208,12 +249,9 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     }
     // TODO[JG] JAVA-3298 this GSON usage will be encapsulated in the Contrast SDK
     final Gson gson = new Gson();
-    final CodeArtifact artifact;
     try (Reader reader = new InputStreamReader(connection.getInputStream())) {
-      artifact = gson.fromJson(reader, CodeArtifact.class);
+      return gson.fromJson(reader, CodeArtifact.class);
     }
-    connection.disconnect();
-    return artifact;
   }
 
   private Scan startScan(final StartScanRequest request) throws UnauthorizedException, IOException {
@@ -222,7 +260,15 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     // to the SDK
     final String path =
         String.join(
-            "/", "", "sast", "organizations", getOrganizationId(), "projects", projectID, "scans");
+            "/",
+            "",
+            "api",
+            "sast",
+            "organizations",
+            getOrganizationId(),
+            "projects",
+            projectID,
+            "scans");
     // TODO[JG] JAVA-3298 this GSON usage will be encapsulated in the Contrast SDK
     final Gson gson = new Gson();
     final String json = gson.toJson(request);

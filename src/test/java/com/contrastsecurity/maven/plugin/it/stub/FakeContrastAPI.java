@@ -49,6 +49,9 @@ final class FakeContrastAPI implements ContrastAPI {
             + PROJECT_ID
             + "/code-artifacts",
         authenticatedEndpoint(FakeContrastAPI::uploadCodeArtifact));
+    server.createContext(
+        "/api/sast/organizations/" + ORGANIZATION_ID + "/projects/" + PROJECT_ID + "/scans",
+        authenticatedEndpoint(FakeContrastAPI::startScan));
 
     server.setExecutor(Executors.newSingleThreadExecutor());
     try {
@@ -89,6 +92,7 @@ final class FakeContrastAPI implements ContrastAPI {
 
   private static HttpHandler status(final int status) {
     return exchange -> {
+      discardRequest(exchange);
       // ideally we would use response length -1 according to the HttpServer JavaDoc, but it's not
       // working as expected
       exchange.sendResponseHeaders(status, 0);
@@ -167,6 +171,7 @@ final class FakeContrastAPI implements ContrastAPI {
     } catch (IOException e) {
       throw new UncheckedIOException("Failed to send response", e);
     }
+    exchange.close();
   }
 
   private static void projects(final HttpExchange exchange) {
@@ -185,16 +190,11 @@ final class FakeContrastAPI implements ContrastAPI {
     } catch (final IOException e) {
       throw new UncheckedIOException("Failed to send response", e);
     }
+    exchange.close();
   }
 
   private static void uploadCodeArtifact(final HttpExchange exchange) {
-    final byte[] buffer = new byte[4096];
-    try (InputStream is = exchange.getRequestBody()) {
-      //noinspection StatementWithEmptyBody
-      while (is.read(buffer) >= 0) {}
-    } catch (final IOException e) {
-      throw new UncheckedIOException("Failed to read request", e);
-    }
+    discardRequest(exchange);
     final String json =
         "{\n"
             + "    \"id\": \""
@@ -215,6 +215,30 @@ final class FakeContrastAPI implements ContrastAPI {
       exchange.getResponseBody().write(body);
     } catch (final IOException e) {
       throw new UncheckedIOException("Failed to send response", e);
+    }
+    exchange.close();
+  }
+
+  private static void startScan(final HttpExchange exchange) {
+    discardRequest(exchange);
+    final String json = "{\"id\": \"scan-id\"}";
+    final byte[] body = json.getBytes(StandardCharsets.UTF_8);
+    try {
+      exchange.sendResponseHeaders(201, body.length);
+      exchange.getResponseBody().write(body);
+    } catch (final IOException e) {
+      throw new UncheckedIOException("Failed to send response", e);
+    }
+    exchange.close();
+  }
+
+  private static void discardRequest(final HttpExchange exchange) {
+    final byte[] buffer = new byte[4096];
+    try (InputStream is = exchange.getRequestBody()) {
+      //noinspection StatementWithEmptyBody
+      while (is.read(buffer) >= 0) {}
+    } catch (final IOException e) {
+      throw new UncheckedIOException("Failed to read request", e);
     }
   }
 
