@@ -2,6 +2,7 @@ package com.contrastsecurity.maven.plugin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.contrastsecurity.maven.plugin.sdkx.Scan;
 import java.net.MalformedURLException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -30,8 +31,7 @@ final class ContrastScanMojoTest {
     mojo.setProjectId("project-id");
 
     // WHEN generate URL for the user to click-through to display the scan in their browser
-    final Scan scan = new Scan("scan-id");
-    final String clickableScanURL = mojo.createClickableScanURL(scan).toExternalForm();
+    final String clickableScanURL = mojo.createClickableScanURL("scan-id").toExternalForm();
 
     // THEN outputs expected URL
     assertThat(clickableScanURL)

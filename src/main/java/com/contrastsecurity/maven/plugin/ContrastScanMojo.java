@@ -1,24 +1,17 @@
 package com.contrastsecurity.maven.plugin;
 
 import com.contrastsecurity.exceptions.UnauthorizedException;
-import com.contrastsecurity.http.HttpMethod;
-import com.contrastsecurity.http.MediaType;
+import com.contrastsecurity.maven.plugin.sdkx.CodeArtifact;
+import com.contrastsecurity.maven.plugin.sdkx.ContrastScanSDK;
+import com.contrastsecurity.maven.plugin.sdkx.NewCodeArtifactRequest;
+import com.contrastsecurity.maven.plugin.sdkx.Scan;
+import com.contrastsecurity.maven.plugin.sdkx.StartScanRequest;
 import com.contrastsecurity.sdk.ContrastSDK;
-import com.contrastsecurity.utils.ContrastSDKUtils;
-import com.google.gson.Gson;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.concurrent.ThreadLocalRandom;
+import java.nio.file.Path;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -53,7 +46,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
    * module's Maven artifact produced in the {@code package} phase.
    */
   @Parameter(name = "artifactPath")
-  private File artifact;
+  private Path artifact;
 
   /** A label to distinguish this scan from others in your project */
   @Parameter(name = "label", defaultValue = "${project.version}")
@@ -61,50 +54,99 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
 
   private ContrastSDK contrast;
 
+  /** visible for testing */
   String getProjectId() {
     return projectId;
   }
 
+  /** visible for testing */
   void setProjectId(final String projectId) {
     this.projectId = projectId;
   }
 
   @Override
   public void execute() throws MojoExecutionException {
+    // initialize plugin
     initialize();
-    final File file = artifact == null ? project.getArtifact().getFile() : artifact;
-    if (!file.exists()) {
+    final ContrastScanSDK contrastScan = new ContrastScanSDK(contrast, getURL());
+
+    // check that file exists
+    final Path file = artifact == null ? project.getArtifact().getFile().toPath() : artifact;
+    if (!Files.exists(file)) {
       throw new MojoExecutionException(
           file
               + " does not exist. Make sure to bind the scan goal to a phase that will execute after the artifact to scan has been built");
     }
-    getLog().info("Submitting " + file.getName() + " to Contrast Scan");
-    final CodeArtifact artifact;
+    final NewCodeArtifactRequest codeArtifactRequest = NewCodeArtifactRequest.of(projectId, file);
+    getLog().info("Submitting " + file.getFileName() + " to Contrast Scan");
 
+    // create new code artifact
+    final CodeArtifact artifact;
     try {
-      artifact = uploadCodeArtifact(file);
+      artifact = contrastScan.createCodeArtifact(getOrganizationId(), codeArtifactRequest);
+    } catch (final UnauthorizedException e) {
+      throw new MojoExecutionException("Failed to authenticate to Contrast", e);
     } catch (final IOException e) {
       throw new MojoExecutionException("Failed to upload artifact to Contrast Scan", e);
     }
-    final StartScanRequest request = new StartScanRequest(artifact.getId(), label);
+
+    // start scan for new code artifact
+    final StartScanRequest request =
+        StartScanRequest.builder()
+            .projectId(projectId)
+            .codeArtifactId(artifact.getId())
+            .label(label)
+            .build();
     final Scan scan;
     try {
-      scan = startScan(request);
+      scan = contrastScan.startScan(getOrganizationId(), request);
     } catch (final UnauthorizedException e) {
       throw new MojoExecutionException("Failed to authenticate to Contrast", e);
     } catch (final IOException e) {
       throw new MojoExecutionException(
           "Failed to start scan for code artifact " + artifact.getId(), e);
     }
+
+    // show link in build log
     final URL clickableScanURL;
     try {
-      clickableScanURL = createClickableScanURL(scan);
+      clickableScanURL = createClickableScanURL(scan.getId());
     } catch (final MalformedURLException e) {
       throw new MojoExecutionException(
-          "Error building clickable Scan URL. Please file an issue to support@contrastsecurity.com",
+          "Error building clickable Scan URL. Please contact support@contrastsecurity.com for help",
           e);
     }
-    getLog().info("Scanning " + file.getName() + ", results " + clickableScanURL.toExternalForm());
+    getLog()
+        .info(
+            "Scanning "
+                + file.getFileName()
+                + " with label "
+                + label
+                + ", results "
+                + clickableScanURL.toExternalForm());
+  }
+
+  /**
+   * visible for testing
+   *
+   * @return Contrast browser application URL for users to click-through and see their scan results
+   */
+  URL createClickableScanURL(final String scanId) throws MalformedURLException {
+    final URL url = new URL(getURL());
+    final String path =
+        String.join(
+            "/",
+            "",
+            "Contrast",
+            "static",
+            "ng",
+            "index.html#",
+            getOrganizationId(),
+            "scans",
+            projectId,
+            "scans",
+            scanId);
+    return new URL(url.getProtocol(), url.getHost(), url.getPort(), path);
   }
 
   /**
@@ -119,113 +161,10 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
    * @throws IllegalStateException when has already been initialized
    * @throws MojoExecutionException when cannot connect to Contrast
    */
-  synchronized void initialize() throws MojoExecutionException {
+  private synchronized void initialize() throws MojoExecutionException {
     if (contrast != null) {
       throw new IllegalStateException("Already initialized");
     }
     contrast = connectToContrast();
   }
-
-  /**
-   * visible for testing
-   *
-   * @return Contrast browser application URL for users to click-through and see their scan results
-   */
-  URL createClickableScanURL(final Scan scan) throws MalformedURLException {
-    final URL url = new URL(getURL());
-    final String path =
-        String.join(
-            "/",
-            "",
-            "Contrast",
-            "static",
-            "ng",
-            "index.html#",
-            getOrganizationId(),
-            "scans",
-            projectId,
-            "scans",
-            scan.getId());
-    return new URL(url.getProtocol(), url.getHost(), url.getPort(), path);
-  }
-
-  /**
-   * visible for testing
-   *
-   * @param file the file to upload
-   * @return new {@link CodeArtifact} from Contrast
-   * @throws IOException when an IO error occurs while uploading the file
-   */
-  CodeArtifact uploadCodeArtifact(File file) throws IOException {
-    final String url =
-        String.join(
-            "/",
-            ContrastSDKUtils.ensureApi(getURL()),
-            "sast",
-            "organizations",
-            getOrganizationId(),
-            "projects",
-            projectId,
-            "code-artifacts");
-    final String boundary = "ContrastFormBoundary" + ThreadLocalRandom.current().nextLong();
-    final String header =
-        "--"
-            + boundary
-            + LINE_FEED
-            + "Content-Disposition: form-data; name=\"filename\"; filename=\""
-            + file.getName()
-            + '"'
-            + LINE_FEED
-            + "Content-Type: application/java-archive"
-            + LINE_FEED
-            + "Content-Transfer-Encoding: binary"
-            + LINE_FEED
-            + LINE_FEED;
-    final String footer = LINE_FEED + "--" + boundary + "--" + LINE_FEED;
-    final long contentLength = header.length() + file.length() + footer.length();
-
-    final HttpURLConnection connection = contrast.makeConnection(url, "POST");
-    connection.setDoOutput(true);
-    connection.setDoInput(true);
-    connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
-    connection.setFixedLengthStreamingMode(contentLength);
-    try (OutputStream os = connection.getOutputStream();
-        PrintWriter writer =
-            new PrintWriter(new OutputStreamWriter(os, StandardCharsets.US_ASCII), true)) {
-      writer.append(header).flush();
-      Files.copy(file.toPath(), os);
-      os.flush();
-      writer.append(footer).flush();
-    }
-    final int rc = connection.getResponseCode();
-    if (rc != 201) {
-      throw new ContrastException(rc, "Failed to upload code artifact to Contrast Scan");
-    }
-    // TODO[JG] JAVA-3298 this GSON usage will be encapsulated in the Contrast SDK
-    final Gson gson = new Gson();
-    try (Reader reader = new InputStreamReader(connection.getInputStream())) {
-      return gson.fromJson(reader, CodeArtifact.class);
-    }
-  }
-
-  private Scan startScan(final StartScanRequest request) throws UnauthorizedException, IOException {
-    // TODO[JG] JAVA-3298 unlike requests made with ContrastSDK.makeConnection, requests made with
-    // ContrastSDK.makeRequest must have their path prepended with "/". This complexity will migrate
-    // to the SDK
-    final String path =
-        String.join(
-            "/", "", "sast", "organizations", getOrganizationId(), "projects", projectId, "scans");
-    // TODO[JG] JAVA-3298 this GSON usage will be encapsulated in the Contrast SDK
-    final Gson gson = new Gson();
-    final String json = gson.toJson(request);
-    getLog().debug("Starting Scan");
-    getLog().debug(json);
-    try (Reader reader =
-        new InputStreamReader(
-            contrast.makeRequestWithBody(HttpMethod.POST, path, json, MediaType.JSON))) {
-      return gson.fromJson(reader, Scan.class);
-    }
-  }
-
-  private static final String LINE_FEED = "\r\n";
 }

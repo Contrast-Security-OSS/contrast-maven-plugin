@@ -74,7 +74,7 @@
                   <goal>scan</goal>
                 </goals>
                 <configuration>
-                  <projectID>project-id</projectID>
+                  <projectId>project-id</projectId>
                 </configuration>
               </execution>
             </executions>
