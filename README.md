@@ -168,12 +168,20 @@ You may find it useful to store the environment variable configuration in a file
 easily include it in your environment
 
 ```shell
-. ~/contrast.env
+source ~/contrast.env
 ```
 
-Having configured the environment, you can run the integration tests with hte `end-to-end-test`
+Having configured the environment, you can run the integration tests with the `end-to-end-test`
 profile active:
 
 ```shell
 ./mvnw -Pend-to-end-test verify
+```
+
+When you are finished testing, you may want to remove the variables from the
+environment. In a POSIX shell, the script `unset-contrast.env` can take care of
+this:
+
+```shell
+source unset-contrast.env
 ```

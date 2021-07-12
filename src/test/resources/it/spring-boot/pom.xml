@@ -49,7 +49,7 @@
         </executions>
         <configuration>
           <username>${contrast.api.user_name}</username>
-          <orgUuid>${contrast.api.organization}</orgUuid>
+          <organizationId>${contrast.api.organization_id}</organizationId>
           <apiKey>${contrast.api.api_key}</apiKey>
           <serviceKey>${contrast.api.service_key}</serviceKey>
           <apiUrl>${contrast.api.url}</apiUrl>
@@ -59,4 +59,28 @@
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>scan</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>@project.groupId@</groupId>
+            <artifactId>@project.artifactId@</artifactId>
+            <version>@project.version@</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>scan</goal>
+                </goals>
+                <configuration>
+                  <projectId>project-id</projectId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

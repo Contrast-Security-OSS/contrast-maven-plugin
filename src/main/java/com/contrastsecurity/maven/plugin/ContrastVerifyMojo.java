@@ -4,47 +4,60 @@ import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.http.RuleSeverity;
 import com.contrastsecurity.http.ServerFilterForm;
 import com.contrastsecurity.http.TraceFilterForm;
-import com.contrastsecurity.models.*;
+import com.contrastsecurity.models.Application;
+import com.contrastsecurity.models.Applications;
+import com.contrastsecurity.models.Server;
+import com.contrastsecurity.models.Servers;
+import com.contrastsecurity.models.Trace;
+import com.contrastsecurity.models.Traces;
 import com.contrastsecurity.sdk.ContrastSDK;
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 
 @Mojo(name = "verify", requiresOnline = true)
-public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMojo {
+public class ContrastVerifyMojo extends AbstractAssessMojo {
+
+  @Parameter(property = "minSeverity", defaultValue = "Medium")
+  String minSeverity;
 
   public void execute() throws MojoExecutionException {
     verifyAppIdOrNameNotBlank();
-    ContrastSDK contrast = connectToTeamServer();
+    ContrastSDK contrast = connectToContrast();
 
-    getLog().info("Successfully authenticated to TeamServer.");
+    getLog().info("Successfully authenticated to Contrast.");
 
     getLog().info("Checking for new vulnerabilities for appVersion [" + computedAppVersion + "]");
 
     String applicationId;
-    if (StringUtils.isNotBlank(appId)) {
-      applicationId = appId;
+    if (StringUtils.isNotBlank(getAppId())) {
+      applicationId = getAppId();
 
-      if (StringUtils.isNotBlank(appName)) {
+      if (StringUtils.isNotBlank(getAppName())) {
         getLog().info("Using 'appId' property; 'appName' property is ignored.");
       }
 
     } else {
-      applicationId = getApplicationId(contrast, appName);
+      applicationId = getApplicationId(contrast, getAppName());
     }
 
     List<Long> serverIds = null;
 
-    if (StringUtils.isNotBlank(serverName)) {
+    if (StringUtils.isNotBlank(getServerName())) {
       serverIds = getServerId(contrast, applicationId);
     }
 
     TraceFilterForm form = getTraceFilterForm(serverIds);
 
-    getLog().info("Sending vulnerability request to TeamServer.");
+    getLog().info("Sending vulnerability request to Contrast.");
 
     Traces traces;
 
@@ -55,11 +68,12 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
     }
 
     try {
-      traces = contrast.getTraces(orgUuid, applicationId, form);
+      final String organizationID = getOrganizationId();
+      traces = contrast.getTraces(organizationID, applicationId, form);
     } catch (IOException e) {
       throw new MojoExecutionException("Unable to retrieve the traces.", e);
     } catch (UnauthorizedException e) {
-      throw new MojoExecutionException("Unable to connect to TeamServer.", e);
+      throw new MojoExecutionException("Unable to connect to Contrast.", e);
     }
 
     if (traces != null && traces.getCount() > 0) {
@@ -104,13 +118,14 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
     Servers servers;
     List<Long> serverIds;
 
+    final String organizationID = getOrganizationId();
     try {
-      serverFilterForm.setQ(URLEncoder.encode(serverName, "UTF-8"));
-      servers = sdk.getServersWithFilter(orgUuid, serverFilterForm);
+      serverFilterForm.setQ(URLEncoder.encode(getServerName(), "UTF-8"));
+      servers = sdk.getServersWithFilter(organizationID, serverFilterForm);
     } catch (IOException e) {
       throw new MojoExecutionException("Unable to retrieve the servers.", e);
     } catch (UnauthorizedException e) {
-      throw new MojoExecutionException("Unable to connect to TeamServer.", e);
+      throw new MojoExecutionException("Unable to connect to Contrast.", e);
     }
 
     if (!servers.getServers().isEmpty()) {
@@ -121,8 +136,8 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
     } else {
       throw new MojoExecutionException(
           "\n\nServer with name '"
-              + serverName
-              + "' not found. Make sure this server name appears in TeamServer under the 'Servers' tab.\n");
+              + getServerName()
+              + "' not found. Make sure this server name appears in Contrast under the 'Servers' tab.\n");
     }
 
     return serverIds;
@@ -141,13 +156,12 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
 
     Applications applications;
 
+    final String organizationID = getOrganizationId();
     try {
-      applications = sdk.getApplications(orgUuid);
+      applications = sdk.getApplications(organizationID);
     } catch (Exception e) {
       throw new MojoExecutionException(
-          "\n\nUnable to retrieve the application list from TeamServer. Please check that TeamServer is running at this address ["
-              + apiUrl
-              + "]\n",
+          "\n\nUnable to retrieve the application list from Contrast. Please check Contrast connection configuration\n",
           e);
     }
 
@@ -160,7 +174,7 @@ public class VerifyContrastMavenPluginMojo extends AbstractContrastMavenPluginMo
     throw new MojoExecutionException(
         "\n\nApplication with name '"
             + applicationName
-            + "' not found. Make sure this server name appears in TeamServer under the 'Applications' tab.\n");
+            + "' not found. Make sure this server name appears in Contrast under the 'Applications' tab.\n");
   }
 
   /**

@@ -1,24 +1,64 @@
 package com.contrastsecurity.maven.plugin;
 
+import com.contrastsecurity.exceptions.UnauthorizedException;
+import com.contrastsecurity.models.AgentType;
+import com.contrastsecurity.models.Applications;
 import com.contrastsecurity.sdk.ContrastSDK;
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 
 @Mojo(name = "install", defaultPhase = LifecyclePhase.VALIDATE, requiresOnline = true)
-public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMojo {
+public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
+
+  @Parameter(defaultValue = "${project}", readonly = true)
+  private MavenProject project;
+
+  @Parameter(property = "skipArgLine")
+  boolean skipArgLine;
+
+  @Parameter(property = "standalone")
+  boolean standalone;
+
+  @Parameter(property = "profile")
+  private String profile;
+
+  @Parameter(property = "environment")
+  private String environment;
+
+  @Parameter(property = "serverPath")
+  String serverPath;
+
+  @Parameter(property = "jarPath")
+  private String jarPath;
+
+  String contrastAgentLocation;
+
+  @Parameter(property = "applicationSessionMetadata")
+  private String applicationSessionMetadata;
+
+  @Parameter(property = "applicationTags")
+  private String applicationTags;
+
+  @Parameter(property = "appVersion")
+  String appVersion;
+
   String applicationName;
 
-  static Map<String, String> environmentToSessionMetadata = new TreeMap<String, String>();
+  static Map<String, String> environmentToSessionMetadata = new TreeMap<>();
 
   static {
     // Jenkins git plugin environment variables
@@ -38,21 +78,21 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
     verifyAppIdOrNameNotBlank();
     getLog().info("Attempting to connect to Contrast and install the Java agent.");
 
-    ContrastSDK contrast = connectToTeamServer();
+    ContrastSDK contrast = connectToContrast();
 
     File agentFile = installJavaAgent(contrast);
 
     getLog().info("Agent downloaded.");
 
-    if (StringUtils.isNotBlank(appId)) {
-      applicationName = getAppName(contrast, appId);
+    if (StringUtils.isNotBlank(getAppId())) {
+      applicationName = getAppName(contrast, getAppId());
 
-      if (StringUtils.isNotBlank(appName)) {
+      if (StringUtils.isNotBlank(getAppName())) {
         getLog().info("Using 'appId' property; 'appName' property is ignored.");
       }
 
     } else {
-      applicationName = appName;
+      applicationName = getAppName();
     }
     project
         .getProperties()
@@ -81,7 +121,33 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
     }
   }
 
-  public String computeAppVersion(Date currentDate) {
+  private String getAppName(ContrastSDK contrastSDK, String applicationId)
+      throws MojoExecutionException {
+    Applications applications;
+    try {
+      final String organizationID = getOrganizationId();
+      applications = contrastSDK.getApplication(organizationID, applicationId);
+    } catch (Exception e) {
+      String logMessage;
+      if (e.getMessage().contains("403")) {
+        logMessage =
+            "\n\n Unable to find the application on Contrast with the id [" + applicationId + "]\n";
+      } else {
+        logMessage =
+            "\n\n Unable to retrieve the application list from Contrast. Please check Contrast connection configuration\n";
+      }
+      throw new MojoExecutionException(logMessage, e);
+    }
+    if (applications.getApplication() == null) {
+      throw new MojoExecutionException(
+          "\n\nApplication with id '"
+              + applicationId
+              + "' not found. Make sure this application appears in Contrast under the 'Applications' tab.\n");
+    }
+    return applications.getApplication().getName();
+  }
+
+  String computeAppVersion(Date currentDate) {
     if (computedAppVersion != null) {
       return computedAppVersion;
     }
@@ -95,7 +161,7 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
     String travisBuildNumber = System.getenv("TRAVIS_BUILD_NUMBER");
     String circleBuildNum = System.getenv("CIRCLE_BUILD_NUM");
 
-    String appVersionQualifier = "";
+    final String appVersionQualifier;
     if (travisBuildNumber != null) {
       getLog()
           .info(
@@ -112,17 +178,17 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
       getLog().info("No CI build number detected, we'll use current timestamp.");
       appVersionQualifier = new SimpleDateFormat("yyyyMMddHHmmss").format(currentDate);
     }
-    if (StringUtils.isNotBlank(appId)) {
+    if (StringUtils.isNotBlank(getAppId())) {
       computedAppVersion = applicationName + "-" + appVersionQualifier;
     } else {
-      computedAppVersion = appName + "-" + appVersionQualifier;
+      computedAppVersion = getAppName() + "-" + appVersionQualifier;
     }
 
     return computedAppVersion;
   }
 
-  public String computeSessionMetadata() {
-    List<String> metadata = new ArrayList<String>();
+  String computeSessionMetadata() {
+    List<String> metadata = new ArrayList<>();
 
     for (Map.Entry<String, String> entry : environmentToSessionMetadata.entrySet()) {
       String environmentValue = System.getenv(entry.getKey());
@@ -135,11 +201,11 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
     return StringUtils.join(metadata, ",");
   }
 
-  public String buildArgLine(String currentArgLine) {
-    return buildArgLine(currentArgLine, appName);
+  String buildArgLine(String currentArgLine) {
+    return buildArgLine(currentArgLine, getAppName());
   }
 
-  public String buildArgLine(String currentArgLine, String applicationName) {
+  String buildArgLine(String currentArgLine, String applicationName) {
 
     if (currentArgLine == null) {
       getLog().info("Current argLine is null");
@@ -163,7 +229,7 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
     StringBuilder argLineBuilder = new StringBuilder();
     argLineBuilder.append(currentArgLine);
     argLineBuilder.append(" -javaagent:").append(contrastAgentLocation);
-    argLineBuilder.append(" -Dcontrast.server=").append(serverName);
+    argLineBuilder.append(" -Dcontrast.server=").append(getServerName());
     if (environment != null) {
       argLineBuilder.append(" -Dcontrast.env=").append(environment);
     } else {
@@ -206,4 +272,58 @@ public class InstallAgentContrastMavenMojo extends AbstractContrastMavenPluginMo
     getLog().info("Updated argLine is " + newArgLine);
     return newArgLine.trim();
   }
+
+  File installJavaAgent(ContrastSDK connection) throws MojoExecutionException {
+    byte[] javaAgent;
+    File agentFile;
+
+    if (StringUtils.isEmpty(jarPath)) {
+      getLog().info("No jar path was configured. Downloading the latest contrast.jar...");
+
+      final String organizationID = getOrganizationId();
+      try {
+        if (profile != null) {
+          javaAgent = connection.getAgent(AgentType.JAVA, organizationID, profile);
+        } else {
+          javaAgent = connection.getAgent(AgentType.JAVA, organizationID);
+        }
+      } catch (IOException e) {
+        throw new MojoExecutionException(
+            "\n\nCouldn't download the Java agent from Contrast. Please check that all your credentials are correct. If everything is correct, please contact Contrast Support. The error is:",
+            e);
+      } catch (UnauthorizedException e) {
+        throw new MojoExecutionException(
+            "\n\nWe contacted Contrast successfully but couldn't authorize with the credentials you provided. The error is:",
+            e);
+      }
+
+      // Save the jar to the 'target' directory
+      agentFile = new File(project.getBuild().getDirectory() + File.separator + AGENT_NAME);
+
+      try {
+        FileUtils.writeByteArrayToFile(agentFile, javaAgent);
+      } catch (IOException e) {
+        throw new MojoExecutionException("Unable to save the latest java agent.", e);
+      }
+
+      getLog().info("Saved the latest java agent to " + agentFile.getAbsolutePath());
+      contrastAgentLocation = agentFile.getAbsolutePath();
+
+    } else {
+      getLog().info("Using configured jar path " + jarPath);
+
+      agentFile = new File(jarPath);
+
+      if (!agentFile.exists()) {
+        throw new MojoExecutionException("Unable to load the local Java agent from " + jarPath);
+      }
+
+      getLog().info("Loaded the latest java agent from " + jarPath);
+      contrastAgentLocation = jarPath;
+    }
+
+    return agentFile;
+  }
+
+  private static final String AGENT_NAME = "contrast.jar";
 }

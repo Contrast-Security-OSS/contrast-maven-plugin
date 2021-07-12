@@ -1,4 +1,5 @@
 # Project
+*.private.env.json
 /.idea
 *.iml
 
