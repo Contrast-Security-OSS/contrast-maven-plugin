@@ -1,4 +1,4 @@
-package com.contrastsecurity.maven.plugin.it.stub;
+package com.contrastsecurity.test;
 
 /*-
  * #%L
@@ -20,17 +20,12 @@ package com.contrastsecurity.maven.plugin.it.stub;
  * #L%
  */
 
-/** Describes a test instance of Contrast API to which tests may requests */
-public interface ContrastAPI {
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-  /** starts the Contrast API instance */
-  void start();
-
-  /**
-   * @return connection configuration necessary for making requests to this Contrast API instance
-   */
-  ConnectionParameters connection();
-
-  /** stops the Contrast API instance */
-  void stop();
+@SpringBootApplication
+public final class Application {
+  public static void main(final String[] args) {
+    SpringApplication.run(Application.class, args);
+  }
 }

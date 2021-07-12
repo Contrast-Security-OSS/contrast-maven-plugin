@@ -1,5 +1,25 @@
 package com.contrastsecurity.maven.plugin.it.stub;
 
+/*-
+ * #%L
+ * Contrast Maven Plugin
+ * %%
+ * Copyright (C) 2021 Contrast Security, Inc.
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -35,10 +55,22 @@ final class FakeContrastAPI implements ContrastAPI {
     final InetSocketAddress address = new InetSocketAddress("localhost", 0);
 
     // register stub handlers
-    server.createContext("/", status(204));
     server.createContext(
-        "/ng/" + ORGANIZATION_ID + "/agents/default/java",
+        "/api/ng/" + ORGANIZATION_ID + "/agents/default/java",
         authenticatedEndpoint(FakeContrastAPI::downloadAgent));
+    server.createContext(
+        "/api/sast/organizations/" + ORGANIZATION_ID + "/projects",
+        authenticatedEndpoint(FakeContrastAPI::projects));
+    server.createContext(
+        "/api/sast/organizations/"
+            + ORGANIZATION_ID
+            + "/projects/"
+            + PROJECT_ID
+            + "/code-artifacts",
+        authenticatedEndpoint(FakeContrastAPI::uploadCodeArtifact));
+    server.createContext(
+        "/api/sast/organizations/" + ORGANIZATION_ID + "/projects/" + PROJECT_ID + "/scans",
+        authenticatedEndpoint(FakeContrastAPI::startScan));
 
     server.setExecutor(Executors.newSingleThreadExecutor());
     try {
@@ -59,7 +91,7 @@ final class FakeContrastAPI implements ContrastAPI {
       throw new IllegalStateException("server not yet initialized, must call start() first");
     }
     final InetSocketAddress address = server.getAddress();
-    final String url = "http://" + address.getHostName() + ":" + address.getPort();
+    final String url = "http://" + address.getHostName() + ":" + address.getPort() + "/api";
     return ConnectionParameters.builder()
         .url(url)
         .username(USER_NAME)
@@ -79,6 +111,7 @@ final class FakeContrastAPI implements ContrastAPI {
 
   private static HttpHandler status(final int status) {
     return exchange -> {
+      discardRequest(exchange);
       // ideally we would use response length -1 according to the HttpServer JavaDoc, but it's not
       // working as expected
       exchange.sendResponseHeaders(status, 0);
@@ -134,6 +167,7 @@ final class FakeContrastAPI implements ContrastAPI {
   }
 
   private static void downloadAgent(final HttpExchange exchange) {
+    discardRequest(exchange);
     // read the contrast-agent.jar into memory, because we need to know the size of the content that
     // we'll send over the wire since we are not using chunked responses with this simple JDK HTTP
     // server
@@ -157,12 +191,83 @@ final class FakeContrastAPI implements ContrastAPI {
     } catch (IOException e) {
       throw new UncheckedIOException("Failed to send response", e);
     }
+    exchange.close();
+  }
+
+  private static void projects(final HttpExchange exchange) {
+    final String json =
+        "{\n"
+            + "    \"id\": \"2f35cd90-b73e-44c5-8bb0-533afdbb07d5\",\n"
+            + "    \"organizationId\": \"d89d9103-89c7-4a74-968e-a8b93ea8f7bb\",\n"
+            + "    \"projectId\": \"02faf17f-0db6-4d0f-b6dc-0d9c00473ff2\",\n"
+            + "    \"filename\": \"spring-async.war\",\n"
+            + "    \"createdTime\": \"2021-06-08T15:46:03.748+00:00\"\n"
+            + "}";
+    final byte[] body = json.getBytes(StandardCharsets.UTF_8);
+    try {
+      exchange.sendResponseHeaders(201, body.length);
+      exchange.getResponseBody().write(body);
+    } catch (final IOException e) {
+      throw new UncheckedIOException("Failed to send response", e);
+    }
+    exchange.close();
+  }
+
+  private static void uploadCodeArtifact(final HttpExchange exchange) {
+    discardRequest(exchange);
+    final String json =
+        "{\n"
+            + "    \"id\": \""
+            + CODE_ARTIFACT_ID
+            + "\",\n"
+            + "    \"organizationId\": \""
+            + ORGANIZATION_ID
+            + "\",\n"
+            + "    \"projectId\": \""
+            + PROJECT_ID
+            + "\",\n"
+            + "    \"filename\": \"spring-async.war\",\n"
+            + "    \"createdTime\": \"2021-06-08T15:46:03.748+00:00\"\n"
+            + "}";
+    final byte[] body = json.getBytes(StandardCharsets.UTF_8);
+    try {
+      exchange.sendResponseHeaders(201, body.length);
+      exchange.getResponseBody().write(body);
+    } catch (final IOException e) {
+      throw new UncheckedIOException("Failed to send response", e);
+    }
+    exchange.close();
+  }
+
+  private static void startScan(final HttpExchange exchange) {
+    discardRequest(exchange);
+    final String json = "{\"id\": \"scan-id\"}";
+    final byte[] body = json.getBytes(StandardCharsets.UTF_8);
+    try {
+      exchange.sendResponseHeaders(201, body.length);
+      exchange.getResponseBody().write(body);
+    } catch (final IOException e) {
+      throw new UncheckedIOException("Failed to send response", e);
+    }
+    exchange.close();
+  }
+
+  private static void discardRequest(final HttpExchange exchange) {
+    final byte[] buffer = new byte[4096];
+    try (InputStream is = exchange.getRequestBody()) {
+      //noinspection StatementWithEmptyBody
+      while (is.read(buffer) >= 0) {}
+    } catch (final IOException e) {
+      throw new UncheckedIOException("Failed to read request", e);
+    }
   }
 
   private static final String USER_NAME = "test-user";
   private static final String API_KEY = "test-api-key";
   private static final String SERVICE_KEY = "test-service-key";
   private static final String ORGANIZATION_ID = "organization-id";
+  private static final String PROJECT_ID = "project-id";
+  private static final String CODE_ARTIFACT_ID = "code-artifact-id";
   public static final String AUTHORIZATION =
       Base64.getEncoder()
           .encodeToString((USER_NAME + ":" + SERVICE_KEY).getBytes(StandardCharsets.US_ASCII));

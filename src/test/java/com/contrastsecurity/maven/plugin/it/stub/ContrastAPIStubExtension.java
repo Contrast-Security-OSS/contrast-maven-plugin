@@ -1,5 +1,25 @@
 package com.contrastsecurity.maven.plugin.it.stub;
 
+/*-
+ * #%L
+ * Contrast Maven Plugin
+ * %%
+ * Copyright (C) 2021 Contrast Security, Inc.
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 import java.util.Optional;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -75,7 +95,7 @@ public final class ContrastAPIStubExtension
     final Optional<String> serviceKey =
         context.getConfigurationParameter("contrast.api.service_key");
     final Optional<String> organization =
-        context.getConfigurationParameter("contrast.api.organization");
+        context.getConfigurationParameter("contrast.api.organization_id");
 
     // if all connection parameters are present, then use end-to-end testing mode
     if (url.isPresent()

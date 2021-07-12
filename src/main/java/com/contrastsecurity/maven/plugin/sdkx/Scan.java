@@ -1,4 +1,4 @@
-package com.contrastsecurity.maven.plugin.it.stub;
+package com.contrastsecurity.maven.plugin.sdkx;
 
 /*-
  * #%L
@@ -22,29 +22,39 @@ package com.contrastsecurity.maven.plugin.it.stub;
 
 import java.util.Objects;
 
-/**
- * {@link ContrastAPI} implementation that represents an external system. Methods that affect the
- * system such as {@code start()} and {@code stop()} are no-ops.
- */
-final class ExternalContrastAPI implements ContrastAPI {
+/** TODO[JG] JAVA-3298 move this to the Contrast Java SDK and flesh it out */
+public final class Scan {
 
-  private final ConnectionParameters connection;
+  private final String id;
 
-  /** @param connection the connection parameters constant to provide to users */
-  public ExternalContrastAPI(final ConnectionParameters connection) {
-    this.connection = Objects.requireNonNull(connection);
+  Scan(final String id) {
+    this.id = Objects.requireNonNull(id);
   }
 
-  /** nop */
-  @Override
-  public void start() {}
-
-  @Override
-  public ConnectionParameters connection() {
-    return connection;
+  /** @return unique ID of this scan */
+  public String getId() {
+    return id;
   }
 
-  /** nop */
   @Override
-  public void stop() {}
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    final Scan scan = (Scan) o;
+    return id.equals(scan.id);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id);
+  }
+
+  @Override
+  public String toString() {
+    return "Scan{" + "id='" + id + '\'' + '}';
+  }
 }

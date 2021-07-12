@@ -1,4 +1,4 @@
-package com.contrastsecurity.maven.plugin.it.stub;
+package com.contrastsecurity.maven.plugin.sdkx;
 
 /*-
  * #%L
@@ -20,17 +20,26 @@ package com.contrastsecurity.maven.plugin.it.stub;
  * #L%
  */
 
-/** Describes a test instance of Contrast API to which tests may requests */
-public interface ContrastAPI {
+import static org.assertj.core.api.Assertions.assertThat;
 
-  /** starts the Contrast API instance */
-  void start();
+import com.google.gson.Gson;
+import java.io.StringReader;
+import org.junit.jupiter.api.Test;
 
-  /**
-   * @return connection configuration necessary for making requests to this Contrast API instance
-   */
-  ConnectionParameters connection();
+/** Unit tests for {@link Scan} */
+final class ScanTest {
 
-  /** stops the Contrast API instance */
-  void stop();
+  @Test
+  void gson_deserialization_configuration() {
+    // GIVEN some JSON for a scan
+    final String id = "scan-id";
+    final String json = "{\"id\": \"" + id + "\"}";
+
+    // WHEN deserialize with GSON
+    final Scan scan = new Gson().fromJson(new StringReader(json), Scan.class);
+
+    // THEN has expected ID
+    final Scan expected = new Scan(id);
+    assertThat(scan).isEqualTo(expected);
+  }
 }

@@ -1,6 +1,29 @@
 package com.contrastsecurity.maven.plugin;
 
-import static org.junit.Assert.*;
+/*-
+ * #%L
+ * Contrast Maven Plugin
+ * %%
+ * Copyright (C) 2021 Contrast Security, Inc.
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import com.contrastsecurity.http.RuleSeverity;
 import com.contrastsecurity.http.TraceFilterForm;
@@ -9,13 +32,13 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-public class VerifyContrastMavenPluginMojoTest {
+public class ContrastVerifyMojoTest {
 
-  VerifyContrastMavenPluginMojo verifyContrastMavenPluginMojo;
+  private ContrastVerifyMojo verifyContrastMavenPluginMojo;
 
   @Before
   public void setUp() {
-    verifyContrastMavenPluginMojo = new VerifyContrastMavenPluginMojo();
+    verifyContrastMavenPluginMojo = new ContrastVerifyMojo();
     verifyContrastMavenPluginMojo.minSeverity = "Medium";
   }
 
@@ -27,10 +50,10 @@ public class VerifyContrastMavenPluginMojoTest {
 
   @Test
   public void testGetTraceFilterForm() {
-    List<Long> serverIds = new ArrayList<Long>();
-    long server1 = 123l;
-    long server2 = 456l;
-    long server3 = 789l;
+    List<Long> serverIds = new ArrayList<>();
+    long server1 = 123L;
+    long server2 = 456L;
+    long server3 = 789L;
 
     serverIds.add(server1);
     serverIds.add(server2);
@@ -61,7 +84,7 @@ public class VerifyContrastMavenPluginMojoTest {
   public void testGetTraceFilterFormAppVersionTags() {
     String appVersion = "WebGoat-1";
 
-    verifyContrastMavenPluginMojo.computedAppVersion = appVersion;
+    AbstractAssessMojo.computedAppVersion = appVersion;
     TraceFilterForm traceFilterForm = verifyContrastMavenPluginMojo.getTraceFilterForm(null);
 
     assertEquals(1, traceFilterForm.getAppVersionTags().size());
