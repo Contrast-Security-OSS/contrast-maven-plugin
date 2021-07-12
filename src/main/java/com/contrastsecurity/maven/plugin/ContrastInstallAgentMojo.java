@@ -22,7 +22,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 @Mojo(name = "install", defaultPhase = LifecyclePhase.VALIDATE, requiresOnline = true)
-public class ContrastInstallAgentMojo extends AbstractAssessMojo {
+public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
 
   @Parameter(defaultValue = "${project}", readonly = true)
   private MavenProject project;

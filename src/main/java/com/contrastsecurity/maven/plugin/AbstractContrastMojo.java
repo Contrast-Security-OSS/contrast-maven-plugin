@@ -5,7 +5,6 @@ import java.net.Authenticator;
 import java.net.InetSocketAddress;
 import java.net.PasswordAuthentication;
 import java.net.Proxy;
-import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -46,7 +45,7 @@ abstract class AbstractContrastMojo extends AbstractMojo {
   private String serviceKey;
 
   /** Contrast API URL */
-  @Parameter(alias = "apiUrl", defaultValue = "https://app.contrastsecurity.com/Contrast")
+  @Parameter(alias = "apiUrl", defaultValue = "https://app.contrastsecurity.com/Contrast/api")
   private String url;
 
   /**
@@ -65,6 +64,7 @@ abstract class AbstractContrastMojo extends AbstractMojo {
    * @deprecated in a future release, we will remove the proprietary proxy configuration in favor of
    *     standard Maven proxy configuration
    */
+  @Deprecated
   @Parameter(property = "useProxy", defaultValue = "false")
   private boolean useProxy;
 
@@ -74,6 +74,7 @@ abstract class AbstractContrastMojo extends AbstractMojo {
    * @deprecated in a future release, we will remove the proprietary proxy configuration in favor of
    *     standard Maven proxy configuration
    */
+  @Deprecated
   @Parameter(property = "proxyHost")
   private String proxyHost;
 
@@ -83,6 +84,7 @@ abstract class AbstractContrastMojo extends AbstractMojo {
    * @deprecated in a future release, we will remove the proprietary proxy configuration in favor of
    *     standard Maven proxy configuration
    */
+  @Deprecated
   @Parameter(property = "proxyPort")
   private int proxyPort;
 
@@ -135,14 +137,10 @@ abstract class AbstractContrastMojo extends AbstractMojo {
     Proxy proxy = getProxy();
 
     try {
-      if (!StringUtils.isEmpty(url)) {
-        return new ContrastSDK.Builder(userName, serviceKey, apiKey)
-            .withApiUrl(url)
-            .withProxy(proxy)
-            .build();
-      } else {
-        return new ContrastSDK.Builder(userName, serviceKey, apiKey).withProxy(proxy).build();
-      }
+      return new ContrastSDK.Builder(userName, serviceKey, apiKey)
+          .withApiUrl(url)
+          .withProxy(proxy)
+          .build();
     } catch (IllegalArgumentException e) {
       throw new MojoExecutionException(
           "\n\nWe couldn't connect to Contrast at this address [" + url + "]. The error is: ", e);

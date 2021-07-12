@@ -3,7 +3,6 @@ package com.contrastsecurity.maven.plugin.sdkx;
 import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.http.HttpMethod;
 import com.contrastsecurity.http.MediaType;
-import com.contrastsecurity.maven.plugin.ContrastException;
 import com.contrastsecurity.sdk.ContrastSDK;
 import com.contrastsecurity.utils.ContrastSDKUtils;
 import com.google.gson.Gson;
