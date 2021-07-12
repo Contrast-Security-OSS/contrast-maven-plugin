@@ -42,8 +42,8 @@
   </scm>
 
   <name>Contrast Maven Plugin</name>
-  <description>Maven plugin to test for vulnerabilities when running integration tests for a Java
-    application
+  <description>
+    Maven plugin for including Contrast security analysis in Java web applications
   </description>
   <url>https://docs.contrastsecurity.com/en/maven.html</url>
 

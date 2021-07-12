@@ -19,12 +19,27 @@ abstract class AbstractAssessMojo extends AbstractContrastMojo {
    */
   @Deprecated static String computedAppVersion;
 
+  /**
+   * Override the reported application name.
+   *
+   * <p>On Java systems where multiple, distinct applications may be served by a single process,
+   * this configuration causes the agent to report all discovered applications as one application
+   * with the given name.
+   */
   @Parameter(property = "appName")
   private String appName;
 
+  /**
+   * ID of the application as seen in Contrast. Either the {@code appId} or {@code appName} is
+   * required. If both are specified, Contrast uses the {@code appId} and ignores the {@code
+   * appName}.
+   *
+   * @since 2.5
+   */
   @Parameter(property = "appId")
   private String appId;
 
+  /** Overrides the reported server name */
   // TODO[JG] why is this required?
   @Parameter(property = "serverName", required = true)
   private String serverName;

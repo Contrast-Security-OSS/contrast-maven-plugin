@@ -1,0 +1,60 @@
+### Create Scan Project
+POST {{ url }}/sast/organizations/{{ organizationID }}/projects
+API-Key: {{ apiKey }}
+Authorization: {{ authorization }}
+Content-Type: application/json
+
+{
+  "name": "spring-test-application",
+  "language": "JAVA",
+  "includeNamespaceFilters": [],
+  "excludeNamespaceFilters": []
+}
+
+> {% client.global.set("projectID", response.body.id); %}
+
+
+### Upload Scan
+
+POST {{ url }}/sast/organizations/{{ organizationID }}/projects/{{ projectID }}/code-artifacts
+API-Key: {{ apiKey }}
+Authorization: {{ authorization }}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="filename"; filename="spring-test-application-0.0.1-SNAPSHOT.jar"
+Content-Type: application/java-archive
+
+< ./target/test-classes/it/spring-boot/target/spring-test-application-0.0.1-SNAPSHOT.jar
+--WebAppBoundary--
+
+> {% client.global.set("artifactID", response.body.id); %}
+
+
+### Start Scan
+
+POST {{ url }}/sast/organizations/{{ organizationID }}/projects/{{ projectID }}/scans
+API-Key: {{ apiKey }}
+Authorization: {{ authorization }}
+Content-Type: application/json
+
+{
+  "codeArtifactId": "{{ artifactID }}",
+  "label": "scan.http"
+}
+
+> {% client.global.set("scanID", response.body.id); %}
+
+
+### Get Scan
+
+GET {{ url }}/sast/organizations/{{ organizationID }}/projects/{{ projectID }}/scans/{{ scanID }}
+API-Key: {{ apiKey }}
+Authorization: {{ authorization }}
+
+
+### Get Scan Results Summary
+
+GET {{ url }}/sast/organizations/{{ organizationID }}/projects/{{ projectID }}/scans/{{ scanID }}/result-instances/info
+API-Key: {{ apiKey }}
+Authorization: {{ authorization }}

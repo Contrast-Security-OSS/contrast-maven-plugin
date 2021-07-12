@@ -20,12 +20,21 @@ import java.util.EnumSet;
 import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
-@Mojo(name = "verify", requiresOnline = true)
-public class ContrastVerifyMojo extends AbstractAssessMojo {
+/**
+ * Verifies that none of the vulnerabilities found by Contrast Assess during integration testing
+ * violate the project's security policy (fails the build when violations are detected)
+ */
+@Mojo(name = "verify", requiresOnline = true, defaultPhase = LifecyclePhase.VERIFY)
+public final class ContrastVerifyMojo extends AbstractAssessMojo {
 
+  /**
+   * Verifies that no vulnerabilities were found at this or a higher severity level. Severity levels
+   * include Note, Low, Medium, High, and Critical.
+   */
   @Parameter(property = "minSeverity", defaultValue = "Medium")
   String minSeverity;
 

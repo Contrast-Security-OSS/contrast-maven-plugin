@@ -63,6 +63,7 @@ abstract class AbstractContrastMojo extends AbstractMojo {
    *
    * @deprecated in a future release, we will remove the proprietary proxy configuration in favor of
    *     standard Maven proxy configuration
+   * @since 2.8
    */
   @Deprecated
   @Parameter(property = "useProxy", defaultValue = "false")
@@ -73,6 +74,7 @@ abstract class AbstractContrastMojo extends AbstractMojo {
    *
    * @deprecated in a future release, we will remove the proprietary proxy configuration in favor of
    *     standard Maven proxy configuration
+   * @since 2.8
    */
   @Deprecated
   @Parameter(property = "proxyHost")
@@ -83,6 +85,7 @@ abstract class AbstractContrastMojo extends AbstractMojo {
    *
    * @deprecated in a future release, we will remove the proprietary proxy configuration in favor of
    *     standard Maven proxy configuration
+   * @since 2.8
    */
   @Deprecated
   @Parameter(property = "proxyPort")
