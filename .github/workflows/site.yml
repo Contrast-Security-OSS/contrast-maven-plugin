@@ -14,5 +14,17 @@ jobs:
         with:
           java-version: 11
           distribution: adopt-hotspot
+      - name: Cache Maven Wrapper
+        uses: actions/cache@v2
+        with:
+          path: ./.mvn/wrapper/maven-wrapper.jar
+          key: ${{ runner.os }}-maven-wrapper-${{ hashFiles('./.mvn/wrapper/maven-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-maven-wrapper
+      - name: Cache Maven Packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
       - name: publish site
-        run: mvn site-deploy
+        run: ./mvnw --batch-mode -e site-deploy
