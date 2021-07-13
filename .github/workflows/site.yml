@@ -26,5 +26,10 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
+      # See https://github.com/actions/checkout/issues/13
+      - name: configure git user
+        run: |
+          git config user.name "github-actions"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
       - name: publish site
         run: ./mvnw --batch-mode site-deploy
