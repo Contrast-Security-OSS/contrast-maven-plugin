@@ -14,8 +14,6 @@ jobs:
         with:
           java-version: 11
           distribution: adopt-hotspot
-          server-id: my-github
-          server-password: ${{ github.token }}f
       - name: Cache Maven Wrapper
         uses: actions/cache@v2
         with:
@@ -30,3 +28,5 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
       - name: publish site
         run: ./mvnw --batch-mode site-deploy
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
