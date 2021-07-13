@@ -32,4 +32,4 @@ jobs:
           git config user.name "github-actions"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
       - name: publish site
-        run: ./mvnw --batch-mode site-deploy
+        run: ./mvnw --batch-mode -DskipTests verify
