@@ -33,3 +33,5 @@ jobs:
           git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
       - name: Publish Site
         run: ./mvnw --batch-mode site-deploy
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
