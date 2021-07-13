@@ -14,7 +14,7 @@ jobs:
         with:
           java-version: 11
           distribution: adopt-hotspot
-          server-id: github
+          server-id: my-github
           server-password: ${{ github.token }}f
       - name: Cache Maven Wrapper
         uses: actions/cache@v2

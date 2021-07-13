@@ -357,7 +357,7 @@
         <version>0.12</version>
         <configuration>
           <!-- Server profile created by GitHub Actions https://github.com/actions/setup-java -->
-          <server>github</server>
+          <server>my-github</server>
           <message>Creating site for ${project.version}</message>
         </configuration>
         <executions>
