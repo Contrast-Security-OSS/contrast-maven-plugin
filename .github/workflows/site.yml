@@ -29,4 +29,4 @@ jobs:
       - name: publish site
         run: ./mvnw --batch-mode site-deploy
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
