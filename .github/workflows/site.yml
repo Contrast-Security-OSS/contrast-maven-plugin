@@ -28,5 +28,3 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
       - name: publish site
         run: ./mvnw --batch-mode site-deploy
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
