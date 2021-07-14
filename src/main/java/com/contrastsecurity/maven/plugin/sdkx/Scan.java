@@ -16,6 +16,14 @@ public final class Scan {
     return id;
   }
 
+  public boolean isFailed() {
+    throw new RuntimeException("Not yet implemented");
+  }
+
+  public boolean isComplete() {
+    throw new RuntimeException("Not yet implemented");
+  }
+
   @Override
   public boolean equals(final Object o) {
     if (this == o) {
@@ -37,4 +45,5 @@ public final class Scan {
   public String toString() {
     return "Scan{" + "id='" + id + '\'' + '}';
   }
+
 }

@@ -16,7 +16,11 @@ import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Extensions to the Contrast SDK for Contrast Scan
@@ -34,7 +38,7 @@ public final class ContrastScanSDK {
    * Creates a new {@code ContrastScanSDK} that delegates to the given {@link ContrastSDK}
    *
    * @param contrast the {@link ContrastSDK} this type extends with Scan support
-   * @param restURL URL for the Contrast REST API
+   * @param restURL  URL for the Contrast REST API
    */
   public ContrastScanSDK(final ContrastSDK contrast, final String restURL) {
     this.contrast = contrast;
@@ -46,9 +50,9 @@ public final class ContrastScanSDK {
    * analysis.
    *
    * @param organizationId unique ID for the user's organization
-   * @param request parameters for creating the new code artifact
+   * @param request        parameters for creating the new code artifact
    * @return new {@link CodeArtifact} from Contrast
-   * @throws IOException when an IO error occurs while uploading the file
+   * @throws IOException           when an IO error occurs while uploading the file
    * @throws UnauthorizedException when Contrast rejects this request as unauthorized
    */
   public CodeArtifact createCodeArtifact(
@@ -104,7 +108,7 @@ public final class ContrastScanSDK {
       throw new UnauthorizedException(rc);
     }
     if (rc != 201) {
-      throw new ContrastException(rc, "Failed to upload code artifact to Contrast Scan");
+      throw new ContrastAPIException(rc, "Failed to upload code artifact to Contrast Scan");
     }
     try (Reader reader = new InputStreamReader(connection.getInputStream())) {
       return gson.fromJson(reader, CodeArtifact.class);
@@ -137,9 +141,9 @@ public final class ContrastScanSDK {
    * Starts a new scan
    *
    * @param organizationId unique ID for the user's organization
-   * @param request parameters for requesting a new scan
+   * @param request        parameters for requesting a new scan
    * @return new scan operation
-   * @throws IOException when an IO error occurs while uploading the file
+   * @throws IOException           when an IO error occurs while uploading the file
    * @throws UnauthorizedException when Contrast rejects this request as unauthorized
    */
   public Scan startScan(final String organizationId, final StartScanRequest request)
@@ -161,6 +165,20 @@ public final class ContrastScanSDK {
             contrast.makeRequestWithBody(HttpMethod.POST, path, json, MediaType.JSON))) {
       return gson.fromJson(reader, Scan.class);
     }
+  }
+
+  public Scan getScanById(final String organizationId, final String projectId,
+      final String scanId) {
+    throw new RuntimeException("Not yet implemented");
+  }
+
+  public CompletableFuture<Scan> waitForScan(final String organizationId, final String projectId,
+      final String scanId) {
+    final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    final AwaitScan await = new AwaitScan(this, scheduler,
+        organizationId, projectId, scanId, 30,
+        TimeUnit.SECONDS);
+    return await.await().whenComplete((scan, throwable) -> scheduler.shutdown());
   }
 
   private static final String CRLF = "\r\n";
