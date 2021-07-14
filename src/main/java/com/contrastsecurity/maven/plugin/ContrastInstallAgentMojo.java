@@ -41,40 +41,103 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
+/**
+ * Includes the Contrast Java agent in integration testing to provide Contrast Assess runtime
+ * security analysis.
+ */
 @Mojo(name = "install", defaultPhase = LifecyclePhase.VALIDATE, requiresOnline = true)
 public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
 
   @Parameter(defaultValue = "${project}", readonly = true)
   private MavenProject project;
 
+  /**
+   * When {@code true}, will not alter the Maven {@code argLine} property.
+   *
+   * @since 2.0
+   */
   @Parameter(property = "skipArgLine")
   boolean skipArgLine;
 
+  /**
+   * When "true", will configure Contrast to treat this as a standalone application (e.g. one that
+   * uses an embedded web server vs war packaging).
+   *
+   * @since 2.2
+   */
   @Parameter(property = "standalone")
   boolean standalone;
 
-  @Parameter(property = "profile")
-  private String profile;
-
+  /**
+   * Override the reported server environment {@see
+   * https://docs.contrastsecurity.com/en/server-configuration.html}.
+   *
+   * @since 2.9
+   */
   @Parameter(property = "environment")
   private String environment;
 
+  /**
+   * Override the reported server path. Default is the present working directory of the JVM process
+   * Contrast is attached to.
+   *
+   * <p>In a multi-module build, the default value may lead Contrast to report a unique server per
+   * module. Multi-module Maven builds can appear as different servers in the Contrast UI. If you
+   * would like to discourage this behavior and would rather see all modules appear under the same
+   * server in Contrast, use this property to set a common server path across modules.
+   *
+   * @since 2.1
+   */
   @Parameter(property = "serverPath")
   String serverPath;
 
+  /**
+   * Path to an existing Contrast Java agent JAR. Specifying this configures the plugin to omit the
+   * "retrieve Contrast JAR" step.
+   */
   @Parameter(property = "jarPath")
   private String jarPath;
 
-  String contrastAgentLocation;
-
+  /**
+   * Define a set of key=value pairs (which conforms to RFC 2253) for specifying user-defined
+   * metadata associated with the application. The set must be formatted as a comma-delimited list.
+   * of {@code key=value} pairs.
+   *
+   * <p>Example - "business-unit=accounting, office=Baltimore"
+   *
+   * @since 2.9
+   */
   @Parameter(property = "applicationSessionMetadata")
   private String applicationSessionMetadata;
 
+  /**
+   * Tags to apply to the Contrast application. Must be formatted as a comma-delimited list.
+   *
+   * @since 2.9
+   */
   @Parameter(property = "applicationTags")
   private String applicationTags;
 
+  /**
+   * The {@code appVersion} metadata associated with Contrast analysis findings. Allows users to
+   * compare vulnerabilities between applications versions, CI builds, etc. Contrast generates the
+   * appVersion in the following order:
+   *
+   * <ol>
+   *   <li>The {@code appVersion} as configured in the plugin properties.
+   *   <li>If your build is running in TravisCI, Contrast will use {@code
+   *       appName-$TRAVIS_BUILD_NUMBER}.
+   *   <li>If your build is running in CircleCI, Contrast will use {@code
+   *       appName-$CIRCLE_BUILD_NUM}.
+   *   <li>If none of the above apply, Contrast will use a timestamp {@code appName-yyyyMMddHHmmss}
+   *       format.
+   * </ol>
+   */
   @Parameter(property = "appVersion")
   String appVersion;
+
+  /** visible for testing */
+  String contrastAgentLocation;
 
   String applicationName;
 
@@ -302,11 +365,7 @@ public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
 
       final String organizationID = getOrganizationId();
       try {
-        if (profile != null) {
-          javaAgent = connection.getAgent(AgentType.JAVA, organizationID, profile);
-        } else {
-          javaAgent = connection.getAgent(AgentType.JAVA, organizationID);
-        }
+        javaAgent = connection.getAgent(AgentType.JAVA, organizationID);
       } catch (IOException e) {
         throw new MojoExecutionException(
             "\n\nCouldn't download the Java agent from Contrast. Please check that all your credentials are correct. If everything is correct, please contact Contrast Support. The error is:",

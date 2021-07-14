@@ -16,8 +16,8 @@
   <packaging>maven-plugin</packaging>
 
   <name>Contrast Maven Plugin</name>
-  <description>Maven plugin to test for vulnerabilities when running integration tests for a Java
-    application
+  <description>
+    Maven plugin for including Contrast security analysis in Java web applications
   </description>
   <url>https://docs.contrastsecurity.com/en/maven.html</url>
 
@@ -44,6 +44,10 @@
       <id>ossrh</id>
       <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
+    <site>
+      <id>github</id>
+      <url>scm:git:https://github.com/Contrast-Security-OSS/contrast-maven-plugin.git</url>
+    </site>
   </distributionManagement>
 
   <scm>
@@ -328,6 +332,39 @@
             <phase>deploy</phase>
             <goals>
               <goal>deploy</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-site-plugin</artifactId>
+        <configuration>
+          <!-- disable default deployment because we use maven-scm-publish-plugin for deploying the site to GitHub Pages since the site plugin is incapable of doing this -->
+          <skipDeploy>true</skipDeploy>
+        </configuration>
+        <executions>
+          <execution>
+            <id>stage-site</id>
+            <phase>site-deploy</phase>
+            <goals>
+              <goal>stage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-scm-publish-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <scmBranch>gh-pages</scmBranch>
+          <serverId>github</serverId>
+        </configuration>
+        <executions>
+          <execution>
+            <id>site-deploy</id>
+            <phase>site-deploy</phase>
+            <goals>
+              <goal>publish-scm</goal>
             </goals>
           </execution>
         </executions>
