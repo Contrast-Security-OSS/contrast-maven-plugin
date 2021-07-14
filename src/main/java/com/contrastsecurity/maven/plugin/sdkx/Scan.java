@@ -6,13 +6,44 @@ import java.util.Objects;
 public final class Scan {
 
   /**
+   * static factory that enforces invariants for a waiting scan
+   *
+   * @param id unique ID of this scan
+   * @return new completed Scan
+   */
+  public static Scan createWaiting(final String id) {
+    return new Scan(id, Status.WAITING, null);
+  }
+
+  /**
+   * static factory that enforces invariants for a running scan
+   *
+   * @param id unique ID of this scan
+   * @return new completed Scan
+   */
+  public static Scan createRunning(final String id) {
+    return new Scan(id, Status.RUNNING, null);
+  }
+
+  /**
    * static factory that enforces invariants for a completed scan
    *
    * @param id unique ID of this scan
    * @return new completed Scan
    */
-  static Scan createCompleted(final String id) {
+  public static Scan createCompleted(final String id) {
     return new Scan(id, Status.COMPLETED, null);
+  }
+
+  /**
+   * static factory that enforces invariants for a failed scan
+   *
+   * @param id unique ID of this scan
+   * @param errorMessage error message returned by the Scan API
+   * @return new failed Scan
+   */
+  public static Scan createFailed(final String id, final String errorMessage) {
+    return new Scan(id, Status.FAILED, Objects.requireNonNull(errorMessage));
   }
 
   private final String id;
