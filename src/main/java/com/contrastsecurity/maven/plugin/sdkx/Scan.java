@@ -5,15 +5,44 @@ import java.util.Objects;
 /** TODO[JG] JAVA-3298 move this to the Contrast Java SDK and flesh it out */
 public final class Scan {
 
-  private final String id;
+  /**
+   * static factory that enforces invariants for a completed scan
+   *
+   * @param id unique ID of this scan
+   * @return new completed Scan
+   */
+  static Scan createCompleted(final String id) {
+    return new Scan(id, Status.COMPLETED, null);
+  }
 
-  Scan(final String id) {
+  private final String id;
+  private final Status status;
+  private final String errorMessage;
+
+  /** visible for GSON */
+  Scan(final String id, final Status status, final String errorMessage) {
     this.id = Objects.requireNonNull(id);
+    this.status = Objects.requireNonNull(status);
+    this.errorMessage = errorMessage;
   }
 
   /** @return unique ID of this scan */
   public String getId() {
     return id;
+  }
+
+  /** @return scan status */
+  public Status getStatus() {
+    return status;
+  }
+
+  /** @return error message for failed scan, or {@code null} if the scan has not failed */
+  public String getErrorMessage() {
+    return errorMessage;
+  }
+
+  public boolean isFinished() {
+    return status == Status.FAILED || status == Status.COMPLETED;
   }
 
   @Override
@@ -36,5 +65,13 @@ public final class Scan {
   @Override
   public String toString() {
     return "Scan{" + "id='" + id + '\'' + '}';
+  }
+
+  public enum Status {
+    WAITING,
+    RUNNING,
+    CANCELLED,
+    COMPLETED,
+    FAILED
   }
 }

@@ -16,7 +16,11 @@ import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Extensions to the Contrast SDK for Contrast Scan
@@ -104,7 +108,7 @@ public final class ContrastScanSDK {
       throw new UnauthorizedException(rc);
     }
     if (rc != 201) {
-      throw new ContrastException(rc, "Failed to upload code artifact to Contrast Scan");
+      throw new ContrastAPIException(rc, "Failed to upload code artifact to Contrast Scan");
     }
     try (Reader reader = new InputStreamReader(connection.getInputStream())) {
       return gson.fromJson(reader, CodeArtifact.class);
@@ -161,6 +165,19 @@ public final class ContrastScanSDK {
             contrast.makeRequestWithBody(HttpMethod.POST, path, json, MediaType.JSON))) {
       return gson.fromJson(reader, Scan.class);
     }
+  }
+
+  public Scan getScanById(
+      final String organizationId, final String projectId, final String scanId) {
+    throw new RuntimeException("Not yet implemented");
+  }
+
+  public CompletableFuture<Scan> waitForScan(
+      final String organizationId, final String projectId, final String scanId) {
+    final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    final AwaitScan await =
+        new AwaitScan(this, scheduler, organizationId, projectId, scanId, 30, TimeUnit.SECONDS);
+    return await.await().whenComplete((scan, throwable) -> scheduler.shutdown());
   }
 
   private static final String CRLF = "\r\n";
