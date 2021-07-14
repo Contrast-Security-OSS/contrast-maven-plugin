@@ -9,13 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Contrast Scan support
 
 ### Removed
-- `profile` configuration which the Contrast server has not supported since before 3.7.7
+- `profile` configuration which the Contrast server has not supported since before 3.7.7.
+- support for JRE 1.7. Requires minimum JRE 1.8
 
 
 ## [2.12] - 2021-03-09
 ### Changed
-- Builds with JDK 8, 11, and 15
-- Targets JRE 7
+- Tested with JDK 1.8, 11, and 15
+- Targets JRE 1.7
 - Maven version > 3.6.1 (Released April 2019) is required to build the plugin
 
 

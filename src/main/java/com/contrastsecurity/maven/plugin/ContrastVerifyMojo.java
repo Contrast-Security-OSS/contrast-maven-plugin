@@ -26,7 +26,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 
 /**
  * Verifies that none of the vulnerabilities found by Contrast Assess during integration testing
- * violate the project's security policy (fails the build when violations are detected)
+ * violate the project's security policy (fails the build when violations are detected).
  */
 @Mojo(name = "verify", requiresOnline = true, defaultPhase = LifecyclePhase.VERIFY)
 public final class ContrastVerifyMojo extends AbstractAssessMojo {

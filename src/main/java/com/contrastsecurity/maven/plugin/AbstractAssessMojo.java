@@ -11,7 +11,7 @@ abstract class AbstractAssessMojo extends AbstractContrastMojo {
    * As near as I can tell, there doesn't appear to be any way to share data between Mojo phases.
    * However, we need to compute the appVersion in the install phase and then use the
    * computedAppVersion in the verify phase. Setting the field to static is the only way I found for
-   * it to work
+   * it to work.
    *
    * @deprecated [JG] the Maven solution for the aforementioned issue is to save the information to
    *     the file system between goals, so we will deprecate this static field in favor of that

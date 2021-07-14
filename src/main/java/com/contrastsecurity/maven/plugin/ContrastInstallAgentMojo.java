@@ -23,7 +23,7 @@ import org.apache.maven.project.MavenProject;
 
 /**
  * Includes the Contrast Java agent in integration testing to provide Contrast Assess runtime
- * security analysis
+ * security analysis.
  */
 @Mojo(name = "install", defaultPhase = LifecyclePhase.VALIDATE, requiresOnline = true)
 public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
@@ -32,7 +32,7 @@ public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
   private MavenProject project;
 
   /**
-   * When {@code true}, will not alter the Maven {@code argLine} property
+   * When {@code true}, will not alter the Maven {@code argLine} property.
    *
    * @since 2.0
    */
@@ -40,7 +40,8 @@ public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
   boolean skipArgLine;
 
   /**
-   * "true" if this is a standalone application (e.g. uses an embedded web server vs war packaging)
+   * When "true", will configure Contrast to treat this as a standalone application (e.g. one that
+   * uses an embedded web server vs war packaging).
    *
    * @since 2.2
    */
@@ -48,8 +49,10 @@ public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
   boolean standalone;
 
   /**
-   * Override the reported server environment. {@see
-   * https://docs.contrastsecurity.com/en/server-configuration.html}
+   * Override the reported server environment {@see
+   * https://docs.contrastsecurity.com/en/server-configuration.html}.
+   *
+   * @since 2.9
    */
   @Parameter(property = "environment")
   private String environment;
@@ -77,15 +80,21 @@ public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
 
   /**
    * Define a set of key=value pairs (which conforms to RFC 2253) for specifying user-defined
-   * metadata associated with the application. The set must be formatted as a comma-delimited list
+   * metadata associated with the application. The set must be formatted as a comma-delimited list.
    * of {@code key=value} pairs.
    *
    * <p>Example - "business-unit=accounting, office=Baltimore"
+   *
+   * @since 2.9
    */
   @Parameter(property = "applicationSessionMetadata")
   private String applicationSessionMetadata;
 
-  /** Tags to apply to the Contrast application. Must be formatted as a comma-delimited list */
+  /**
+   * Tags to apply to the Contrast application. Must be formatted as a comma-delimited list.
+   *
+   * @since 2.9
+   */
   @Parameter(property = "applicationTags")
   private String applicationTags;
 
@@ -95,10 +104,11 @@ public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
    * appVersion in the following order:
    *
    * <ol>
-   *   <li>The {@code appVersion} as configured in the plugin properties
+   *   <li>The {@code appVersion} as configured in the plugin properties.
    *   <li>If your build is running in TravisCI, Contrast will use {@code
-   *       appName-$TRAVIS_BUILD_NUMBER}
-   *   <li>If your build is running in CircleCI, Contrast will use {@code appName-$CIRCLE_BUILD_NUM}
+   *       appName-$TRAVIS_BUILD_NUMBER}.
+   *   <li>If your build is running in CircleCI, Contrast will use {@code
+   *       appName-$CIRCLE_BUILD_NUM}.
    *   <li>If none of the above apply, Contrast will use a timestamp {@code appName-yyyyMMddHHmmss}
    *       format.
    * </ol>
