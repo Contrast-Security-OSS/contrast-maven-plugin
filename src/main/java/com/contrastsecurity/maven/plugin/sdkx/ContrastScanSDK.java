@@ -38,7 +38,7 @@ public final class ContrastScanSDK {
    * Creates a new {@code ContrastScanSDK} that delegates to the given {@link ContrastSDK}
    *
    * @param contrast the {@link ContrastSDK} this type extends with Scan support
-   * @param restURL  URL for the Contrast REST API
+   * @param restURL URL for the Contrast REST API
    */
   public ContrastScanSDK(final ContrastSDK contrast, final String restURL) {
     this.contrast = contrast;
@@ -50,9 +50,9 @@ public final class ContrastScanSDK {
    * analysis.
    *
    * @param organizationId unique ID for the user's organization
-   * @param request        parameters for creating the new code artifact
+   * @param request parameters for creating the new code artifact
    * @return new {@link CodeArtifact} from Contrast
-   * @throws IOException           when an IO error occurs while uploading the file
+   * @throws IOException when an IO error occurs while uploading the file
    * @throws UnauthorizedException when Contrast rejects this request as unauthorized
    */
   public CodeArtifact createCodeArtifact(
@@ -141,9 +141,9 @@ public final class ContrastScanSDK {
    * Starts a new scan
    *
    * @param organizationId unique ID for the user's organization
-   * @param request        parameters for requesting a new scan
+   * @param request parameters for requesting a new scan
    * @return new scan operation
-   * @throws IOException           when an IO error occurs while uploading the file
+   * @throws IOException when an IO error occurs while uploading the file
    * @throws UnauthorizedException when Contrast rejects this request as unauthorized
    */
   public Scan startScan(final String organizationId, final StartScanRequest request)
@@ -167,17 +167,16 @@ public final class ContrastScanSDK {
     }
   }
 
-  public Scan getScanById(final String organizationId, final String projectId,
-      final String scanId) {
+  public Scan getScanById(
+      final String organizationId, final String projectId, final String scanId) {
     throw new RuntimeException("Not yet implemented");
   }
 
-  public CompletableFuture<Scan> waitForScan(final String organizationId, final String projectId,
-      final String scanId) {
+  public CompletableFuture<Scan> waitForScan(
+      final String organizationId, final String projectId, final String scanId) {
     final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-    final AwaitScan await = new AwaitScan(this, scheduler,
-        organizationId, projectId, scanId, 30,
-        TimeUnit.SECONDS);
+    final AwaitScan await =
+        new AwaitScan(this, scheduler, organizationId, projectId, scanId, 30, TimeUnit.SECONDS);
     return await.await().whenComplete((scan, throwable) -> scheduler.shutdown());
   }
 
