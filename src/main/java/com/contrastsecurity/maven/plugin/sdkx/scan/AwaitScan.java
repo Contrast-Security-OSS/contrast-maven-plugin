@@ -1,6 +1,12 @@
-package com.contrastsecurity.maven.plugin.sdkx;
+package com.contrastsecurity.maven.plugin.sdkx.scan;
 
+import com.contrastsecurity.exceptions.UnauthorizedException;
+import com.contrastsecurity.maven.plugin.sdkx.ContrastScanSDK;
+import com.contrastsecurity.maven.plugin.sdkx.Scan;
 import com.contrastsecurity.maven.plugin.sdkx.Scan.Status;
+import com.contrastsecurity.maven.plugin.sdkx.ScanFailedException;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
@@ -39,7 +45,16 @@ final class AwaitScan {
 
   CompletableFuture<Scan> await(final Executor executor) {
     return CompletableFuture.supplyAsync(
-            () -> contrast.getScanById(organizationId, projectId, scanId), executor)
+            () -> {
+              try {
+                return contrast.getScanById(organizationId, projectId, scanId);
+              } catch (final IOException e) {
+                throw new UncheckedIOException(e);
+              } catch (final UnauthorizedException e) {
+                throw new IllegalStateException("Failed to authenticate to Contrast", e);
+              }
+            },
+            executor)
         .thenCompose(
             scan -> {
               if (scan.getStatus() == Status.FAILED) {

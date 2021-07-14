@@ -3,6 +3,7 @@ package com.contrastsecurity.maven.plugin;
 import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.maven.plugin.sdkx.CodeArtifact;
 import com.contrastsecurity.maven.plugin.sdkx.ContrastScanSDK;
+import com.contrastsecurity.maven.plugin.sdkx.ContrastScanSDKImpl;
 import com.contrastsecurity.maven.plugin.sdkx.NewCodeArtifactRequest;
 import com.contrastsecurity.maven.plugin.sdkx.Scan;
 import com.contrastsecurity.maven.plugin.sdkx.StartScanRequest;
@@ -68,7 +69,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
   public void execute() throws MojoExecutionException {
     // initialize plugin
     initialize();
-    final ContrastScanSDK contrastScan = new ContrastScanSDK(contrast, getURL());
+    final ContrastScanSDK contrastScan = new ContrastScanSDKImpl(contrast, getURL());
 
     // check that file exists
     final Path file = artifact == null ? project.getArtifact().getFile().toPath() : artifact;
