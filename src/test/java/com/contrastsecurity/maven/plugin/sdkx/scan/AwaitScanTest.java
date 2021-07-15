@@ -10,7 +10,9 @@ import com.contrastsecurity.maven.plugin.sdkx.Scan;
 import com.contrastsecurity.maven.plugin.sdkx.ScanFailedException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -32,7 +34,7 @@ final class AwaitScanTest {
     contrast = mock(ContrastScanSDK.class);
     as =
         new AwaitScan(
-            contrast, scheduler, ORGANIZATION_ID, PROJECT_ID, SCAN_ID, 1, TimeUnit.MILLISECONDS);
+            contrast, scheduler, ORGANIZATION_ID, PROJECT_ID, SCAN_ID, Duration.ofMillis(1));
   }
 
   @AfterEach
@@ -43,11 +45,11 @@ final class AwaitScanTest {
   @Test
   void completes_successfully_when_scan_is_completed() throws UnauthorizedException, IOException {
     // GIVEN the scan has already been completed
-    final Scan completed = Scan.createCompleted(SCAN_ID);
+    final Scan completed = Scan.createCompleted(SCAN_ID, PROJECT_ID, ORGANIZATION_ID);
     when(contrast.getScanById(ORGANIZATION_ID, PROJECT_ID, SCAN_ID)).thenReturn(completed);
 
     // WHEN await scan to finish
-    final CompletableFuture<Scan> future = as.await();
+    final CompletionStage<Scan> future = as.await();
 
     // THEN succeeds
     assertThat(future).succeedsWithin(1, TimeUnit.SECONDS).isEqualTo(completed);
@@ -57,14 +59,14 @@ final class AwaitScanTest {
   void completes_successfully_when_scan_eventually_completes()
       throws UnauthorizedException, IOException {
     // GIVEN the scan has not yet started, then starts, then completes
-    final Scan waiting = Scan.createWaiting(SCAN_ID);
-    final Scan running = Scan.createRunning(SCAN_ID);
-    final Scan completed = Scan.createCompleted(SCAN_ID);
+    final Scan waiting = Scan.createWaiting(SCAN_ID, PROJECT_ID, ORGANIZATION_ID);
+    final Scan running = Scan.createRunning(SCAN_ID, PROJECT_ID, ORGANIZATION_ID);
+    final Scan completed = Scan.createCompleted(SCAN_ID, PROJECT_ID, ORGANIZATION_ID);
     when(contrast.getScanById(ORGANIZATION_ID, PROJECT_ID, SCAN_ID))
         .thenReturn(waiting, running, completed);
 
     // WHEN await scan to finish
-    final CompletableFuture<Scan> future = as.await(scheduler);
+    final CompletionStage<Scan> future = as.await(scheduler);
 
     // THEN completes successfully
     assertThat(future).succeedsWithin(1, TimeUnit.SECONDS).isEqualTo(completed);
@@ -73,11 +75,12 @@ final class AwaitScanTest {
   @Test
   void completes_exceptionally_when_scan_has_failed() throws UnauthorizedException, IOException {
     // GIVEN the scan has already failed
-    final Scan failed = Scan.createFailed(SCAN_ID, "DNS exploded again");
+    final Scan failed =
+        Scan.createFailed(SCAN_ID, PROJECT_ID, ORGANIZATION_ID, "DNS exploded again");
     when(contrast.getScanById(ORGANIZATION_ID, PROJECT_ID, SCAN_ID)).thenReturn(failed);
 
     // WHEN await scan to finish
-    final CompletableFuture<Scan> future = as.await();
+    final CompletionStage<Scan> future = as.await();
 
     // THEN fails
     assertThat(future).failsWithin(1, TimeUnit.SECONDS);
@@ -87,14 +90,15 @@ final class AwaitScanTest {
   void completes_exceptionally_when_scan_eventually_fails()
       throws UnauthorizedException, IOException {
     // GIVEN the scan has not yet started, then starts, then fails
-    final Scan waiting = Scan.createWaiting(SCAN_ID);
-    final Scan running = Scan.createRunning(SCAN_ID);
-    final Scan failed = Scan.createFailed(SCAN_ID, "DNS exploded again");
+    final Scan waiting = Scan.createWaiting(SCAN_ID, PROJECT_ID, ORGANIZATION_ID);
+    final Scan running = Scan.createRunning(SCAN_ID, PROJECT_ID, ORGANIZATION_ID);
+    final Scan failed =
+        Scan.createFailed(SCAN_ID, PROJECT_ID, ORGANIZATION_ID, "DNS exploded again");
     when(contrast.getScanById(ORGANIZATION_ID, PROJECT_ID, SCAN_ID))
         .thenReturn(waiting, running, failed);
 
     // WHEN await scan to finish
-    final CompletableFuture<Scan> future = as.await(scheduler);
+    final CompletionStage<Scan> future = as.await(scheduler);
 
     // THEN completes successfully
     assertThat(future)
@@ -108,14 +112,14 @@ final class AwaitScanTest {
   @Test
   void completes_exceptionally_when_get_scan_throws() throws UnauthorizedException, IOException {
     // GIVEN the scan has not yet started, then starts, then fails
-    final Scan waiting = Scan.createWaiting(SCAN_ID);
-    final Scan running = Scan.createRunning(SCAN_ID);
+    final Scan waiting = Scan.createWaiting(SCAN_ID, PROJECT_ID, ORGANIZATION_ID);
+    final Scan running = Scan.createRunning(SCAN_ID, PROJECT_ID, ORGANIZATION_ID);
     when(contrast.getScanById(ORGANIZATION_ID, PROJECT_ID, SCAN_ID))
         .thenReturn(waiting, running, running)
         .thenThrow(new IOException("NIC melted"));
 
     // WHEN await scan to finish
-    final CompletableFuture<Scan> future = as.await(scheduler);
+    final CompletionStage<Scan> future = as.await(scheduler);
 
     // THEN completes successfully
     assertThat(future)

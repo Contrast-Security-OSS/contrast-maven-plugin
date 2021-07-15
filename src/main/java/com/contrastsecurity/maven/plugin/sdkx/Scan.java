@@ -9,50 +9,75 @@ public final class Scan {
    * static factory that enforces invariants for a waiting scan
    *
    * @param id unique ID of this scan
+   * @param projectId unique ID of the Scan project
+   * @param organizationId unique Contrast organization ID
    * @return new completed Scan
    */
-  public static Scan createWaiting(final String id) {
-    return new Scan(id, Status.WAITING, null);
+  public static Scan createWaiting(
+      final String id, final String projectId, final String organizationId) {
+    return new Scan(id, projectId, organizationId, Status.WAITING, null);
   }
 
   /**
    * static factory that enforces invariants for a running scan
    *
    * @param id unique ID of this scan
+   * @param projectId unique ID of the Scan project
+   * @param organizationId unique Contrast organization ID
    * @return new completed Scan
    */
-  public static Scan createRunning(final String id) {
-    return new Scan(id, Status.RUNNING, null);
+  public static Scan createRunning(
+      final String id, final String projectId, final String organizationId) {
+    return new Scan(id, projectId, organizationId, Status.RUNNING, null);
   }
 
   /**
    * static factory that enforces invariants for a completed scan
    *
    * @param id unique ID of this scan
+   * @param projectId unique ID of the Scan project
+   * @param organizationId unique Contrast organization ID
    * @return new completed Scan
    */
-  public static Scan createCompleted(final String id) {
-    return new Scan(id, Status.COMPLETED, null);
+  public static Scan createCompleted(
+      final String id, final String projectId, final String organizationId) {
+    return new Scan(id, projectId, organizationId, Status.COMPLETED, null);
   }
 
   /**
    * static factory that enforces invariants for a failed scan
    *
    * @param id unique ID of this scan
+   * @param projectId unique ID of the Scan project
+   * @param organizationId unique Contrast organization ID
    * @param errorMessage error message returned by the Scan API
    * @return new failed Scan
    */
-  public static Scan createFailed(final String id, final String errorMessage) {
-    return new Scan(id, Status.FAILED, Objects.requireNonNull(errorMessage));
+  public static Scan createFailed(
+      final String id,
+      final String projectId,
+      final String organizationId,
+      final String errorMessage) {
+    return new Scan(
+        id, projectId, organizationId, Status.FAILED, Objects.requireNonNull(errorMessage));
   }
 
   private final String id;
+  private final String projectId;
+  private final String organizationId;
   private final Status status;
   private final String errorMessage;
 
   /** visible for GSON */
-  Scan(final String id, final Status status, final String errorMessage) {
+  Scan(
+      final String id,
+      final String projectId,
+      final String organizationId,
+      final Status status,
+      final String errorMessage) {
     this.id = Objects.requireNonNull(id);
+    this.projectId = Objects.requireNonNull(projectId);
+    this.organizationId = Objects.requireNonNull(organizationId);
     this.status = Objects.requireNonNull(status);
     this.errorMessage = errorMessage;
   }
@@ -60,6 +85,16 @@ public final class Scan {
   /** @return unique ID of this scan */
   public String getId() {
     return id;
+  }
+
+  /** @return unique ID of the Scan project that owns this scan */
+  public String getProjectId() {
+    return projectId;
+  }
+
+  /** @return unique ID of the Contrast organization that owns this scan */
+  public String getOrganizationId() {
+    return organizationId;
   }
 
   /** @return scan status */
@@ -85,17 +120,16 @@ public final class Scan {
       return false;
     }
     final Scan scan = (Scan) o;
-    return id.equals(scan.id);
+    return id.equals(scan.id)
+        && projectId.equals(scan.projectId)
+        && organizationId.equals(scan.organizationId)
+        && status == scan.status
+        && Objects.equals(errorMessage, scan.errorMessage);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id);
-  }
-
-  @Override
-  public String toString() {
-    return "Scan{" + "id='" + id + '\'' + '}';
+    return Objects.hash(id, projectId, organizationId, status, errorMessage);
   }
 
   public enum Status {
