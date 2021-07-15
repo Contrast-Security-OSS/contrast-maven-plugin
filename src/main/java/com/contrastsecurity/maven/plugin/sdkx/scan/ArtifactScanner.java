@@ -13,22 +13,30 @@ import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 
+/**
+ * Facilitates analyzing code artifacts with Contrast Scan. Uploads the code artifact to Contrast
+ * Scan, starts a new scan, and provides means for retrieving the results of that scan when it has
+ * completed.
+ */
 public final class ArtifactScanner {
 
   private final ScheduledExecutorService scheduler;
   private final ContrastScanSDK contrast;
   private final String organizationId;
   private final String projectId;
+  private final Duration interval;
 
   public ArtifactScanner(
       final ScheduledExecutorService scheduler,
       final ContrastScanSDK contrast,
       final String organizationId,
-      final String projectId) {
+      final String projectId,
+      final Duration interval) {
     this.scheduler = Objects.requireNonNull(scheduler);
     this.contrast = Objects.requireNonNull(contrast);
     this.organizationId = Objects.requireNonNull(organizationId);
     this.projectId = Objects.requireNonNull(projectId);
+    this.interval = interval;
   }
 
   public ScanOperation scanArtifact(final Path file, final String label) {
@@ -56,6 +64,6 @@ public final class ArtifactScanner {
     } catch (final UnauthorizedException e) {
       throw new IllegalStateException("Failed to authenticate to Contrast", e);
     }
-    return ScanOperation.create(scheduler, contrast, scan, Duration.ofSeconds(30));
+    return ScanOperation.create(scheduler, contrast, scan, interval);
   }
 }

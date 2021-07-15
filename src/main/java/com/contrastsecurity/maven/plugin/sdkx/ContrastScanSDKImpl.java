@@ -7,6 +7,7 @@ import com.contrastsecurity.sdk.ContrastSDK;
 import com.contrastsecurity.utils.ContrastSDKUtils;
 import com.google.gson.Gson;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -168,6 +169,20 @@ public final class ContrastScanSDKImpl implements ContrastScanSDK {
   @Override
   public Scan getScanById(
       final String organizationId, final String projectId, final String scanId) {
+    throw new RuntimeException("Not yet implemented");
+  }
+
+  @Override
+  public InputStream getSarif(final String organizationId, final String projectId,
+      final String scanId)
+      throws IOException, UnauthorizedException {
+    throw new RuntimeException("Not yet implemented");
+  }
+
+  @Override
+  public ScanSummary getScanSummary(final String organizationId, final String projectId,
+      final String scanId)
+      throws IOException, UnauthorizedException {
     throw new RuntimeException("Not yet implemented");
   }
 
