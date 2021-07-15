@@ -111,6 +111,27 @@ public final class Scan {
     return status == Status.FAILED || status == Status.COMPLETED;
   }
 
+  public Scan toRunning() {
+    if (status != Status.WAITING) {
+      throw new IllegalStateException("Only a waiting scan can transition to a running state");
+    }
+    return createRunning(id, projectId, organizationId);
+  }
+
+  public Scan toCompleted() {
+    if (status != Status.RUNNING) {
+      throw new IllegalStateException("Only a running scan can transition to a completed state");
+    }
+    return createCompleted(id, projectId, organizationId);
+  }
+
+  public Scan toFailed(final String errorMessage) {
+    if (status != Status.RUNNING) {
+      throw new IllegalStateException("Only a running scan can transition to a failed state");
+    }
+    return createFailed(id, projectId, organizationId, errorMessage);
+  }
+
   @Override
   public boolean equals(final Object o) {
     if (this == o) {

@@ -9,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
@@ -99,7 +100,8 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
     try {
       final ArtifactScanner scanner =
-          new ArtifactScanner(executor, contrastScan, getOrganizationId(), getProjectId());
+          new ArtifactScanner(executor, contrastScan, getOrganizationId(), getProjectId(),
+              Duration.ofSeconds(30));
 
       getLog().info("Uploading " + file.getFileName() + " to Contrast Scan");
       final ScanOperation operation = scanner.scanArtifact(file, label);
