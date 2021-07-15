@@ -34,45 +34,25 @@ public final class ScanOperation {
                 interval)
             .await()
             .toCompletableFuture();
-
-    // when scan is complete, fetch summary
-    final CompletableFuture<ScanSummary> summary =
-        operation.thenCompose(
-            completed ->
-                CompletableFuture.supplyAsync(
-                    () -> {
-                      try {
-                        return contrast.getScanSummary(
-                            completed.getOrganizationId(),
-                            completed.getProjectId(),
-                            completed.getId());
-                      } catch (final IOException e) {
-                        throw new UncheckedIOException("Failed to retrieve scan status", e);
-                      } catch (final UnauthorizedException e) {
-                        throw new IllegalStateException("Failed to authenticate to Contrast", e);
-                      }
-                    },
-                    scheduler));
-    return new ScanOperation(scheduler, contrast, scan.getId(), operation, summary);
+    return new ScanOperation(scheduler, contrast, scan.getId(), operation);
   }
 
   private final Executor executor;
   private final ContrastScanSDK contrast;
   private final String id;
   private final CompletableFuture<Scan> operation;
-  private final CompletableFuture<ScanSummary> summary;
+
+  private CompletableFuture<ScanSummary> summary;
 
   private ScanOperation(
       final Executor executor,
       final ContrastScanSDK contrast,
       final String id,
-      final CompletableFuture<Scan> operation,
-      final CompletableFuture<ScanSummary> summary) {
+      final CompletableFuture<Scan> operation) {
     this.executor = executor;
     this.contrast = contrast;
     this.id = id;
     this.operation = operation;
-    this.summary = summary;
   }
 
   public String id() {
@@ -96,7 +76,26 @@ public final class ScanOperation {
                 executor));
   }
 
-  public CompletionStage<ScanSummary> summary() {
+  public synchronized CompletionStage<ScanSummary> summary() {
+    if (summary == null || summary.isCompletedExceptionally()) {
+      summary =
+          operation.thenCompose(
+              completed ->
+                  CompletableFuture.supplyAsync(
+                      () -> {
+                        try {
+                          return contrast.getScanSummary(
+                              completed.getOrganizationId(),
+                              completed.getProjectId(),
+                              completed.getId());
+                        } catch (final IOException e) {
+                          throw new UncheckedIOException("Failed to retrieve scan status", e);
+                        } catch (final UnauthorizedException e) {
+                          throw new IllegalStateException("Failed to authenticate to Contrast", e);
+                        }
+                      },
+                      executor));
+    }
     return summary;
   }
 
@@ -121,8 +120,11 @@ public final class ScanOperation {
                     executor));
   }
 
-  public void hangup() {
+  public synchronized void hangup() {
     for (final CompletableFuture<?> stage : Arrays.asList(operation, summary)) {
+      if (stage == null) {
+        continue;
+      }
       stage.toCompletableFuture().cancel(true);
       stage.cancel(true);
     }
