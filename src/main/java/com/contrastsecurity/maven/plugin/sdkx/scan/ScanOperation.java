@@ -16,8 +16,22 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
+/**
+ * Provides methods for asynchronously waiting for a scan to complete and retrieving its results
+ * when it has.
+ */
 public final class ScanOperation {
 
+  /**
+   * Static factory for creating a new {@code ScanOperation}
+   *
+   * @param scheduler for scheduling scan status retrievals and all other retrievals communication
+   *     with the Scan API
+   * @param contrast for communicating with the Contrast Scan API
+   * @param scan the scan on which the new {@code ScanOperation} operates
+   * @param interval the polling interval for retrieving the status of a not-yet-finished scan
+   * @return new {@code ScanOperation}
+   */
   static ScanOperation create(
       final ScheduledExecutorService scheduler,
       final ContrastScanSDK contrast,
@@ -55,27 +69,17 @@ public final class ScanOperation {
     this.operation = operation;
   }
 
+  /** @return scan ID */
   public String id() {
     return id;
   }
 
-  public CompletionStage<InputStream> sarif() {
-    return operation.thenCompose(
-        scan ->
-            CompletableFuture.supplyAsync(
-                () -> {
-                  try {
-                    return contrast.getSarif(
-                        scan.getOrganizationId(), scan.getProjectId(), scan.getId());
-                  } catch (final IOException e) {
-                    throw new UncheckedIOException("Failed to retrieve SARIF", e);
-                  } catch (final UnauthorizedException e) {
-                    throw new IllegalStateException("Failed to authenticate to Contrast", e);
-                  }
-                },
-                executor));
-  }
-
+  /**
+   * Retrieves a summary of the scan results.
+   *
+   * @return {@link CompletionStage} that completes successfully when the scan has completed and the
+   *     summary has been retrieved
+   */
   public synchronized CompletionStage<ScanSummary> summary() {
     if (summary == null || summary.isCompletedExceptionally()) {
       summary =
@@ -99,6 +103,38 @@ public final class ScanOperation {
     return summary;
   }
 
+  /**
+   * Retrieves and scan's results in <a href="https://sarifweb.azurewebsites.net">SARIF</a>
+   *
+   * @return {@link CompletionStage} that completes successfully when the scan has completed and the
+   *     results stream is available to consume. The caller is expected to close the {@code
+   *     InputStream}
+   */
+  public CompletionStage<InputStream> sarif() {
+    return operation.thenCompose(
+        scan ->
+            CompletableFuture.supplyAsync(
+                () -> {
+                  try {
+                    return contrast.getSarif(
+                        scan.getOrganizationId(), scan.getProjectId(), scan.getId());
+                  } catch (final IOException e) {
+                    throw new UncheckedIOException("Failed to retrieve SARIF", e);
+                  } catch (final UnauthorizedException e) {
+                    throw new IllegalStateException("Failed to authenticate to Contrast", e);
+                  }
+                },
+                executor));
+  }
+
+  /**
+   * Retrieves and saves the scan's results (in <a
+   * href="https://sarifweb.azurewebsites.net">SARIF</a>) to the specified file
+   *
+   * @param file the file to which to save the results
+   * @return {@link CompletionStage} that completes successfully when the scan has completed and the
+   *     results file has been saved
+   */
   public CompletionStage<Void> saveSarifToFile(final Path file) {
     return sarif()
         .thenCompose(
@@ -120,7 +156,14 @@ public final class ScanOperation {
                     executor));
   }
 
-  public synchronized void hangup() {
+  /**
+   * Disconnects from the Contrast Scan API. Stops polling for the latest scan status.
+   *
+   * <p>This method is deliberately not named {@code cancel}, because the Contrast Scan API supports
+   * a "cancel scan" operation and this class will likely add a corresponding {@code cancel} method
+   * in the future as it is needed.
+   */
+  public synchronized void disconnect() {
     for (final CompletableFuture<?> stage : Arrays.asList(operation, summary)) {
       if (stage == null) {
         continue;
