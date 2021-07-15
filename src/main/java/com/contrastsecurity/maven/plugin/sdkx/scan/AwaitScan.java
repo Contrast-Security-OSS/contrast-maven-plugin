@@ -3,8 +3,6 @@ package com.contrastsecurity.maven.plugin.sdkx.scan;
 import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.maven.plugin.sdkx.ContrastScanSDK;
 import com.contrastsecurity.maven.plugin.sdkx.Scan;
-import com.contrastsecurity.maven.plugin.sdkx.Scan.Status;
-import com.contrastsecurity.maven.plugin.sdkx.ScanFailedException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.time.Duration;
@@ -47,8 +45,10 @@ final class AwaitScan {
   /**
    * Visible for testing
    *
-   * @param executor
-   * @return
+   * @param executor for executing blocking calls to the Contrast Scan API
+   * @return {@code CompletionStage} that resolves successfully with a {@code Scan} record when the
+   *     scan has completed, or resolves exceptionally with a {@link ScanException} when the scan
+   *     has failed or there was a problem communicating with the Contrast Scan API.
    */
   CompletionStage<Scan> await(final Executor executor) {
     return CompletableFuture.supplyAsync(
@@ -64,12 +64,16 @@ final class AwaitScan {
             executor)
         .thenCompose(
             scan -> {
-              if (scan.getStatus() == Status.FAILED) {
-                throw new ScanFailedException(scan.getErrorMessage());
+              switch (scan.getStatus()) {
+                case FAILED:
+                  throw new ScanException(scan, scan.getErrorMessage());
+                case CANCELLED:
+                  throw new ScanException(scan, "Canceled");
+                case COMPLETED:
+                  return CompletableFuture.completedFuture(scan);
+                default:
+                  return await(delayedExecutor(delay, scheduler));
               }
-              return scan.isFinished()
-                  ? CompletableFuture.completedFuture(scan)
-                  : await(delayedExecutor(delay, scheduler));
             });
   }
 

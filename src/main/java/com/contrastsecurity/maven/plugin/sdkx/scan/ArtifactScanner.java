@@ -26,6 +26,14 @@ public final class ArtifactScanner {
   private final String projectId;
   private final Duration interval;
 
+  /**
+   * @param scheduler for scheduling scan status retrievals and all other retrievals communication
+   *     with the Scan API
+   * @param contrast for communicating with the Contrast Scan API
+   * @param organizationId unique ID of the organization in which the project exists
+   * @param projectId unique ID of the Contrast Scan project
+   * @param interval the polling interval for retrieving the status of a not-yet-finished scan
+   */
   public ArtifactScanner(
       final ScheduledExecutorService scheduler,
       final ContrastScanSDK contrast,
@@ -39,6 +47,13 @@ public final class ArtifactScanner {
     this.interval = interval;
   }
 
+  /**
+   * Uploads the given code artifact to Contrast and starts a new scan.
+   *
+   * @param file code artifact to analyze
+   * @param label distinguishes this scan from others in your project
+   * @return new {@link ScanOperation} for retrieving scan results
+   */
   public ScanOperation scanArtifact(final Path file, final String label) {
     final NewCodeArtifactRequest newCodeArtifactRequest =
         NewCodeArtifactRequest.of(projectId, file);

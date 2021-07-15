@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.maven.plugin.sdkx.ContrastScanSDK;
 import com.contrastsecurity.maven.plugin.sdkx.Scan;
-import com.contrastsecurity.maven.plugin.sdkx.ScanFailedException;
 import com.contrastsecurity.maven.plugin.sdkx.ScanSummary;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -49,7 +48,7 @@ final class ScanOperationTest {
 
   @AfterEach
   void after() {
-    operation.hangup();
+    operation.disconnect();
     scheduler.shutdownNow();
   }
 
@@ -143,8 +142,33 @@ final class ScanOperationTest {
           .failsWithin(Duration.ofMillis(10))
           .withThrowableOfType(ExecutionException.class)
           .havingCause()
-          .isInstanceOf(ScanFailedException.class)
+          .isInstanceOf(ScanException.class)
           .withMessage("DNS again");
+    }
+  }
+
+  @Test
+  void fails_to_retrieve_results_when_scan_is_canceled() throws UnauthorizedException, IOException {
+    // GIVEN the user cancels the scan through some other means while it is running
+    final Scan waiting = this.scan;
+    final Scan running = waiting.toRunning();
+    final Scan canceled = running.toCanceled();
+    when(contrast.getScanById(waiting.getOrganizationId(), waiting.getProjectId(), waiting.getId()))
+        .thenReturn(waiting, running, running, canceled);
+    startScanOperation();
+
+    // WHEN request results
+    final CompletionStage<ScanSummary> summary = operation.summary();
+    final CompletionStage<InputStream> sarif = operation.sarif();
+
+    // THEN futures complete exceptionally
+    for (final CompletionStage<?> result : Arrays.asList(summary, sarif)) {
+      assertThat(result)
+          .failsWithin(Duration.ofMillis(10))
+          .withThrowableOfType(ExecutionException.class)
+          .havingCause()
+          .isInstanceOf(ScanException.class)
+          .withMessage("Canceled");
     }
   }
 
@@ -156,7 +180,7 @@ final class ScanOperationTest {
     startScanOperation();
 
     // WHEN hangup operation
-    operation.hangup();
+    operation.disconnect();
 
     // THEN operation ceases to poll for updates
     // sleep a little to allow executor's queue to clear out

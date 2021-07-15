@@ -125,7 +125,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
 
       // if should not wait, then stop asking for scan results and return
       if (!waitForResults) {
-        operation.hangup();
+        operation.disconnect();
         return;
       }
 

@@ -11,7 +11,7 @@ public final class Scan {
    * @param id unique ID of this scan
    * @param projectId unique ID of the Scan project
    * @param organizationId unique Contrast organization ID
-   * @return new completed Scan
+   * @return new completed {@code Scan}
    */
   public static Scan createWaiting(
       final String id, final String projectId, final String organizationId) {
@@ -24,7 +24,7 @@ public final class Scan {
    * @param id unique ID of this scan
    * @param projectId unique ID of the Scan project
    * @param organizationId unique Contrast organization ID
-   * @return new completed Scan
+   * @return new completed {@code Scan}
    */
   public static Scan createRunning(
       final String id, final String projectId, final String organizationId) {
@@ -37,11 +37,24 @@ public final class Scan {
    * @param id unique ID of this scan
    * @param projectId unique ID of the Scan project
    * @param organizationId unique Contrast organization ID
-   * @return new completed Scan
+   * @return new completed {@code Scan}
    */
   public static Scan createCompleted(
       final String id, final String projectId, final String organizationId) {
     return new Scan(id, projectId, organizationId, Status.COMPLETED, null);
+  }
+
+  /**
+   * static factory that enforces invariants for a canceled scan
+   *
+   * @param id unique ID of this scan
+   * @param projectId unique ID of the Scan project
+   * @param organizationId unique Contrast organization ID
+   * @return new canceled {@code Scan}
+   */
+  public static Scan createCanceled(
+      final String id, final String projectId, final String organizationId) {
+    return new Scan(id, projectId, organizationId, Status.CANCELLED, null);
   }
 
   /**
@@ -107,10 +120,18 @@ public final class Scan {
     return errorMessage;
   }
 
+  /** @return true when the scan has completed, failed, or been canceled */
   public boolean isFinished() {
-    return status == Status.FAILED || status == Status.COMPLETED;
+    return status == Status.FAILED || status == Status.COMPLETED || status == Status.CANCELLED;
   }
 
+  /**
+   * Factory that creates a new {@code Scan} with the same properties as this one albeit in the
+   * "running" state
+   *
+   * @return new {@code Scan} in the running state
+   * @throws IllegalStateException when this is not in the "waiting" state
+   */
   public Scan toRunning() {
     if (status != Status.WAITING) {
       throw new IllegalStateException("Only a waiting scan can transition to a running state");
@@ -118,6 +139,13 @@ public final class Scan {
     return createRunning(id, projectId, organizationId);
   }
 
+  /**
+   * Factory that creates a new {@code Scan} with the same properties as this one albeit in the
+   * "completed" state
+   *
+   * @return new {@code Scan} in the running state
+   * @throws IllegalStateException when this is not in the "running" state
+   */
   public Scan toCompleted() {
     if (status != Status.RUNNING) {
       throw new IllegalStateException("Only a running scan can transition to a completed state");
@@ -125,11 +153,33 @@ public final class Scan {
     return createCompleted(id, projectId, organizationId);
   }
 
+  /**
+   * Factory that creates a new {@code Scan} with the same properties as this one albeit in the
+   * "failed" state
+   *
+   * @param errorMessage error message returned by the Scan API
+   * @return new {@code Scan} in the running state
+   * @throws IllegalStateException when this is not in the "running" state
+   */
   public Scan toFailed(final String errorMessage) {
     if (status != Status.RUNNING) {
       throw new IllegalStateException("Only a running scan can transition to a failed state");
     }
     return createFailed(id, projectId, organizationId, errorMessage);
+  }
+
+  /**
+   * Factory that creates a new {@code Scan} with the same properties as this one albeit in the
+   * "canceled" state
+   *
+   * @return new {@code Scan} in the running state
+   * @throws IllegalStateException when this is not in the "running" state
+   */
+  public Scan toCanceled() {
+    if (status != Status.RUNNING) {
+      throw new IllegalStateException("Only a running scan can transition to a failed state");
+    }
+    return createCanceled(id, projectId, organizationId);
   }
 
   @Override

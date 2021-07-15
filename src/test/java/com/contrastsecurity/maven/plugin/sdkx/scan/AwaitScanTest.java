@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.maven.plugin.sdkx.ContrastScanSDK;
 import com.contrastsecurity.maven.plugin.sdkx.Scan;
-import com.contrastsecurity.maven.plugin.sdkx.ScanFailedException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.time.Duration;
@@ -103,7 +102,7 @@ final class AwaitScanTest {
     assertThat(future)
         .failsWithin(1, TimeUnit.SECONDS)
         .withThrowableOfType(ExecutionException.class)
-        .withCauseExactlyInstanceOf(ScanFailedException.class)
+        .withCauseExactlyInstanceOf(ScanException.class)
         .havingCause()
         .withMessage("DNS exploded again");
   }
