@@ -100,8 +100,8 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
     try {
       final ArtifactScanner scanner =
-          new ArtifactScanner(executor, contrastScan, getOrganizationId(), getProjectId(),
-              Duration.ofSeconds(30));
+          new ArtifactScanner(
+              executor, contrastScan, getOrganizationId(), getProjectId(), Duration.ofSeconds(30));
 
       getLog().info("Uploading " + file.getFileName() + " to Contrast Scan");
       final ScanOperation operation = scanner.scanArtifact(file, label);
@@ -130,7 +130,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
       }
 
       // else wait for results, output summary to console, output sarif to file system
-      final CompletionStage<Void> save = operation.saveResultsToFile(null);
+      final CompletionStage<Void> save = operation.saveSarifToFile(null);
       final CompletionStage<Void> output =
           operation
               .summary()

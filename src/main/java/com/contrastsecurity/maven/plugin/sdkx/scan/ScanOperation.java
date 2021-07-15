@@ -7,13 +7,14 @@ import com.contrastsecurity.maven.plugin.sdkx.ScanSummary;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
-import org.apache.maven.wagon.authentication.AuthenticationException;
 
 public final class ScanOperation {
 
@@ -52,17 +53,23 @@ public final class ScanOperation {
                       }
                     },
                     scheduler));
-    return new ScanOperation(scan.getId(), operation, summary);
+    return new ScanOperation(scheduler, contrast, scan.getId(), operation, summary);
   }
 
+  private final Executor executor;
+  private final ContrastScanSDK contrast;
   private final String id;
   private final CompletableFuture<Scan> operation;
   private final CompletableFuture<ScanSummary> summary;
 
   private ScanOperation(
+      final Executor executor,
+      final ContrastScanSDK contrast,
       final String id,
       final CompletableFuture<Scan> operation,
       final CompletableFuture<ScanSummary> summary) {
+    this.executor = executor;
+    this.contrast = contrast;
     this.id = id;
     this.operation = operation;
     this.summary = summary;
@@ -73,15 +80,45 @@ public final class ScanOperation {
   }
 
   public CompletionStage<InputStream> sarif() {
-    throw new UnsupportedOperationException("Not yet implemented");
+    return operation.thenCompose(
+        scan ->
+            CompletableFuture.supplyAsync(
+                () -> {
+                  try {
+                    return contrast.getSarif(
+                        scan.getOrganizationId(), scan.getProjectId(), scan.getId());
+                  } catch (final IOException e) {
+                    throw new UncheckedIOException("Failed to retrieve SARIF", e);
+                  } catch (final UnauthorizedException e) {
+                    throw new IllegalStateException("Failed to authenticate to Contrast", e);
+                  }
+                },
+                executor));
   }
 
   public CompletionStage<ScanSummary> summary() {
     return summary;
   }
 
-  public CompletionStage<Void> saveResultsToFile(final Path file) {
-    throw new UnsupportedOperationException("not yet implemented");
+  public CompletionStage<Void> saveSarifToFile(final Path file) {
+    return sarif()
+        .thenCompose(
+            is ->
+                CompletableFuture.supplyAsync(
+                    () -> {
+                      try {
+                        Files.copy(is, file);
+                      } catch (final IOException e) {
+                        throw new UncheckedIOException("Failed to save SARIF to file", e);
+                      } finally {
+                        try {
+                          is.close();
+                        } catch (final IOException ignored) {
+                        }
+                      }
+                      return null;
+                    },
+                    executor));
   }
 
   public void hangup() {
