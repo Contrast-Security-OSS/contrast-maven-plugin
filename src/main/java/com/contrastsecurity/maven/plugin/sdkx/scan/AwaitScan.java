@@ -7,11 +7,14 @@ import com.contrastsecurity.maven.plugin.sdkx.Scan.Status;
 import com.contrastsecurity.maven.plugin.sdkx.ScanFailedException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+/** Method object that encapsulates a "wait for a Scan to complete" operation. */
 final class AwaitScan {
 
   private final ContrastScanSDK contrast;
@@ -19,8 +22,7 @@ final class AwaitScan {
   private final String organizationId;
   private final String projectId;
   private final String scanId;
-  private final int delay;
-  private final TimeUnit unit;
+  private final Duration delay;
 
   AwaitScan(
       final ContrastScanSDK contrast,
@@ -28,22 +30,27 @@ final class AwaitScan {
       final String organizationId,
       final String projectId,
       final String scanId,
-      final int delay,
-      final TimeUnit unit) {
+      final Duration delay) {
     this.contrast = contrast;
     this.scheduler = scheduler;
     this.organizationId = organizationId;
     this.projectId = projectId;
     this.scanId = scanId;
     this.delay = delay;
-    this.unit = unit;
   }
 
-  CompletableFuture<Scan> await() {
+  /** @return {@link CompletableFuture} */
+  CompletionStage<Scan> await() {
     return await(scheduler);
   }
 
-  CompletableFuture<Scan> await(final Executor executor) {
+  /**
+   * Visible for testing
+   *
+   * @param executor
+   * @return
+   */
+  CompletionStage<Scan> await(final Executor executor) {
     return CompletableFuture.supplyAsync(
             () -> {
               try {
@@ -62,11 +69,12 @@ final class AwaitScan {
               }
               return scan.isFinished()
                   ? CompletableFuture.completedFuture(scan)
-                  : await(delayedExecutor(delay, unit, scheduler));
+                  : await(delayedExecutor(delay, scheduler));
             });
   }
 
-  private Executor delayedExecutor(long delay, TimeUnit unit, Executor executor) {
-    return r -> scheduler.schedule(() -> executor.execute(r), delay, unit);
+  private Executor delayedExecutor(Duration delay, Executor executor) {
+    return r ->
+        scheduler.schedule(() -> executor.execute(r), delay.toMillis(), TimeUnit.MILLISECONDS);
   }
 }

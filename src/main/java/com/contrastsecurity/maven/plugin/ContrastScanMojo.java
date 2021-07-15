@@ -1,18 +1,21 @@
 package com.contrastsecurity.maven.plugin;
 
-import com.contrastsecurity.exceptions.UnauthorizedException;
-import com.contrastsecurity.maven.plugin.sdkx.CodeArtifact;
 import com.contrastsecurity.maven.plugin.sdkx.ContrastScanSDK;
 import com.contrastsecurity.maven.plugin.sdkx.ContrastScanSDKImpl;
-import com.contrastsecurity.maven.plugin.sdkx.NewCodeArtifactRequest;
-import com.contrastsecurity.maven.plugin.sdkx.Scan;
-import com.contrastsecurity.maven.plugin.sdkx.StartScanRequest;
+import com.contrastsecurity.maven.plugin.sdkx.scan.ArtifactScanner;
+import com.contrastsecurity.maven.plugin.sdkx.scan.ScanOperation;
 import com.contrastsecurity.sdk.ContrastSDK;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -46,12 +49,25 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
    * File path to the Java artifact to upload for scanning. By default, uses the path to this
    * module's Maven artifact produced in the {@code package} phase.
    */
-  @Parameter(name = "artifactPath")
-  private Path artifact;
+  @Parameter private Path artifactPath;
 
   /** A label to distinguish this scan from others in your project */
-  @Parameter(name = "label", defaultValue = "${project.version}")
+  @Parameter(defaultValue = "${project.version}")
   private String label;
+
+  /**
+   * When true, will wait for and retrieve scan results before completing the goal. Otherwise, will
+   * start a scan then complete the goal without waiting for Contrast Scan to complete.
+   */
+  @Parameter(defaultValue = "" + true)
+  private boolean waitForResults;
+
+  /**
+   * Maximum time (in milliseconds) to wait for a Scan to complete. Scans that exceed this threshold
+   * fail this goal.
+   */
+  @Parameter(defaultValue = "" + 20 * 60 * 1000)
+  private long timeout;
 
   private ContrastSDK contrast;
 
@@ -72,54 +88,65 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     final ContrastScanSDK contrastScan = new ContrastScanSDKImpl(contrast, getURL());
 
     // check that file exists
-    final Path file = artifact == null ? project.getArtifact().getFile().toPath() : artifact;
+    final Path file =
+        artifactPath == null ? project.getArtifact().getFile().toPath() : artifactPath;
     if (!Files.exists(file)) {
       throw new MojoExecutionException(
           file
               + " does not exist. Make sure to bind the scan goal to a phase that will execute after the artifact to scan has been built");
     }
-    final NewCodeArtifactRequest codeArtifactRequest = NewCodeArtifactRequest.of(projectId, file);
-    getLog().info("Uploading " + file.getFileName() + " to Contrast Scan");
 
-    // create new code artifact
-    final CodeArtifact artifact;
+    final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
     try {
-      artifact = contrastScan.createCodeArtifact(getOrganizationId(), codeArtifactRequest);
-    } catch (final UnauthorizedException e) {
-      throw new MojoExecutionException("Failed to authenticate to Contrast", e);
-    } catch (final IOException e) {
-      throw new MojoExecutionException("Failed to upload artifact to Contrast Scan", e);
-    }
+      final ArtifactScanner scanner =
+          new ArtifactScanner(executor, contrastScan, getOrganizationId(), getProjectId());
 
-    // start scan for new code artifact
-    final StartScanRequest request =
-        StartScanRequest.builder()
-            .projectId(projectId)
-            .codeArtifactId(artifact.getId())
-            .label(label)
-            .build();
-    final Scan scan;
-    try {
-      scan = contrastScan.startScan(getOrganizationId(), request);
-    } catch (final UnauthorizedException e) {
-      throw new MojoExecutionException("Failed to authenticate to Contrast", e);
-    } catch (final IOException e) {
-      throw new MojoExecutionException(
-          "Failed to start scan for code artifact " + artifact.getId(), e);
-    }
+      getLog().info("Uploading " + file.getFileName() + " to Contrast Scan");
+      final ScanOperation operation = scanner.scanArtifact(file, label);
+      getLog().info("Starting scan with label " + label);
 
-    // show link in build log
-    final URL clickableScanURL;
-    try {
-      clickableScanURL = createClickableScanURL(scan.getId());
-    } catch (final MalformedURLException e) {
-      throw new MojoExecutionException(
-          "Error building clickable Scan URL. Please contact support@contrastsecurity.com for help",
-          e);
+      // show link in build log
+      final URL clickableScanURL;
+      try {
+        clickableScanURL = createClickableScanURL(operation.id());
+      } catch (final MalformedURLException e) {
+        throw new MojoExecutionException(
+            "Error building clickable Scan URL. Please contact support@contrastsecurity.com for help",
+            e);
+      }
+      getLog()
+          .info("Contrast Scan results will be available at " + clickableScanURL.toExternalForm());
+
+      if (true) {
+        throw new UnsupportedOperationException("Not yet implemented");
+      }
+
+      // if should not wait, then stop asking for scan results and return
+      if (!waitForResults) {
+        operation.hangup();
+        return;
+      }
+
+      // else wait for results, output summary to console, output sarif to file system
+      final CompletionStage<Void> save = operation.saveResultsToFile(null);
+      final CompletionStage<Void> output =
+          operation
+              .summary()
+              .thenAccept(
+                  summary -> {
+                    getLog().info("Scan Summary");
+                  });
+      CompletableFuture.allOf(save.toCompletableFuture(), output.toCompletableFuture())
+          .get(timeout, TimeUnit.MILLISECONDS);
+    } catch (final ExecutionException e) {
+      e.printStackTrace();
+    } catch (final InterruptedException e) {
+      e.printStackTrace();
+    } catch (final TimeoutException e) {
+      e.printStackTrace();
+    } finally {
+      executor.shutdown();
     }
-    getLog().info("Starting scan with label " + label);
-    getLog()
-        .info("Contrast Scan results will be available at " + clickableScanURL.toExternalForm());
   }
 
   /**

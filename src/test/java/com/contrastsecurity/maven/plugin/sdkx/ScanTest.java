@@ -22,7 +22,7 @@ final class ScanTest {
     final Scan scan = readScanResource("/scan-api/scans/scan-completed.json");
 
     // THEN has expected ID
-    final Scan expected = Scan.createCompleted("scan-id");
+    final Scan expected = Scan.createCompleted("scan-id", "project-id", "organization-id");
     assertThat(scan).isEqualTo(expected);
   }
 
