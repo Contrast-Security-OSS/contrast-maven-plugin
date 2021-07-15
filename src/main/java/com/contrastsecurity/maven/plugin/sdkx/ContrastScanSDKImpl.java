@@ -173,15 +173,15 @@ public final class ContrastScanSDKImpl implements ContrastScanSDK {
   }
 
   @Override
-  public InputStream getSarif(final String organizationId, final String projectId,
-      final String scanId)
+  public InputStream getSarif(
+      final String organizationId, final String projectId, final String scanId)
       throws IOException, UnauthorizedException {
     throw new RuntimeException("Not yet implemented");
   }
 
   @Override
-  public ScanSummary getScanSummary(final String organizationId, final String projectId,
-      final String scanId)
+  public ScanSummary getScanSummary(
+      final String organizationId, final String projectId, final String scanId)
       throws IOException, UnauthorizedException {
     throw new RuntimeException("Not yet implemented");
   }

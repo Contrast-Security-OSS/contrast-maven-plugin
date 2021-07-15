@@ -1,6 +1,7 @@
 package com.contrastsecurity.maven.plugin.sdkx.scan;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -15,29 +16,56 @@ import com.contrastsecurity.maven.plugin.sdkx.ScanSummary;
 import com.contrastsecurity.maven.plugin.sdkx.StartScanRequest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InOrder;
 
+/**
+ * Unit tests for {@link ArtifactScanner}. Mockist style tests mock the {@link ContrastScanSDK} and
+ * verify that the {@code ArtifactScanner} interacts with it as expected.
+ *
+ * <p>The complexity of monitoring a running scan and retrieving results is encapsulated in {@link
+ * ScanOperation} and not this class. Therefore, these tests cover the happy path and some failure
+ * cases for starting the scan. The more interesting test cases are in {@link ScanOperationTest}.
+ */
 final class ArtifactScannerTest {
 
-  @Test
-  void retrieves_results_after_scan_completes(@TempDir final Path tmp)
-      throws UnauthorizedException, IOException {
-    // GIVEN an ArtifactScanner with a stubbed ContrastScanSDK that successfully completes the scan
-    final Path artifact = tmp.resolve("my-app.jar");
-    final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-    final ContrastScanSDK contrast = mock(ContrastScanSDK.class);
-    final ArtifactScanner scanner =
+  private ScheduledExecutorService executor;
+  private ContrastScanSDK contrast;
+  private ArtifactScanner scanner;
+  private Path artifact;
+  private NewCodeArtifactRequest newCodeArtifactRequest;
+
+  @TempDir Path tmp;
+
+  @BeforeEach
+  void before() {
+    executor = Executors.newSingleThreadScheduledExecutor();
+    contrast = mock(ContrastScanSDK.class);
+    artifact = tmp.resolve("my-app.jar");
+    scanner =
         new ArtifactScanner(executor, contrast, ORGANIZATION_ID, PROJECT_ID, Duration.ofMillis(1));
-    final NewCodeArtifactRequest newCodeArtifactRequest =
-        NewCodeArtifactRequest.of(PROJECT_ID, artifact);
+    newCodeArtifactRequest = NewCodeArtifactRequest.of(PROJECT_ID, artifact);
+  }
+
+  @AfterEach
+  void after() {
+    executor.shutdownNow();
+  }
+
+  /** Happy path test: verifies the full, complete scan operation */
+  @Test
+  void retrieves_results_after_scan_completes() throws UnauthorizedException, IOException {
+    // GIVEN an ArtifactScanner with a stubbed ContrastScanSDK that successfully completes the scan
     when(contrast.createCodeArtifact(ORGANIZATION_ID, newCodeArtifactRequest))
         .thenReturn(CodeArtifact.of(CODE_ARTIFACT_ID));
     final Scan waiting = Scan.createWaiting(SCAN_ID, PROJECT_ID, ORGANIZATION_ID);
@@ -69,9 +97,43 @@ final class ArtifactScannerTest {
 
     // AND saves sarif to file system
     final Path results = tmp.resolve("results.sarif");
-    final CompletionStage<Void> save = operation.saveResultsToFile(results);
+    final CompletionStage<Void> save = operation.saveSarifToFile(results);
     assertThat(save).succeedsWithin(Duration.ofMillis(100));
     assertThat(results).hasContent("results");
+  }
+
+  @Test
+  void throws_when_code_artifact_upload_fails() throws UnauthorizedException, IOException {
+    // WHEN the SDK encounters an error when uploading the code artifact
+    when(contrast.createCodeArtifact(ORGANIZATION_ID, newCodeArtifactRequest))
+        .thenThrow(new IOException("💥"));
+
+    // THEN scan artifact throws
+    assertThatThrownBy(() -> scanner.scanArtifact(artifact, "Test Label"))
+        .isInstanceOf(UncheckedIOException.class)
+        .hasCauseInstanceOf(IOException.class)
+        .hasRootCauseMessage("💥");
+  }
+
+  @Test
+  void throws_when_start_scan_fails() throws UnauthorizedException, IOException {
+    // WHEN the SDK encounters an error when uploading the code artifact
+    when(contrast.createCodeArtifact(ORGANIZATION_ID, newCodeArtifactRequest))
+        .thenReturn(CodeArtifact.of(CODE_ARTIFACT_ID));
+    when(contrast.startScan(
+            ORGANIZATION_ID,
+            StartScanRequest.builder()
+                .projectId(PROJECT_ID)
+                .codeArtifactId(CODE_ARTIFACT_ID)
+                .label("Test Label")
+                .build()))
+        .thenThrow(new IOException("💥"));
+
+    // THEN scan artifact throws
+    assertThatThrownBy(() -> scanner.scanArtifact(artifact, "Test Label"))
+        .isInstanceOf(UncheckedIOException.class)
+        .hasCauseInstanceOf(IOException.class)
+        .hasRootCauseMessage("💥");
   }
 
   private static final String ORGANIZATION_ID = "organization-id";
