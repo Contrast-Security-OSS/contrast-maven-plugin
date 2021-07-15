@@ -2,6 +2,8 @@ package com.contrastsecurity.maven.plugin.sdkx.scan;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.contrastsecurity.exceptions.UnauthorizedException;
@@ -109,18 +111,12 @@ final class ScanOperationTest {
     final Scan completed = running.toCompleted();
     when(contrast.getScanById(waiting.getOrganizationId(), waiting.getProjectId(), waiting.getId()))
         .thenReturn(waiting, running, running, completed);
-    final ScanSummary summary = new ScanSummary();
-    when(contrast.getScanSummary(scan.getOrganizationId(), scan.getProjectId(), scan.getId()))
-        .thenReturn(summary);
     // AND the request for the sarif fails
     when(contrast.getSarif(scan.getOrganizationId(), scan.getProjectId(), scan.getId()))
         .thenThrow(new IOException("💥"));
     startScanOperation();
 
-    // EXPECT summary available
-    assertThat(operation.summary()).succeedsWithin(Duration.ofMillis(10)).isEqualTo(summary);
-
-    // AND SARIF fails
+    // EXPECT SARIF fails
     final Path results = tmp.resolve("results.sarif");
     final CompletionStage<Void> save = operation.saveSarifToFile(results);
     assertThat(save).failsWithin(Duration.ofMillis(100));
@@ -177,6 +173,50 @@ final class ScanOperationTest {
     for (final CompletionStage<?> result : Arrays.asList(operation.summary(), operation.sarif())) {
       assertThat(result).failsWithin(Duration.ofMillis(10));
     }
+  }
+
+  @Test
+  void caches_successful_summary() throws UnauthorizedException, IOException {
+    // GIVEN the scan eventually completes
+    final Scan waiting = this.scan;
+    final Scan running = waiting.toRunning();
+    final Scan completed = running.toCompleted();
+    when(contrast.getScanById(waiting.getOrganizationId(), waiting.getProjectId(), waiting.getId()))
+        .thenReturn(waiting, running, running, completed);
+    final ScanSummary summary = new ScanSummary();
+    when(contrast.getScanSummary(scan.getOrganizationId(), scan.getProjectId(), scan.getId()))
+        .thenReturn(summary);
+    startScanOperation();
+
+    // AND get summary succeeds
+    assertThat(operation.summary()).succeedsWithin(Duration.ofMillis(10)).isEqualTo(summary);
+
+    // EXPECT calling get summary again to reuse already retrieved summary
+    assertThat(operation.summary()).succeedsWithin(Duration.ofMillis(10)).isEqualTo(summary);
+    verify(contrast, times(1))
+        .getScanSummary(scan.getOrganizationId(), scan.getProjectId(), scan.getId());
+  }
+
+  @Test
+  void does_not_cache_failed_summary() throws UnauthorizedException, IOException {
+    // GIVEN the scan eventually completes
+    final Scan waiting = this.scan;
+    final Scan running = waiting.toRunning();
+    final Scan completed = running.toCompleted();
+    when(contrast.getScanById(waiting.getOrganizationId(), waiting.getProjectId(), waiting.getId()))
+        .thenReturn(waiting, running, running, completed);
+    final ScanSummary summary = new ScanSummary();
+    // AND the request for a summary initially fails then succeeds
+    when(contrast.getScanSummary(scan.getOrganizationId(), scan.getProjectId(), scan.getId()))
+        .thenThrow(new IOException("💥"))
+        .thenReturn(summary);
+    startScanOperation();
+
+    // EXPECT get summary fails
+    assertThat(operation.summary()).failsWithin(Duration.ofMillis(10));
+
+    // EXPECT get summary succeeds on second attempt
+    assertThat(operation.summary()).succeedsWithin(Duration.ofMillis(10)).isEqualTo(summary);
   }
 
   private void startScanOperation() {
