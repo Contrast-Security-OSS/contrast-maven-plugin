@@ -167,23 +167,65 @@ public final class ContrastScanSDKImpl implements ContrastScanSDK {
   }
 
   @Override
-  public Scan getScanById(
-      final String organizationId, final String projectId, final String scanId) {
-    throw new RuntimeException("Not yet implemented");
+  public Scan getScanById(final String organizationId, final String projectId, final String scanId)
+      throws UnauthorizedException, IOException {
+    // requests made with ContrastSDK.makeRequest must have their path prepended with "/"
+    final String path =
+        String.join(
+            "/",
+            "",
+            "sast",
+            "organizations",
+            organizationId,
+            "projects",
+            projectId,
+            "scans",
+            scanId);
+    try (Reader reader = new InputStreamReader(contrast.makeRequest(HttpMethod.GET, path))) {
+      return gson.fromJson(reader, Scan.class);
+    }
   }
 
   @Override
   public InputStream getSarif(
       final String organizationId, final String projectId, final String scanId)
       throws IOException, UnauthorizedException {
-    throw new RuntimeException("Not yet implemented");
+    // requests made with ContrastSDK.makeRequest must have their path prepended with "/"
+    final String path =
+        String.join(
+            "/",
+            "",
+            "sast",
+            "organizations",
+            organizationId,
+            "projects",
+            projectId,
+            "scans",
+            scanId,
+            "raw-output");
+    return contrast.makeRequest(HttpMethod.GET, path);
   }
 
   @Override
   public ScanSummary getScanSummary(
       final String organizationId, final String projectId, final String scanId)
       throws IOException, UnauthorizedException {
-    throw new RuntimeException("Not yet implemented");
+    // requests made with ContrastSDK.makeRequest must have their path prepended with "/"
+    final String path =
+        String.join(
+            "/",
+            "",
+            "sast",
+            "organizations",
+            organizationId,
+            "projects",
+            projectId,
+            "scans",
+            scanId,
+            "summary");
+    try (Reader reader = new InputStreamReader(contrast.makeRequest(HttpMethod.GET, path))) {
+      return gson.fromJson(reader, ScanSummary.class);
+    }
   }
 
   private static final String CRLF = "\r\n";

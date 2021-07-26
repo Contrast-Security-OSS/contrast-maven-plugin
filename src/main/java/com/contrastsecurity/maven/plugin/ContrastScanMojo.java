@@ -2,9 +2,12 @@ package com.contrastsecurity.maven.plugin;
 
 import com.contrastsecurity.maven.plugin.sdkx.ContrastScanSDK;
 import com.contrastsecurity.maven.plugin.sdkx.ContrastScanSDKImpl;
+import com.contrastsecurity.maven.plugin.sdkx.ScanSummary;
 import com.contrastsecurity.maven.plugin.sdkx.scan.ArtifactScanner;
 import com.contrastsecurity.maven.plugin.sdkx.scan.ScanOperation;
 import com.contrastsecurity.sdk.ContrastSDK;
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -17,6 +20,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -50,7 +54,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
    * File path to the Java artifact to upload for scanning. By default, uses the path to this
    * module's Maven artifact produced in the {@code package} phase.
    */
-  @Parameter private Path artifactPath;
+  @Parameter private File artifactPath;
 
   /** A label to distinguish this scan from others in your project */
   @Parameter(defaultValue = "${project.version}")
@@ -62,6 +66,14 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
    */
   @Parameter(defaultValue = "" + true)
   private boolean waitForResults;
+
+  @Parameter(defaultValue = "" + true)
+  private boolean consoleOutput;
+
+  @Parameter(
+      defaultValue =
+          "${project.build.directory}/contrast-scan-reports/contrast-scan-results.sarif.json")
+  private File outputPath;
 
   /**
    * Maximum time (in milliseconds) to wait for a Scan to complete. Scans that exceed this threshold
@@ -82,6 +94,16 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     this.projectId = projectId;
   }
 
+  /** visible for testing */
+  boolean isConsoleOutput() {
+    return consoleOutput;
+  }
+
+  /** visible for testing */
+  public void setConsoleOutput(final boolean consoleOutput) {
+    this.consoleOutput = consoleOutput;
+  }
+
   @Override
   public void execute() throws MojoExecutionException {
     // initialize plugin
@@ -90,7 +112,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
 
     // check that file exists
     final Path file =
-        artifactPath == null ? project.getArtifact().getFile().toPath() : artifactPath;
+        artifactPath == null ? project.getArtifact().getFile().toPath() : artifactPath.toPath();
     if (!Files.exists(file)) {
       throw new MojoExecutionException(
           file
@@ -99,9 +121,10 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
 
     final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
     try {
+      final Duration pollStatusInterval = Duration.ofSeconds(30);
       final ArtifactScanner scanner =
           new ArtifactScanner(
-              executor, contrastScan, getOrganizationId(), getProjectId(), Duration.ofSeconds(30));
+              executor, contrastScan, getOrganizationId(), getProjectId(), pollStatusInterval);
 
       getLog().info("Uploading " + file.getFileName() + " to Contrast Scan");
       final ScanOperation operation = scanner.scanArtifact(file, label);
@@ -116,12 +139,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
             "Error building clickable Scan URL. Please contact support@contrastsecurity.com for help",
             e);
       }
-      getLog()
-          .info("Contrast Scan results will be available at " + clickableScanURL.toExternalForm());
-
-      if (true) {
-        throw new UnsupportedOperationException("Not yet implemented");
-      }
+      getLog().info("Scan results will be available at " + clickableScanURL.toExternalForm());
 
       // if should not wait, then stop asking for scan results and return
       if (!waitForResults) {
@@ -130,22 +148,39 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
       }
 
       // else wait for results, output summary to console, output sarif to file system
-      final CompletionStage<Void> save = operation.saveSarifToFile(null);
+      getLog().info("Waiting for scan results");
+      final Path outputFile = outputPath.toPath();
+      final Path reportsDirectory = outputFile.getParent();
+      try {
+        Files.createDirectories(reportsDirectory);
+      } catch (final IOException e) {
+        throw new MojoExecutionException("Failed to create Contrast Scan reports directory", e);
+      }
+      final CompletionStage<Void> save = operation.saveSarifToFile(outputFile);
       final CompletionStage<Void> output =
           operation
               .summary()
-              .thenAccept(
-                  summary -> {
-                    getLog().info("Scan Summary");
-                  });
+              .thenAccept(summary -> writeSummaryToConsole(summary, line -> getLog().info(line)));
       CompletableFuture.allOf(save.toCompletableFuture(), output.toCompletableFuture())
           .get(timeout, TimeUnit.MILLISECONDS);
     } catch (final ExecutionException e) {
-      e.printStackTrace();
+      // try to unwrap the extraneous ExecutionException
+      final Throwable cause = e.getCause();
+      // ExecutionException should always have a cause, but its constructor does not enforce this,
+      // so check if the cause is null
+      final Throwable inner = cause == null ? e : cause;
+      throw new MojoExecutionException("Failed to retrieve Contrast Scan results", inner);
     } catch (final InterruptedException e) {
-      e.printStackTrace();
+      Thread.currentThread().interrupt();
+      throw new MojoExecutionException("Interrupted while retrieving Contrast Scan results", e);
     } catch (final TimeoutException e) {
-      e.printStackTrace();
+      final Duration duration = Duration.ofMillis(timeout);
+      final String durationString =
+          duration.toMinutes() > 0
+              ? duration.toMinutes() + " minutes"
+              : (duration.toMillis() / 1000) + " seconds";
+      throw new MojoExecutionException(
+          "Failed to retrieve Contrast Scan results in " + durationString, e);
     } finally {
       executor.shutdown();
     }
@@ -172,6 +207,22 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
             "scans",
             scanId);
     return new URL(url.getProtocol(), url.getHost(), url.getPort(), path);
+  }
+
+  /**
+   * visible for testing
+   *
+   * @param summary the scan summary to write to console
+   * @param consoleLogger describes a console logger where each accepted string is printed to a new
+   *     line
+   */
+  void writeSummaryToConsole(final ScanSummary summary, final Consumer<String> consoleLogger) {
+    consoleLogger.accept("Scan completed");
+    if (consoleOutput) {
+      consoleLogger.accept("New Results\t" + summary.getTotalNewResults());
+      consoleLogger.accept("Fixed Results\t" + summary.getTotalFixedResults());
+      consoleLogger.accept("Total Results\t" + summary.getTotalResults());
+    }
   }
 
   /**

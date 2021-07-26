@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -30,6 +31,7 @@ final class ScanTest {
   @ValueSource(
       strings = {"/scan-api/scans/scan-completed.json", "/scan-api/scans/scan-failed.json"})
   @ParameterizedTest
+  @Disabled
   void is_finished(final String path) throws IOException {
     final Scan scan = readScanResource(path);
     assertThat(scan.isFinished()).isTrue();

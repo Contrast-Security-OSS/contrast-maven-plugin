@@ -39,18 +39,73 @@ final class FakeContrastAPI implements ContrastAPI {
         "/api/ng/" + ORGANIZATION_ID + "/agents/default/java",
         authenticatedEndpoint(FakeContrastAPI::downloadAgent));
     server.createContext(
-        "/api/sast/organizations/" + ORGANIZATION_ID + "/projects",
+        String.join("/", "", "api", "sast", "organizations", ORGANIZATION_ID, "projects"),
         authenticatedEndpoint(FakeContrastAPI::projects));
     server.createContext(
-        "/api/sast/organizations/"
-            + ORGANIZATION_ID
-            + "/projects/"
-            + PROJECT_ID
-            + "/code-artifacts",
+        String.join(
+            "/",
+            "",
+            "api",
+            "sast",
+            "organizations",
+            ORGANIZATION_ID,
+            "projects",
+            PROJECT_ID,
+            "code-artifacts"),
         authenticatedEndpoint(FakeContrastAPI::uploadCodeArtifact));
     server.createContext(
-        "/api/sast/organizations/" + ORGANIZATION_ID + "/projects/" + PROJECT_ID + "/scans",
+        String.join(
+            "/",
+            "",
+            "api",
+            "sast",
+            "organizations",
+            ORGANIZATION_ID,
+            "projects",
+            PROJECT_ID,
+            "scans"),
         authenticatedEndpoint(FakeContrastAPI::startScan));
+    server.createContext(
+        String.join(
+            "/",
+            "",
+            "api",
+            "sast",
+            "organizations",
+            ORGANIZATION_ID,
+            "projects",
+            PROJECT_ID,
+            "scans",
+            SCAN_ID),
+        authenticatedEndpoint(FakeContrastAPI::scan));
+    server.createContext(
+        String.join(
+            "/",
+            "",
+            "api",
+            "sast",
+            "organizations",
+            ORGANIZATION_ID,
+            "projects",
+            PROJECT_ID,
+            "scans",
+            SCAN_ID,
+            "summary"),
+        authenticatedEndpoint(FakeContrastAPI::scanSummary));
+    server.createContext(
+        String.join(
+            "/",
+            "",
+            "api",
+            "sast",
+            "organizations",
+            ORGANIZATION_ID,
+            "projects",
+            PROJECT_ID,
+            "scans",
+            SCAN_ID,
+            "raw-output"),
+        authenticatedEndpoint(FakeContrastAPI::sarif));
 
     server.setExecutor(Executors.newSingleThreadExecutor());
     try {
@@ -221,10 +276,118 @@ final class FakeContrastAPI implements ContrastAPI {
 
   private static void startScan(final HttpExchange exchange) {
     discardRequest(exchange);
-    final String json = "{\"id\": \"scan-id\"}";
+    final String json =
+        "{\n"
+            + "  \"id\": \""
+            + SCAN_ID
+            + "\",\n"
+            + "  \"organizationId\": \""
+            + ORGANIZATION_ID
+            + "\",\n"
+            + "  \"projectId\": \""
+            + PROJECT_ID
+            + "\",\n"
+            + "  \"codeArtifactId\": \""
+            + CODE_ARTIFACT_ID
+            + "\",\n"
+            + "  \"status\": \"WAITING\",\n"
+            + "  \"createdTime\": \"2021-07-26T18:45:19.222+00:00\",\n"
+            + "  \"startedTime\": null,\n"
+            + "  \"completedTime\": null,\n"
+            + "  \"language\": \"JAVA\",\n"
+            + "  \"label\": \"scan.http\",\n"
+            + "  \"errorMessage\": null,\n"
+            + "  \"includeNamespaceFilters\": [],\n"
+            + "  \"excludeNamespaceFilters\": []\n"
+            + "}";
     final byte[] body = json.getBytes(StandardCharsets.UTF_8);
     try {
       exchange.sendResponseHeaders(201, body.length);
+      exchange.getResponseBody().write(body);
+    } catch (final IOException e) {
+      throw new UncheckedIOException("Failed to send response", e);
+    }
+    exchange.close();
+  }
+
+  private static void scan(final HttpExchange exchange) {
+    discardRequest(exchange);
+    final String json =
+        "{\n"
+            + "  \"id\": \""
+            + SCAN_ID
+            + "\",\n"
+            + "  \"organizationId\": \""
+            + ORGANIZATION_ID
+            + "\",\n"
+            + "  \"projectId\": \""
+            + PROJECT_ID
+            + "\",\n"
+            + "  \"codeArtifactId\": \""
+            + CODE_ARTIFACT_ID
+            + "\",\n"
+            + "  \"status\": \"COMPLETED\",\n"
+            + "  \"createdTime\": \"2021-07-26T18:45:19.222+00:00\",\n"
+            + "  \"startedTime\": \"2021-07-26T18:46:00\",\n"
+            + "  \"completedTime\": \"2021-07-25T18:50:00\",\n"
+            + "  \"language\": \"JAVA\",\n"
+            + "  \"label\": \"scan.http\",\n"
+            + "  \"errorMessage\": null,\n"
+            + "  \"includeNamespaceFilters\": [],\n"
+            + "  \"excludeNamespaceFilters\": []\n"
+            + "}";
+    final byte[] body = json.getBytes(StandardCharsets.UTF_8);
+    try {
+      exchange.sendResponseHeaders(201, body.length);
+      exchange.getResponseBody().write(body);
+    } catch (final IOException e) {
+      throw new UncheckedIOException("Failed to send response", e);
+    }
+    exchange.close();
+  }
+
+  private static void scanSummary(final HttpExchange exchange) {
+    discardRequest(exchange);
+    final String json =
+        "{\n"
+            + "  \"id\": \"results-id\",\n"
+            + "  \"scanId\": \""
+            + SCAN_ID
+            + "\",\n"
+            + "  \"organizationId\": \""
+            + ORGANIZATION_ID
+            + "\",\n"
+            + "  \"projectId\": \""
+            + PROJECT_ID
+            + "\",\n"
+            + "  \"duration\": 0,\n"
+            + "  \"totalResults\": 10,\n"
+            + "  \"totalNewResults\": 8,\n"
+            + "  \"totalFixedResults\": 1,\n"
+            + "  \"lastModifiedDate\": null,\n"
+            + "  \"createdDate\": \"2021-07-08T20:40:44\"\n"
+            + "}";
+    final byte[] body = json.getBytes(StandardCharsets.UTF_8);
+    try {
+      exchange.sendResponseHeaders(200, body.length);
+      exchange.getResponseBody().write(body);
+    } catch (final IOException e) {
+      throw new UncheckedIOException("Failed to send response", e);
+    }
+    exchange.close();
+  }
+
+  private static void sarif(final HttpExchange exchange) {
+    discardRequest(exchange);
+    final String json =
+        "{\n"
+            + "  \"version\": \"2.1.0\",\n"
+            + "  \"$schema\": \"http://json.schemastore.org/sarif-2.1.0-rtm.4\",\n"
+            + "  \"runs\": []\n"
+            + "}";
+    final byte[] body = json.getBytes(StandardCharsets.UTF_8);
+    try {
+      exchange.sendResponseHeaders(200, body.length);
       exchange.getResponseBody().write(body);
     } catch (final IOException e) {
       throw new UncheckedIOException("Failed to send response", e);
@@ -247,6 +410,7 @@ final class FakeContrastAPI implements ContrastAPI {
   private static final String SERVICE_KEY = "test-service-key";
   private static final String ORGANIZATION_ID = "organization-id";
   private static final String PROJECT_ID = "project-id";
+  private static final String SCAN_ID = "scan-id";
   private static final String CODE_ARTIFACT_ID = "code-artifact-id";
   public static final String AUTHORIZATION =
       Base64.getEncoder()
