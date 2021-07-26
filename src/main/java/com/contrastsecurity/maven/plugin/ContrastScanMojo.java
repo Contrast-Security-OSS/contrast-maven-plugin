@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -100,12 +101,12 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
   }
 
   /** visible for testing */
-  public void setConsoleOutput(final boolean consoleOutput) {
+  void setConsoleOutput(final boolean consoleOutput) {
     this.consoleOutput = consoleOutput;
   }
 
   @Override
-  public void execute() throws MojoExecutionException {
+  public void execute() throws MojoExecutionException, MojoFailureException {
     // initialize plugin
     initialize();
     final ContrastScanSDK contrastScan = new ContrastScanSDKImpl(contrast, getURL());
@@ -179,7 +180,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
           duration.toMinutes() > 0
               ? duration.toMinutes() + " minutes"
               : (duration.toMillis() / 1000) + " seconds";
-      throw new MojoExecutionException(
+      throw new MojoFailureException(
           "Failed to retrieve Contrast Scan results in " + durationString, e);
     } finally {
       executor.shutdown();

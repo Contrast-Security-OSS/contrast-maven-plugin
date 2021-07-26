@@ -164,12 +164,11 @@ public final class ScanOperation {
    * in the future as it is needed.
    */
   public synchronized void disconnect() {
-    for (final CompletableFuture<?> stage : Arrays.asList(operation, summary)) {
-      if (stage == null) {
+    for (final CompletableFuture<?> future : Arrays.asList(operation, summary)) {
+      if (future == null) {
         continue;
       }
-      stage.toCompletableFuture().cancel(true);
-      stage.cancel(true);
+      future.cancel(true);
     }
   }
 }

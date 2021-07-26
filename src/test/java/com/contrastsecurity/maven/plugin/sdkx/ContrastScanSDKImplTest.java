@@ -10,7 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 /** Unit tests for {@link ContrastScanSDKImpl} */
-final class ContrastScanSDKTest {
+final class ContrastScanSDKImplTest {
 
   /**
    * Verifies that all well-known Java archive types are identified as a Java archive mime type
