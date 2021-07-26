@@ -14,7 +14,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 /** Unit tests for {@link Scan} */
 final class ScanTest {
 
-  private final Gson gson = new Gson();
+  private final Gson gson = GsonFactory.create();
 
   @Test
   void gson_deserialization_configuration() throws IOException {

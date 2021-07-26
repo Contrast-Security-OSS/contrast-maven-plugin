@@ -2,7 +2,6 @@ package com.contrastsecurity.maven.plugin.sdkx;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.junit.jupiter.api.Test;
@@ -21,7 +20,7 @@ final class StartScanRequestTest {
             .build();
 
     // WHEN serialize with GSON
-    final JsonElement jsonEl = new Gson().toJsonTree(request);
+    final JsonElement jsonEl = GsonFactory.create().toJsonTree(request);
 
     // THEN JSON includes expected fields
     assertThat(jsonEl.isJsonObject()).isTrue();

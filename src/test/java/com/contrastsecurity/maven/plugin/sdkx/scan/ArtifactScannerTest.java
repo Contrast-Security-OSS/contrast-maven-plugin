@@ -20,6 +20,7 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -81,7 +82,17 @@ final class ArtifactScannerTest {
     when(contrast.getScanById(ORGANIZATION_ID, PROJECT_ID, SCAN_ID)).thenReturn(running, completed);
     when(contrast.getSarif(ORGANIZATION_ID, PROJECT_ID, SCAN_ID))
         .thenReturn(new ByteArrayInputStream("results".getBytes(StandardCharsets.UTF_8)));
-    final ScanSummary summary = new ScanSummary();
+    final ScanSummary summary =
+        ScanSummary.builder()
+            .id("summary-id")
+            .scanId(SCAN_ID)
+            .projectId(PROJECT_ID)
+            .organizationId(ORGANIZATION_ID)
+            .createdDate(LocalDateTime.now())
+            .totalResults(10)
+            .totalFixedResults(2)
+            .totalNewResults(8)
+            .build();
     when(contrast.getScanSummary(ORGANIZATION_ID, PROJECT_ID, SCAN_ID)).thenReturn(summary);
 
     // WHEN scan code artifact and retrieve results

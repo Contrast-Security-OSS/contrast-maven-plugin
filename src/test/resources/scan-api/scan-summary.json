@@ -1,0 +1,12 @@
+{
+  "id": "summary-id",
+  "scanId": "scan-id",
+  "projectId": "project-id",
+  "organizationId": "organization-id",
+  "duration": 0,
+  "totalResults": 10,
+  "totalNewResults": 8,
+  "totalFixedResults": 2,
+  "lastModifiedDate": null,
+  "createdDate": "2021-07-15T20:36:48"
+}

@@ -2,7 +2,6 @@ package com.contrastsecurity.maven.plugin.sdkx;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.gson.Gson;
 import java.io.StringReader;
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +15,8 @@ final class CodeArtifactTest {
     final String json = "{\"id\": \"" + id + "\"}";
 
     // WHEN deserialize with GSON
-    final CodeArtifact artifact = new Gson().fromJson(new StringReader(json), CodeArtifact.class);
+    final CodeArtifact artifact =
+        GsonFactory.create().fromJson(new StringReader(json), CodeArtifact.class);
 
     // THEN has expected ID
     final CodeArtifact expected = new CodeArtifact(id);

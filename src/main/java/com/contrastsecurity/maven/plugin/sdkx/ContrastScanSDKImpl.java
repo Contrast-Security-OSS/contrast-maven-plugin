@@ -29,7 +29,7 @@ public final class ContrastScanSDKImpl implements ContrastScanSDK {
 
   private final ContrastSDK contrast;
   private final String restURL;
-  private final Gson gson = new Gson();
+  private final Gson gson = GsonFactory.create();
 
   /**
    * Creates a new {@code ContrastScanSDK} that delegates to the given {@link ContrastSDK}

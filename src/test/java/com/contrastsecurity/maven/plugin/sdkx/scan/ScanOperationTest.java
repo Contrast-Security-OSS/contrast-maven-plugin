@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
@@ -61,7 +62,17 @@ final class ScanOperationTest {
     final Scan completed = running.toCompleted();
     when(contrast.getScanById(waiting.getOrganizationId(), waiting.getProjectId(), waiting.getId()))
         .thenReturn(waiting, running, running, completed);
-    final ScanSummary summary = new ScanSummary();
+    final ScanSummary summary =
+        ScanSummary.builder()
+            .id("summary-id")
+            .scanId(completed.getId())
+            .projectId(completed.getProjectId())
+            .organizationId(completed.getOrganizationId())
+            .createdDate(LocalDateTime.now())
+            .totalResults(10)
+            .totalFixedResults(2)
+            .totalNewResults(8)
+            .build();
     when(contrast.getScanSummary(scan.getOrganizationId(), scan.getProjectId(), scan.getId()))
         .thenReturn(summary);
     when(contrast.getSarif(scan.getOrganizationId(), scan.getProjectId(), scan.getId()))
@@ -207,7 +218,17 @@ final class ScanOperationTest {
     final Scan completed = running.toCompleted();
     when(contrast.getScanById(waiting.getOrganizationId(), waiting.getProjectId(), waiting.getId()))
         .thenReturn(waiting, running, running, completed);
-    final ScanSummary summary = new ScanSummary();
+    final ScanSummary summary =
+        ScanSummary.builder()
+            .id("summary-id")
+            .scanId(completed.getId())
+            .projectId(completed.getProjectId())
+            .organizationId(completed.getOrganizationId())
+            .createdDate(LocalDateTime.now())
+            .totalResults(10)
+            .totalFixedResults(2)
+            .totalNewResults(8)
+            .build();
     when(contrast.getScanSummary(scan.getOrganizationId(), scan.getProjectId(), scan.getId()))
         .thenReturn(summary);
     startScanOperation();
@@ -229,7 +250,17 @@ final class ScanOperationTest {
     final Scan completed = running.toCompleted();
     when(contrast.getScanById(waiting.getOrganizationId(), waiting.getProjectId(), waiting.getId()))
         .thenReturn(waiting, running, running, completed);
-    final ScanSummary summary = new ScanSummary();
+    final ScanSummary summary =
+        ScanSummary.builder()
+            .id("summary-id")
+            .scanId(completed.getId())
+            .projectId(completed.getProjectId())
+            .organizationId(completed.getOrganizationId())
+            .createdDate(LocalDateTime.now())
+            .totalResults(10)
+            .totalFixedResults(2)
+            .totalNewResults(8)
+            .build();
     // AND the request for a summary initially fails then succeeds
     when(contrast.getScanSummary(scan.getOrganizationId(), scan.getProjectId(), scan.getId()))
         .thenThrow(new IOException("💥"))
