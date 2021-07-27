@@ -1,13 +1,14 @@
 package com.contrastsecurity.maven.plugin.sdkx;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 import com.contrastsecurity.maven.plugin.Resources;
 import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import org.junit.jupiter.api.Disabled;
+import java.nio.file.Paths;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -31,8 +32,9 @@ final class ScanTest {
   @ValueSource(
       strings = {"/scan-api/scans/scan-completed.json", "/scan-api/scans/scan-failed.json"})
   @ParameterizedTest
-  @Disabled
   void is_finished(final String path) throws IOException {
+    // TODO skip scan-failed.json because we do not yet have an example of a failed scan
+    assumeThat(path).isNotEqualTo(Paths.get("/scan-api/scans/scan-failed.json"));
     final Scan scan = readScanResource(path);
     assertThat(scan.isFinished()).isTrue();
   }

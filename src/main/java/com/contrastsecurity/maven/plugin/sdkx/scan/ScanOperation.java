@@ -93,7 +93,7 @@ public final class ScanOperation {
                               completed.getProjectId(),
                               completed.getId());
                         } catch (final IOException e) {
-                          throw new UncheckedIOException("Failed to retrieve scan status", e);
+                          throw new UncheckedIOException("Failed to retrieve scan summary", e);
                         } catch (final UnauthorizedException e) {
                           throw new IllegalStateException("Failed to authenticate to Contrast", e);
                         }

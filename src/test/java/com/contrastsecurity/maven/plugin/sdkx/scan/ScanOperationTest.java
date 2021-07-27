@@ -80,7 +80,7 @@ final class ScanOperationTest {
     startScanOperation();
 
     // EXPECT summary available
-    assertThat(operation.summary()).succeedsWithin(Duration.ofMillis(10)).isEqualTo(summary);
+    assertThat(operation.summary()).succeedsWithin(TEST_TIMEOUT).isEqualTo(summary);
 
     // AND may save SARIF to file
     final Path results = tmp.resolve("results.sarif");
@@ -150,7 +150,7 @@ final class ScanOperationTest {
     // THEN futures complete exceptionally
     for (final CompletionStage<?> result : Arrays.asList(summary, sarif)) {
       assertThat(result)
-          .failsWithin(Duration.ofMillis(10))
+          .failsWithin(TEST_TIMEOUT)
           .withThrowableOfType(ExecutionException.class)
           .havingCause()
           .isInstanceOf(ScanException.class)
@@ -175,7 +175,7 @@ final class ScanOperationTest {
     // THEN futures complete exceptionally
     for (final CompletionStage<?> result : Arrays.asList(summary, sarif)) {
       assertThat(result)
-          .failsWithin(Duration.ofMillis(10))
+          .failsWithin(TEST_TIMEOUT)
           .withThrowableOfType(ExecutionException.class)
           .havingCause()
           .isInstanceOf(ScanException.class)
@@ -206,7 +206,7 @@ final class ScanOperationTest {
 
     // AND results complete exceptionally
     for (final CompletionStage<?> result : Arrays.asList(operation.summary(), operation.sarif())) {
-      assertThat(result).failsWithin(Duration.ofMillis(10));
+      assertThat(result).failsWithin(TEST_TIMEOUT);
     }
   }
 
@@ -234,10 +234,10 @@ final class ScanOperationTest {
     startScanOperation();
 
     // AND get summary succeeds
-    assertThat(operation.summary()).succeedsWithin(Duration.ofMillis(10)).isEqualTo(summary);
+    assertThat(operation.summary()).succeedsWithin(TEST_TIMEOUT).isEqualTo(summary);
 
     // EXPECT calling get summary again to reuse already retrieved summary
-    assertThat(operation.summary()).succeedsWithin(Duration.ofMillis(10)).isEqualTo(summary);
+    assertThat(operation.summary()).succeedsWithin(TEST_TIMEOUT).isEqualTo(summary);
     verify(contrast, times(1))
         .getScanSummary(scan.getOrganizationId(), scan.getProjectId(), scan.getId());
   }
@@ -268,10 +268,10 @@ final class ScanOperationTest {
     startScanOperation();
 
     // EXPECT get summary fails
-    assertThat(operation.summary()).failsWithin(Duration.ofMillis(10));
+    assertThat(operation.summary()).failsWithin(TEST_TIMEOUT);
 
     // EXPECT get summary succeeds on second attempt
-    assertThat(operation.summary()).succeedsWithin(Duration.ofMillis(10)).isEqualTo(summary);
+    assertThat(operation.summary()).succeedsWithin(TEST_TIMEOUT).isEqualTo(summary);
   }
 
   private void startScanOperation() {
@@ -279,4 +279,10 @@ final class ScanOperationTest {
     operation = ScanOperation.create(scheduler, contrast, scan, interval);
     assertThat(operation.id()).isEqualTo(scan.getId());
   }
+
+  /**
+   * Reasonable amount of time to wait for a test future to resolve given that no actual IO is
+   * happening
+   */
+  private static final Duration TEST_TIMEOUT = Duration.ofMillis(100);
 }
