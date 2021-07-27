@@ -52,7 +52,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
   private String projectId;
 
   /**
-   * File path to the Java artifact to upload for scanning. By default, uses the path to this
+   * File path of the Java artifact to upload for scanning. By default, uses the path to this
    * module's Maven artifact produced in the {@code package} phase.
    */
   @Parameter private File artifactPath;
@@ -62,15 +62,22 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
   private String label;
 
   /**
-   * When true, will wait for and retrieve scan results before completing the goal. Otherwise, will
-   * start a scan then complete the goal without waiting for Contrast Scan to complete.
+   * When {@code true}, will wait for and retrieve scan results before completing the goal.
+   * Otherwise, will start a scan then complete the goal without waiting for Contrast Scan to
+   * complete.
    */
   @Parameter(defaultValue = "" + true)
   private boolean waitForResults;
 
+  /** When {@code true}, will output a summary of the scan results to the console (build log). */
   @Parameter(defaultValue = "" + true)
   private boolean consoleOutput;
 
+  /**
+   * File path to where the scan results (in <a href="https://sarifweb.azurewebsites.net">SARIF
+   * format</a>) will be written at the conclusion of the scan. Note: no results are written when
+   * {@link #waitForResults} is {@code false}.
+   */
   @Parameter(
       defaultValue =
           "${project.build.directory}/contrast-scan-reports/contrast-scan-results.sarif.json")
