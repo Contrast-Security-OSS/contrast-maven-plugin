@@ -43,6 +43,31 @@ final class FakeContrastAPI implements ContrastAPI {
     final String projects =
         String.join("/", "", "api", "sast", "organizations", ORGANIZATION_ID, "projects");
     server.createContext(
+        projects,
+        authenticatedEndpoint(
+            exchange -> {
+              switch (exchange.getRequestMethod()) {
+                case "GET":
+                  final Path path;
+                  final String query = exchange.getRequestURI().getQuery();
+                  if (query.contains("unique=true")
+                      && query.contains("name=spring-test-application")) {
+                    // return one matching project
+                    path = file("/scan-api/projects/paged-projects.json");
+                  } else {
+                    // return no projects
+                    path = file("/scan-api/projects/empty-projects-page.json");
+                  }
+                  json(exchange, 200, path);
+                  return;
+                case "POST":
+                  json(exchange, 201, file("/scan-api/projects/project.json"));
+                  return;
+                default:
+                  status(exchange, 415);
+              }
+            }));
+    server.createContext(
         String.join("/", projects, PROJECT_ID, "code-artifacts"),
         authenticatedEndpoint(json(201, file("/scan-api/code-artifacts/code-artifact.json"))));
     server.createContext(
@@ -95,31 +120,68 @@ final class FakeContrastAPI implements ContrastAPI {
     server.stop(0);
   }
 
-  private static HttpHandler status(final int status) {
-    return exchange -> {
-      discardRequest(exchange);
-      // ideally we would use response length -1 according to the HttpServer JavaDoc, but it's not
-      // working as expected
-      exchange.sendResponseHeaders(status, 0);
-      exchange.close();
-    };
+  /**
+   * Creates a new {@code HttpHandler} that sends an empty response with the given status code.
+   *
+   * @param code HTTP status code to return
+   * @return new {@code HttpHandler}
+   */
+  private static HttpHandler status(final int code) {
+    return exchange -> status(exchange, code);
   }
 
+  /**
+   * With the given {@code HttpExchange}, sends an empty response with the given status code.
+   *
+   * @param exchange the {@code HttpExchange} to use to send the response
+   * @param code HTTP status code to return
+   */
+  private static void status(final HttpExchange exchange, final int code) throws IOException {
+    discardRequest(exchange);
+    // ideally we would use response length -1 according to the HttpServer JavaDoc, but it's not
+    // working as expected
+    exchange.sendResponseHeaders(code, 0);
+    exchange.close();
+  }
+
+  /**
+   * Creates a new {@code HttpHandler} that sends a JSON response with the given status code.
+   *
+   * @param code HTTP status code to return
+   * @param path JSON file to send in the response
+   * @return new {@code HttpHandler}
+   */
   private static HttpHandler json(final int code, final Path path) {
-    return exchange -> {
-      discardRequest(exchange);
-      exchange.getResponseHeaders().add("Content-Type", "application/json");
-      try {
-        exchange.sendResponseHeaders(code, Files.size(path));
-        Files.copy(path, exchange.getResponseBody());
-      } catch (final IOException e) {
-        throw new UncheckedIOException("Failed to send response", e);
-      } finally {
-        exchange.close();
-      }
-    };
+    return exchange -> json(exchange, code, path);
   }
 
+  /**
+   * With the given {@code HttpExchange}, sends a JSON response with the given status code and JSON
+   * file.
+   *
+   * @param exchange the {@code HttpExchange} to use to send the response
+   * @param code HTTP status code to return
+   * @param path JSON file to send in the response
+   */
+  private static void json(final HttpExchange exchange, final int code, final Path path) {
+    discardRequest(exchange);
+    exchange.getResponseHeaders().add("Content-Type", "application/json");
+    try {
+      exchange.sendResponseHeaders(code, Files.size(path));
+      Files.copy(path, exchange.getResponseBody());
+    } catch (final IOException e) {
+      throw new UncheckedIOException("Failed to send response", e);
+    } finally {
+      exchange.close();
+    }
+  }
+
+  /**
+   * Decorates the given handler with authentication logic.
+   *
+   * @param handler handler to decorate
+   * @return new {@code HttpHandler}
+   */
   private static HttpHandler authenticatedEndpoint(HttpHandler handler) {
     // local pair class for iterating over common header verification logic
     class ExpectedHeader {
@@ -152,6 +214,11 @@ final class FakeContrastAPI implements ContrastAPI {
     };
   }
 
+  /**
+   * Sends the Contrast agent jar to the response in the given {@code HttpExchange}.
+   *
+   * @param exchange exchange to which the response will be sent
+   */
   private static void downloadAgent(final HttpExchange exchange) {
     discardRequest(exchange);
     exchange.getResponseHeaders().add("Content-Type", "application/java-archive");
@@ -165,6 +232,13 @@ final class FakeContrastAPI implements ContrastAPI {
     exchange.close();
   }
 
+  /**
+   * Reads the request in its entirety. The Sun HTTP server requires that the entire request be read
+   * before sending the response. Note, the {@link HttpExchange#close()} method may not fully read
+   * the request.
+   *
+   * @param exchange the exchange with the request to discard
+   */
   private static void discardRequest(final HttpExchange exchange) {
     final byte[] buffer = new byte[4096];
     try (InputStream is = exchange.getRequestBody()) {

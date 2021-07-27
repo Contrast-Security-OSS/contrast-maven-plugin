@@ -1,0 +1,327 @@
+package com.contrastsecurity.maven.plugin.sdkx;
+
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Objects;
+
+/** Value object that describes a Contrast Scan project record */
+public final class Project {
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  private final String id;
+  private final String organizationId;
+  private final String name;
+  private final boolean archived;
+  private final String language;
+  private final int critical;
+  private final int high;
+  private final int medium;
+  private final int low;
+  private final int note;
+  private final ZonedDateTime lastScanTime;
+  private final int completedScans;
+  private final String lastScanId;
+  private final Collection<String> includeNamespaceFilters;
+  private final Collection<String> excludeNamespaceFilters;
+
+  /** Visible for GSON */
+  Project(
+      final String id,
+      final String organizationId,
+      final String name,
+      final boolean archived,
+      final String language,
+      final int critical,
+      final int high,
+      final int medium,
+      final int low,
+      final int note,
+      final ZonedDateTime lastScanTime,
+      final int completedScans,
+      final String lastScanId,
+      final Collection<String> includeNamespaceFilters,
+      final Collection<String> excludeNamespaceFilters) {
+    this.id = Objects.requireNonNull(id);
+    this.organizationId = Objects.requireNonNull(organizationId);
+    this.name = Objects.requireNonNull(name);
+    this.archived = archived;
+    this.language = Objects.requireNonNull(language);
+    this.critical = critical;
+    this.high = high;
+    this.medium = medium;
+    this.low = low;
+    this.note = note;
+    this.lastScanTime = lastScanTime;
+    this.completedScans = completedScans;
+    this.lastScanId = lastScanId;
+    this.includeNamespaceFilters =
+        Collections.unmodifiableList(new ArrayList<>(includeNamespaceFilters));
+    this.excludeNamespaceFilters =
+        Collections.unmodifiableList(new ArrayList<>(excludeNamespaceFilters));
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public String getOrganizationId() {
+    return organizationId;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public boolean isArchived() {
+    return archived;
+  }
+
+  public String getLanguage() {
+    return language;
+  }
+
+  public int getCritical() {
+    return critical;
+  }
+
+  public int getHigh() {
+    return high;
+  }
+
+  public int getMedium() {
+    return medium;
+  }
+
+  public int getLow() {
+    return low;
+  }
+
+  public int getNote() {
+    return note;
+  }
+
+  public ZonedDateTime getLastScanTime() {
+    return lastScanTime;
+  }
+
+  public int getCompletedScans() {
+    return completedScans;
+  }
+
+  public String getLastScanId() {
+    return lastScanId;
+  }
+
+  public Collection<String> getIncludeNamespaceFilters() {
+    return includeNamespaceFilters;
+  }
+
+  public Collection<String> getExcludeNamespaceFilters() {
+    return excludeNamespaceFilters;
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    final Project project = (Project) o;
+    return archived == project.archived
+        && critical == project.critical
+        && high == project.high
+        && medium == project.medium
+        && low == project.low
+        && note == project.note
+        && completedScans == project.completedScans
+        && id.equals(project.id)
+        && organizationId.equals(project.organizationId)
+        && name.equals(project.name)
+        && language.equals(project.language)
+        && Objects.equals(lastScanTime, project.lastScanTime)
+        && Objects.equals(lastScanId, project.lastScanId)
+        && includeNamespaceFilters.equals(project.includeNamespaceFilters)
+        && excludeNamespaceFilters.equals(project.excludeNamespaceFilters);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        id,
+        organizationId,
+        name,
+        archived,
+        language,
+        critical,
+        high,
+        medium,
+        low,
+        note,
+        lastScanTime,
+        completedScans,
+        lastScanId,
+        includeNamespaceFilters,
+        excludeNamespaceFilters);
+  }
+
+  @Override
+  public String toString() {
+    return "Project{"
+        + "id='"
+        + id
+        + '\''
+        + ", organizationId='"
+        + organizationId
+        + '\''
+        + ", name='"
+        + name
+        + '\''
+        + ", archived="
+        + archived
+        + ", language='"
+        + language
+        + '\''
+        + ", critical="
+        + critical
+        + ", high="
+        + high
+        + ", medium="
+        + medium
+        + ", low="
+        + low
+        + ", note="
+        + note
+        + ", lastScanTime="
+        + lastScanTime
+        + ", completedScans="
+        + completedScans
+        + ", lastScanId='"
+        + lastScanId
+        + '\''
+        + ", includeNamespaceFilters="
+        + includeNamespaceFilters
+        + ", excludeNamespaceFilters="
+        + excludeNamespaceFilters
+        + '}';
+  }
+
+  public static final class Builder {
+
+    private String id;
+    private String organizationId;
+    private String name;
+    private boolean archived;
+    private String language;
+    private int critical;
+    private int high;
+    private int medium;
+    private int low;
+    private int note;
+    private ZonedDateTime lastScanTime;
+    private int completedScans;
+    private String lastScanId;
+    private Collection<String> includeNamespaceFilters;
+    private Collection<String> excludeNamespaceFilters;
+
+    public Builder id(final String id) {
+      this.id = id;
+      return this;
+    }
+
+    public Builder organizationId(final String organizationId) {
+      this.organizationId = organizationId;
+      return this;
+    }
+
+    public Builder name(final String name) {
+      this.name = name;
+      return this;
+    }
+
+    public Builder archived(final boolean archived) {
+      this.archived = archived;
+      return this;
+    }
+
+    public Builder language(final String language) {
+      this.language = language;
+      return this;
+    }
+
+    public Builder critical(final int critical) {
+      this.critical = critical;
+      return this;
+    }
+
+    public Builder high(final int high) {
+      this.high = high;
+      return this;
+    }
+
+    public Builder medium(final int medium) {
+      this.medium = medium;
+      return this;
+    }
+
+    public Builder low(final int low) {
+      this.low = low;
+      return this;
+    }
+
+    public Builder note(final int note) {
+      this.note = note;
+      return this;
+    }
+
+    public Builder lastScanTime(final ZonedDateTime lastScanTime) {
+      this.lastScanTime = lastScanTime;
+      return this;
+    }
+
+    public Builder completedScans(final int completedScans) {
+      this.completedScans = completedScans;
+      return this;
+    }
+
+    public Builder lastScanId(final String lastScanId) {
+      this.lastScanId = lastScanId;
+      return this;
+    }
+
+    public Builder includeNamespaceFilters(final Collection<String> includeNamespaceFilters) {
+      this.includeNamespaceFilters = includeNamespaceFilters;
+      return this;
+    }
+
+    public Builder excludeNamespaceFilters(final Collection<String> excludeNamespaceFilters) {
+      this.excludeNamespaceFilters = excludeNamespaceFilters;
+      return this;
+    }
+
+    public Project build() {
+      return new Project(
+          id,
+          organizationId,
+          name,
+          archived,
+          language,
+          critical,
+          high,
+          medium,
+          low,
+          note,
+          lastScanTime,
+          completedScans,
+          lastScanId,
+          includeNamespaceFilters,
+          excludeNamespaceFilters);
+    }
+  }
+}

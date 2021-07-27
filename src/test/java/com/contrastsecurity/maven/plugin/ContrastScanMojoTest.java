@@ -26,7 +26,7 @@ final class ContrastScanMojoTest {
   void before() {
     mojo = new ContrastScanMojo();
     mojo.setOrganizationId("organization-id");
-    mojo.setProjectId("project-id");
+    mojo.setProjectName("project-id");
   }
 
   /**
@@ -45,9 +45,11 @@ final class ContrastScanMojoTest {
   void it_generates_clickable_url(final String url) throws MojoExecutionException {
     // GIVEN a scan mojo with known URL, organization ID, and project ID
     mojo.setURL(url);
+    mojo.setOrganizationId("organization-id");
 
     // WHEN generate URL for the user to click-through to display the scan in their browser
-    final String clickableScanURL = mojo.createClickableScanURL("scan-id").toExternalForm();
+    final String clickableScanURL =
+        mojo.createClickableScanURL("project-id", "scan-id").toExternalForm();
 
     // THEN outputs expected URL
     assertThat(clickableScanURL)

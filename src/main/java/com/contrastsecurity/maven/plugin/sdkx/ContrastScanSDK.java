@@ -12,6 +12,12 @@ import java.io.InputStream;
  */
 public interface ContrastScanSDK {
 
+  Project createProject(final String organizationId, final CreateProjectRequest request)
+      throws IOException, UnauthorizedException;
+
+  Project findProjectByName(final String organizationId, final String projectName)
+      throws IOException, UnauthorizedException;
+
   /**
    * Transfers a file from the file system to Contrast Scan to create a new code artifact for
    * analysis.
