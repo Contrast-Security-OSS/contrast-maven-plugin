@@ -1,7 +1,7 @@
 package com.contrastsecurity.maven.plugin;
 
 import com.contrastsecurity.maven.plugin.sdkx.ContrastScanSDK;
-import com.contrastsecurity.maven.plugin.sdkx.ContrastScanSDKImpl;
+import com.contrastsecurity.maven.plugin.sdkx.DefaultContrastScanSDK;
 import com.contrastsecurity.maven.plugin.sdkx.ScanSummary;
 import com.contrastsecurity.maven.plugin.sdkx.scan.ArtifactScanner;
 import com.contrastsecurity.maven.plugin.sdkx.scan.ScanOperation;
@@ -74,9 +74,9 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
   private boolean consoleOutput;
 
   /**
-   * File path to where the scan results (in <a href="https://sarifweb.azurewebsites.net">SARIF
-   * format</a>) will be written at the conclusion of the scan. Note: no results are written when
-   * {@link #waitForResults} is {@code false}.
+   * File path to where the scan results (in <a href="https://sarifweb.azurewebsites.net">SARIF</a>)
+   * will be written at the conclusion of the scan. Note: no results are written when {@link
+   * #waitForResults} is {@code false}.
    */
   @Parameter(
       defaultValue =
@@ -126,7 +126,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
               + " does not exist. Make sure to bind the scan goal to a phase that will execute after the artifact to scan has been built");
     }
 
-    final ContrastScanSDK contrastScan = new ContrastScanSDKImpl(contrast, getURL());
+    final ContrastScanSDK contrastScan = new DefaultContrastScanSDK(contrast, getURL());
     final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
     final ArtifactScanner scanner =
         new ArtifactScanner(
@@ -266,5 +266,9 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     contrast = connectToContrast();
   }
 
-  private static final Duration POLL_SCAN_INTERVAL = Duration.ofSeconds(30);
+  /**
+   * This is the same value that the Contrast Scan UI uses to poll for scan updates. There is no
+   * foreseeable reason to expose this level of detail to users through plugin configuration
+   */
+  private static final Duration POLL_SCAN_INTERVAL = Duration.ofSeconds(10);
 }

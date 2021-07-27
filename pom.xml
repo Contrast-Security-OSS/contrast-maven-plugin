@@ -185,6 +185,7 @@
                 <include>README.md</include>
                 <include>.github/workflows/**/*.yml</include>
                 <include>src/**/*.java</include>
+                <include>src/**/*.json</include>
                 <include>src/**/*.xml</include>
                 <include>src/**/*.properties</include>
               </includes>

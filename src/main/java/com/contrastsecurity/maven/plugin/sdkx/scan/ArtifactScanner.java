@@ -44,7 +44,7 @@ public final class ArtifactScanner {
     this.contrast = Objects.requireNonNull(contrast);
     this.organizationId = Objects.requireNonNull(organizationId);
     this.projectId = Objects.requireNonNull(projectId);
-    this.interval = interval;
+    this.interval = Objects.requireNonNull(interval);
   }
 
   /**
@@ -75,7 +75,7 @@ public final class ArtifactScanner {
     try {
       scan = contrast.startScan(organizationId, startScanRequest);
     } catch (final IOException e) {
-      throw new UncheckedIOException("Failed to upload code artifact", e);
+      throw new UncheckedIOException("Failed to start scan", e);
     } catch (final UnauthorizedException e) {
       throw new IllegalStateException("Failed to authenticate to Contrast", e);
     }

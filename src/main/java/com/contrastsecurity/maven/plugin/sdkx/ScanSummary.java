@@ -156,6 +156,7 @@ public final class ScanSummary {
         + '}';
   }
 
+  /** Builder for {@code ScanSummary} */
   public static final class Builder {
 
     private String id;
@@ -213,6 +214,7 @@ public final class ScanSummary {
       return this;
     }
 
+    /** @return new {@code ScanSummary} */
     public ScanSummary build() {
       return new ScanSummary(
           id,

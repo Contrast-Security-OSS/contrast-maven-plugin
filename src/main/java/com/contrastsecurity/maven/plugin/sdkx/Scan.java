@@ -11,7 +11,7 @@ public final class Scan {
    * @param id unique ID of this scan
    * @param projectId unique ID of the Scan project
    * @param organizationId unique Contrast organization ID
-   * @return new completed {@code Scan}
+   * @return new waiting {@code Scan}
    */
   public static Scan createWaiting(
       final String id, final String projectId, final String organizationId) {
@@ -24,7 +24,7 @@ public final class Scan {
    * @param id unique ID of this scan
    * @param projectId unique ID of the Scan project
    * @param organizationId unique Contrast organization ID
-   * @return new completed {@code Scan}
+   * @return new running {@code Scan}
    */
   public static Scan createRunning(
       final String id, final String projectId, final String organizationId) {
@@ -64,7 +64,7 @@ public final class Scan {
    * @param projectId unique ID of the Scan project
    * @param organizationId unique Contrast organization ID
    * @param errorMessage error message returned by the Scan API
-   * @return new failed Scan
+   * @return new failed {@code Scan}
    */
   public static Scan createFailed(
       final String id,
@@ -203,6 +203,7 @@ public final class Scan {
     return Objects.hash(id, projectId, organizationId, status, errorMessage);
   }
 
+  /** Describes the possible states that a scan can have */
   public enum Status {
     WAITING,
     RUNNING,

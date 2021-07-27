@@ -17,15 +17,11 @@ import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
-/**
- * Extensions to the Contrast SDK for Contrast Scan
- *
- * <p>TODO[JAVA-3298] migrate this to the Contrast SDK and implement testing according to that
- * project's testing strategy
- */
-public final class ContrastScanSDKImpl implements ContrastScanSDK {
+/** Implementation of {@link ContrastScanSDK} */
+public final class DefaultContrastScanSDK implements ContrastScanSDK {
 
   private final ContrastSDK contrast;
   private final String restURL;
@@ -37,21 +33,11 @@ public final class ContrastScanSDKImpl implements ContrastScanSDK {
    * @param contrast the {@link ContrastSDK} this type extends with Scan support
    * @param restURL URL for the Contrast REST API
    */
-  public ContrastScanSDKImpl(final ContrastSDK contrast, final String restURL) {
-    this.contrast = contrast;
-    this.restURL = ContrastSDKUtils.ensureApi(restURL);
+  public DefaultContrastScanSDK(final ContrastSDK contrast, final String restURL) {
+    this.contrast = Objects.requireNonNull(contrast);
+    this.restURL = ContrastSDKUtils.ensureApi(Objects.requireNonNull(restURL));
   }
 
-  /**
-   * Transfers a file from the file system to Contrast Scan to create a new code artifact for
-   * analysis.
-   *
-   * @param organizationId unique ID for the user's organization
-   * @param request parameters for creating the new code artifact
-   * @return new {@link CodeArtifact} from Contrast
-   * @throws IOException when an IO error occurs while uploading the file
-   * @throws UnauthorizedException when Contrast rejects this request as unauthorized
-   */
   @Override
   public CodeArtifact createCodeArtifact(
       final String organizationId, final NewCodeArtifactRequest request)
@@ -113,37 +99,6 @@ public final class ContrastScanSDKImpl implements ContrastScanSDK {
     }
   }
 
-  /**
-   * Guesses the mime type from the file extension. Returns the arbitrary "application/octet-stream"
-   * if no mime type can be inferred from the file extension.
-   *
-   * <p>Visible for testing
-   */
-  static String determineMime(final Path file) throws IOException {
-    // trust the content type Java can determine
-    final String contentType = Files.probeContentType(file);
-    if (contentType != null) {
-      return contentType;
-    }
-    // special checks for Java archive types, because not all of these types are identified by
-    // Files.probeContentType(file) and we want to make sure we handle Java extensions correctly
-    // since users of this code will most likely be uploading Java artifacts
-    final String name = file.getFileName().toString();
-    if (name.endsWith(".jar") || name.endsWith(".war") || name.endsWith(".ear")) {
-      return "application/java-archive";
-    }
-    return "application/octet-stream";
-  }
-
-  /**
-   * Starts a new scan
-   *
-   * @param organizationId unique ID for the user's organization
-   * @param request parameters for requesting a new scan
-   * @return new scan operation
-   * @throws IOException when an IO error occurs while uploading the file
-   * @throws UnauthorizedException when Contrast rejects this request as unauthorized
-   */
   @Override
   public Scan startScan(final String organizationId, final StartScanRequest request)
       throws IOException, UnauthorizedException {
@@ -226,6 +181,28 @@ public final class ContrastScanSDKImpl implements ContrastScanSDK {
     try (Reader reader = new InputStreamReader(contrast.makeRequest(HttpMethod.GET, path))) {
       return gson.fromJson(reader, ScanSummary.class);
     }
+  }
+
+  /**
+   * Guesses the mime type from the file extension. Returns the arbitrary "application/octet-stream"
+   * if no mime type can be inferred from the file extension.
+   *
+   * <p>Visible for testing
+   */
+  static String determineMime(final Path file) throws IOException {
+    // trust the content type Java can determine
+    final String contentType = Files.probeContentType(file);
+    if (contentType != null) {
+      return contentType;
+    }
+    // special checks for Java archive types, because not all of these types are identified by
+    // Files.probeContentType(file) and we want to make sure we handle Java extensions correctly
+    // since users of this code will most likely be uploading Java artifacts
+    final String name = file.getFileName().toString();
+    if (name.endsWith(".jar") || name.endsWith(".war") || name.endsWith(".ear")) {
+      return "application/java-archive";
+    }
+    return "application/octet-stream";
   }
 
   private static final String CRLF = "\r\n";
