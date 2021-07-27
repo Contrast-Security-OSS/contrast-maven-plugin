@@ -109,7 +109,6 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
   public void execute() throws MojoExecutionException, MojoFailureException {
     // initialize plugin
     initialize();
-    final ContrastScanSDK contrastScan = new ContrastScanSDKImpl(contrast, getURL());
 
     // check that file exists
     final Path file =
@@ -120,26 +119,18 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
               + " does not exist. Make sure to bind the scan goal to a phase that will execute after the artifact to scan has been built");
     }
 
+    final ContrastScanSDK contrastScan = new ContrastScanSDKImpl(contrast, getURL());
     final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+    final ArtifactScanner scanner =
+        new ArtifactScanner(
+            executor, contrastScan, getOrganizationId(), getProjectId(), POLL_SCAN_INTERVAL);
     try {
-      final Duration pollStatusInterval = Duration.ofSeconds(30);
-      final ArtifactScanner scanner =
-          new ArtifactScanner(
-              executor, contrastScan, getOrganizationId(), getProjectId(), pollStatusInterval);
-
       getLog().info("Uploading " + file.getFileName() + " to Contrast Scan");
       final ScanOperation operation = scanner.scanArtifact(file, label);
       getLog().info("Starting scan with label " + label);
 
       // show link in build log
-      final URL clickableScanURL;
-      try {
-        clickableScanURL = createClickableScanURL(operation.id());
-      } catch (final MalformedURLException e) {
-        throw new MojoExecutionException(
-            "Error building clickable Scan URL. Please contact support@contrastsecurity.com for help",
-            e);
-      }
+      final URL clickableScanURL = createClickableScanURL(operation.id());
       getLog().info("Scan results will be available at " + clickableScanURL.toExternalForm());
 
       // if should not wait, then stop asking for scan results and return
@@ -150,6 +141,54 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
 
       // else wait for results, output summary to console, output sarif to file system
       getLog().info("Waiting for scan results");
+      waitForResults(operation);
+    } finally {
+      executor.shutdown();
+    }
+  }
+
+  /**
+   * visible for testing
+   *
+   * @return Contrast browser application URL for users to click-through and see their scan results
+   * @throws MojoExecutionException when the URL is malformed
+   */
+  URL createClickableScanURL(final String scanId) throws MojoExecutionException {
+    final String path =
+        String.join(
+            "/",
+            "",
+            "Contrast",
+            "static",
+            "ng",
+            "index.html#",
+            getOrganizationId(),
+            "scans",
+            projectId,
+            "scans",
+            scanId);
+    try {
+      final URL url = new URL(getURL());
+      return new URL(url.getProtocol(), url.getHost(), url.getPort(), path);
+    } catch (final MalformedURLException e) {
+      throw new MojoExecutionException(
+          "Error building clickable Scan URL. Please contact support@contrastsecurity.com for help",
+          e);
+    }
+  }
+
+  /**
+   * Waits for the scan to complete, writes results in SARIF to the file system, and optionally
+   * displays a summary of the results in the console. Translates all errors that could occur while
+   * retrieving results to one of {@code MojoExecutionException} or {@code MojoFailureException}.
+   *
+   * @param operation the scan operation to wait for and retrieve the results of
+   * @throws MojoExecutionException when fails to retrieve scan results for unexpected reasons
+   * @throws MojoFailureException when the wait for scan results operation times out
+   */
+  private void waitForResults(final ScanOperation operation)
+      throws MojoExecutionException, MojoFailureException {
+    try {
       final Path outputFile = outputPath.toPath();
       final Path reportsDirectory = outputFile.getParent();
       try {
@@ -182,32 +221,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
               : (duration.toMillis() / 1000) + " seconds";
       throw new MojoFailureException(
           "Failed to retrieve Contrast Scan results in " + durationString, e);
-    } finally {
-      executor.shutdown();
     }
-  }
-
-  /**
-   * visible for testing
-   *
-   * @return Contrast browser application URL for users to click-through and see their scan results
-   */
-  URL createClickableScanURL(final String scanId) throws MalformedURLException {
-    final URL url = new URL(getURL());
-    final String path =
-        String.join(
-            "/",
-            "",
-            "Contrast",
-            "static",
-            "ng",
-            "index.html#",
-            getOrganizationId(),
-            "scans",
-            projectId,
-            "scans",
-            scanId);
-    return new URL(url.getProtocol(), url.getHost(), url.getPort(), path);
   }
 
   /**
@@ -244,4 +258,6 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     }
     contrast = connectToContrast();
   }
+
+  private static final Duration POLL_SCAN_INTERVAL = Duration.ofSeconds(30);
 }

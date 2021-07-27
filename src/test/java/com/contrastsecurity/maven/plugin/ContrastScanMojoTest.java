@@ -6,11 +6,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.contrastsecurity.maven.plugin.sdkx.ScanSummary;
-import java.net.MalformedURLException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -42,7 +42,7 @@ final class ContrastScanMojoTest {
         "https://app.contrastsecurity.com/Contrast/api/"
       })
   @ParameterizedTest
-  void it_generates_clickable_url(final String url) throws MalformedURLException {
+  void it_generates_clickable_url(final String url) throws MojoExecutionException {
     // GIVEN a scan mojo with known URL, organization ID, and project ID
     mojo.setURL(url);
 
