@@ -64,7 +64,7 @@ public interface ContrastScanSDK {
       throws IOException, UnauthorizedException;
 
   /**
-   * Retrieves scan results in <a href="https://sarifweb.azurewebsites.net">SARIF</a>
+   * Retrieves summary of scan results
    *
    * @param organizationId unique ID for the user's organization
    * @param projectId unique ID of the Scan project to which the scan belongs

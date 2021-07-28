@@ -99,7 +99,7 @@ final class ArtifactScannerTest {
     final ScanOperation operation = scanner.scanArtifact(artifact, "Artifact Scanner Test");
 
     // THEN requests summary after scan has completed
-    assertThat(operation.summary()).succeedsWithin(Duration.ofMillis(100)).isEqualTo(summary);
+    assertThat(operation.summary()).succeedsWithin(TEST_TIMEOUT).isEqualTo(summary);
     final InOrder inOrder = inOrder(contrast);
     inOrder.verify(contrast).createCodeArtifact(ORGANIZATION_ID, newCodeArtifactRequest);
     inOrder.verify(contrast).startScan(ORGANIZATION_ID, startScanRequest);
@@ -151,4 +151,10 @@ final class ArtifactScannerTest {
   private static final String PROJECT_ID = "project-id";
   private static final String CODE_ARTIFACT_ID = "code-artifact-id";
   private static final String SCAN_ID = "scan-id";
+
+  /**
+   * Reasonable amount of time to wait for a test future to resolve given that no actual IO is
+   * happening
+   */
+  private static final Duration TEST_TIMEOUT = Duration.ofMillis(100);
 }

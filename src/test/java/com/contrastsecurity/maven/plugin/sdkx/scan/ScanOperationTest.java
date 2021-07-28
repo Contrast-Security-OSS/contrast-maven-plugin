@@ -85,7 +85,7 @@ final class ScanOperationTest {
     // AND may save SARIF to file
     final Path results = tmp.resolve("results.sarif");
     final CompletionStage<Void> save = operation.saveSarifToFile(results);
-    assertThat(save).succeedsWithin(Duration.ofMillis(100));
+    assertThat(save).succeedsWithin(TEST_TIMEOUT);
     assertThat(results).hasContent("sarif");
   }
 
@@ -129,7 +129,7 @@ final class ScanOperationTest {
     // EXPECT SARIF fails
     final Path results = tmp.resolve("results.sarif");
     final CompletionStage<Void> save = operation.saveSarifToFile(results);
-    assertThat(save).failsWithin(Duration.ofMillis(100));
+    assertThat(save).failsWithin(TEST_TIMEOUT);
     assertThat(results).doesNotExist();
   }
 

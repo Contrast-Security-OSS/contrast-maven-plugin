@@ -86,19 +86,10 @@ final class AwaitScan {
                 case COMPLETED:
                   return CompletableFuture.completedFuture(scan);
                 default:
-                  return await(delayedExecutor(delay, scheduler));
+                  final Executor delayedExecutor =
+                      r -> scheduler.schedule(r, delay.toMillis(), TimeUnit.MILLISECONDS);
+                  return await(delayedExecutor);
               }
             });
-  }
-
-  /**
-   * @param delay the delay after which to execute runnables
-   * @param executor the executor with which to execute runnables
-   * @return new {@link Executor} that schedules runnables to execute in the future using the {@link
-   *     #scheduler}.
-   */
-  private Executor delayedExecutor(Duration delay, Executor executor) {
-    return r ->
-        scheduler.schedule(() -> executor.execute(r), delay.toMillis(), TimeUnit.MILLISECONDS);
   }
 }

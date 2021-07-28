@@ -338,7 +338,7 @@ final class FakeContrastAPI implements ContrastAPI {
             + "}";
     final byte[] body = json.getBytes(StandardCharsets.UTF_8);
     try {
-      exchange.sendResponseHeaders(201, body.length);
+      exchange.sendResponseHeaders(200, body.length);
       exchange.getResponseBody().write(body);
     } catch (final IOException e) {
       throw new UncheckedIOException("Failed to send response", e);

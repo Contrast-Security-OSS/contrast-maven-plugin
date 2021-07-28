@@ -14,7 +14,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,7 +49,7 @@ final class AwaitScanTest {
     final CompletionStage<Scan> future = as.await();
 
     // THEN succeeds
-    assertThat(future).succeedsWithin(1, TimeUnit.SECONDS).isEqualTo(completed);
+    assertThat(future).succeedsWithin(TEST_TIMEOUT).isEqualTo(completed);
   }
 
   @Test
@@ -67,7 +66,7 @@ final class AwaitScanTest {
     final CompletionStage<Scan> future = as.await(scheduler);
 
     // THEN completes successfully
-    assertThat(future).succeedsWithin(1, TimeUnit.SECONDS).isEqualTo(completed);
+    assertThat(future).succeedsWithin(TEST_TIMEOUT).isEqualTo(completed);
   }
 
   @Test
@@ -81,7 +80,7 @@ final class AwaitScanTest {
     final CompletionStage<Scan> future = as.await();
 
     // THEN fails
-    assertThat(future).failsWithin(1, TimeUnit.SECONDS);
+    assertThat(future).failsWithin(TEST_TIMEOUT);
   }
 
   @Test
@@ -98,9 +97,9 @@ final class AwaitScanTest {
     // WHEN await scan to finish
     final CompletionStage<Scan> future = as.await(scheduler);
 
-    // THEN completes successfully
+    // THEN completes exceptionally
     assertThat(future)
-        .failsWithin(1, TimeUnit.SECONDS)
+        .failsWithin(TEST_TIMEOUT)
         .withThrowableOfType(ExecutionException.class)
         .withCauseExactlyInstanceOf(ScanException.class)
         .havingCause()
@@ -119,9 +118,9 @@ final class AwaitScanTest {
     // WHEN await scan to finish
     final CompletionStage<Scan> future = as.await(scheduler);
 
-    // THEN completes successfully
+    // THEN completes exceptionally
     assertThat(future)
-        .failsWithin(1, TimeUnit.SECONDS)
+        .failsWithin(TEST_TIMEOUT)
         .withThrowableOfType(ExecutionException.class)
         .withCauseExactlyInstanceOf(UncheckedIOException.class)
         .havingCause()
@@ -133,4 +132,5 @@ final class AwaitScanTest {
   private static final String ORGANIZATION_ID = "organization-id";
   private static final String PROJECT_ID = "project-id";
   private static final String SCAN_ID = "scan-id";
+  private static final Duration TEST_TIMEOUT = Duration.ofMillis(100);
 }

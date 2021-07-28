@@ -61,6 +61,9 @@ final class ContrastScanMojoTest {
     mojo.setConsoleOutput(true);
 
     // WHEN print summary to console
+    final int totalResults = 10;
+    final int totalNewResults = 8;
+    final int totalFixedResults = 1;
     final ScanSummary summary =
         ScanSummary.builder()
             .id("summary-id")
@@ -68,9 +71,9 @@ final class ContrastScanMojoTest {
             .projectId("project-id")
             .scanId("scan-id")
             .createdDate(LocalDateTime.now())
-            .totalResults(10)
-            .totalNewResults(8)
-            .totalFixedResults(1)
+            .totalResults(totalResults)
+            .totalNewResults(totalNewResults)
+            .totalFixedResults(totalFixedResults)
             .duration(0)
             .build();
     @SuppressWarnings("unchecked")
@@ -79,7 +82,11 @@ final class ContrastScanMojoTest {
 
     // THEN prints expected lines
     final List<String> expected =
-        Arrays.asList("Scan completed", "New Results\t8", "Fixed Results\t1", "Total Results\t10");
+        Arrays.asList(
+            "Scan completed",
+            "New Results\t" + totalNewResults,
+            "Fixed Results\t" + totalFixedResults,
+            "Total Results\t" + totalResults);
     final ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
     verify(console, times(4)).accept(captor.capture());
     assertThat(captor.getAllValues()).hasSameElementsAs(expected);

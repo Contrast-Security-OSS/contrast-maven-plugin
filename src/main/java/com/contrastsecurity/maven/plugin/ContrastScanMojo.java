@@ -87,8 +87,8 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
    * Maximum time (in milliseconds) to wait for a Scan to complete. Scans that exceed this threshold
    * fail this goal.
    */
-  @Parameter(defaultValue = "" + 20 * 60 * 1000)
-  private long timeout;
+  @Parameter(defaultValue = "" + 5 * 60 * 1000)
+  private long timeoutMs;
 
   private ContrastSDK contrast;
 
@@ -135,20 +135,20 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
       getLog().info("Uploading " + file.getFileName() + " to Contrast Scan");
       final ScanOperation operation = scanner.scanArtifact(file, label);
       getLog().info("Starting scan with label " + label);
+      // if should not wait, then stop asking for scan status
+      if (!waitForResults) {
+        operation.disconnect();
+      }
 
       // show link in build log
       final URL clickableScanURL = createClickableScanURL(operation.id());
       getLog().info("Scan results will be available at " + clickableScanURL.toExternalForm());
 
-      // if should not wait, then stop asking for scan results and return
-      if (!waitForResults) {
-        operation.disconnect();
-        return;
+      // optionally wait for results, output summary to console, output sarif to file system
+      if (waitForResults) {
+        getLog().info("Waiting for scan results");
+        waitForResults(operation);
       }
-
-      // else wait for results, output summary to console, output sarif to file system
-      getLog().info("Waiting for scan results");
-      waitForResults(operation);
     } finally {
       executor.shutdown();
     }
@@ -209,7 +209,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
               .summary()
               .thenAccept(summary -> writeSummaryToConsole(summary, line -> getLog().info(line)));
       CompletableFuture.allOf(save.toCompletableFuture(), output.toCompletableFuture())
-          .get(timeout, TimeUnit.MILLISECONDS);
+          .get(timeoutMs, TimeUnit.MILLISECONDS);
     } catch (final ExecutionException e) {
       // try to unwrap the extraneous ExecutionException
       final Throwable cause = e.getCause();
@@ -221,7 +221,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
       Thread.currentThread().interrupt();
       throw new MojoExecutionException("Interrupted while retrieving Contrast Scan results", e);
     } catch (final TimeoutException e) {
-      final Duration duration = Duration.ofMillis(timeout);
+      final Duration duration = Duration.ofMillis(timeoutMs);
       final String durationString =
           duration.toMinutes() > 0
               ? duration.toMinutes() + " minutes"
