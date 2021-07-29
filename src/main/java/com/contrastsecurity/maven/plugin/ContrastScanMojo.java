@@ -200,7 +200,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     try {
       return contrastScan.createProject(getOrganizationId(), request);
     } catch (final IOException e) {
-      throw new MojoExecutionException("Failed to create project " + projectName);
+      throw new MojoExecutionException("Failed to create project " + projectName, e);
     } catch (final UnauthorizedException e) {
       throw new MojoExecutionException(
           "Authentication failure while creating project "
