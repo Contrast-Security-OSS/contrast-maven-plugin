@@ -28,6 +28,12 @@ Content-Type: application/json
 > {% client.global.set("projectId", response.body.id); %}
 
 
+### DELETE Scan Project
+DELETE {{ url }}/sast/organizations/{{ organizationId }}/projects/{{ projectId }}
+API-Key: {{ apiKey }}
+Authorization: {{ authorization }}
+
+
 ### Find Scan Project
 GET {{ url }}/sast/organizations/{{ organizationId }}/projects?name=spring-test-application&archived=false&unique=true
 API-Key: {{ apiKey }}

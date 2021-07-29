@@ -14,6 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.ZonedDateTime;
@@ -83,7 +84,9 @@ final class ScanOperationTest {
     assertThat(operation.summary()).succeedsWithin(TEST_TIMEOUT).isEqualTo(summary);
 
     // AND may save SARIF to file
-    final Path results = tmp.resolve("results.sarif");
+    final Path results = tmp.resolve("contrast-scan.sarif.json");
+    // create an empty file at the "results" path, because we expect to overwrite it
+    Files.createFile(results);
     final CompletionStage<Void> save = operation.saveSarifToFile(results);
     assertThat(save).succeedsWithin(TEST_TIMEOUT);
     assertThat(results).hasContent("sarif");

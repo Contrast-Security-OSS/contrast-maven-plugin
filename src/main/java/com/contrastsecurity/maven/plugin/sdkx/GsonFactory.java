@@ -15,8 +15,8 @@ final class GsonFactory {
 
   static Gson create() {
     return new GsonBuilder()
-        .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeTypeAdapter())
-        .registerTypeAdapter(ZonedDateTime.class, new ZonedDateTimeTypeAdapter())
+        .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeTypeAdapter().nullSafe())
+        .registerTypeAdapter(ZonedDateTime.class, new ZonedDateTimeTypeAdapter().nullSafe())
         .create();
   }
 

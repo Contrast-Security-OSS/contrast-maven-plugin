@@ -27,4 +27,10 @@ public class ContrastAPIException extends ContrastException {
   public int getStatus() {
     return status;
   }
+
+  @Override
+  public String getMessage() {
+    final String message = super.getMessage();
+    return message == null ? String.valueOf(status) : status + " " + super.getMessage();
+  }
 }

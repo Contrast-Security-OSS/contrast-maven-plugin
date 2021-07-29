@@ -190,13 +190,22 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
           e);
     }
     if (project != null) {
+      getLog().debug("Found project with name " + projectName);
+      if (project.isArchived()) {
+        // TODO the behavior of tools like this plugin has yet to be defined with respect to
+        // archived projects; however, the UI exposes no way to archive projects at the moment.
+        // For now, simply log a warning to help debug this in the future should we encounter this
+        // case
+        getLog().warn("Project " + projectName + " is archived");
+      }
       return project;
     }
 
     // project does not exist, so create a new one
+    getLog().debug("No project exists with name " + projectName + " - creating one");
     final CreateProjectRequest request =
         new CreateProjectRequest(
-            getOrganizationId(), "JAVA", Collections.emptyList(), Collections.emptyList());
+            projectName, "JAVA", Collections.emptyList(), Collections.emptyList());
     try {
       return contrastScan.createProject(getOrganizationId(), request);
     } catch (final IOException e) {

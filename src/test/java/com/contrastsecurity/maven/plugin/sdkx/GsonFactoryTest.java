@@ -28,6 +28,17 @@ final class GsonFactoryTest {
     assertThat(obj.time).isEqualTo(expected);
   }
 
+  @Test
+  void parse_null_to_local_date_time() {
+    // GIVEN a new GSON instance that should handle java.time.LocalDateTime
+    final Gson gson = GsonFactory.create();
+
+    // WHEN deserialize a type containing a LocalDateTime that is null
+    final LocalDateTimeObj obj = gson.fromJson("{\"time\": null}", LocalDateTimeObj.class);
+
+    assertThat(obj.time).isNull();
+  }
+
   /**
    * Verifies that the {@code Gson} returned by the factor has requisite adapters for dealing with
    * {@link java.time.ZonedDateTime} types.
@@ -43,6 +54,17 @@ final class GsonFactoryTest {
 
     final ZonedDateTime expected = ZonedDateTime.of(1955, 11, 12, 22, 4, 0, 0, ZoneOffset.UTC);
     assertThat(obj.time).isEqualTo(expected);
+  }
+
+  @Test
+  void parse_null_to_zoned_date_time() {
+    // GIVEN a new GSON instance that should handle java.time.ZonedDateTime
+    final Gson gson = GsonFactory.create();
+
+    // WHEN deserialize a type containing a ZonedDateTime that is null
+    final ZonedDateTimeObj obj = gson.fromJson("{\"time\": null}", ZonedDateTimeObj.class);
+
+    assertThat(obj.time).isNull();
   }
 
   /** GSON cannot work with local classes */
