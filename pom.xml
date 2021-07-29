@@ -119,6 +119,12 @@
       <version>${junit-jupiter.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>3.11.2</version>
+      <scope>test</scope>
+    </dependency>
     <!-- TODO[JG] Migrate from JUnit 4 -->
     <dependency>
       <groupId>org.junit.vintage</groupId>
@@ -179,6 +185,7 @@
                 <include>README.md</include>
                 <include>.github/workflows/**/*.yml</include>
                 <include>src/**/*.java</include>
+                <include>src/**/*.json</include>
                 <include>src/**/*.xml</include>
                 <include>src/**/*.properties</include>
               </includes>

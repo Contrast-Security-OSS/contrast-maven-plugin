@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-/** Unit tests for {@link ContrastScanSDK} */
-final class ContrastScanSDKTest {
+/** Unit tests for {@link DefaultContrastScanSDK} */
+final class DefaultContrastScanSDKTest {
 
   /**
    * Verifies that all well-known Java archive types are identified as a Java archive mime type
@@ -27,7 +27,7 @@ final class ContrastScanSDKTest {
   @ParameterizedTest
   void determine_content_type_java_archive(final String name) throws IOException {
     final Path file = Paths.get(name);
-    final String mime = ContrastScanSDK.determineMime(file);
+    final String mime = DefaultContrastScanSDK.determineMime(file);
     assertThat(mime).isEqualTo("application/java-archive");
   }
 
@@ -35,7 +35,7 @@ final class ContrastScanSDKTest {
   @Test
   void determine_content_type_unknown() throws IOException {
     final Path file = Paths.get("foo");
-    final String mime = ContrastScanSDK.determineMime(file);
+    final String mime = DefaultContrastScanSDK.determineMime(file);
     assertThat(mime).isEqualTo("application/octet-stream");
   }
 }

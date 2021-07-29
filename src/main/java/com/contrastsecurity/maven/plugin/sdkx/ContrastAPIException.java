@@ -1,7 +1,7 @@
 package com.contrastsecurity.maven.plugin.sdkx;
 
 /** Indicates an error occurred while using the Contrast HTTP API */
-public class ContrastException extends RuntimeException {
+public class ContrastAPIException extends RuntimeException {
 
   private final int status;
 
@@ -9,7 +9,7 @@ public class ContrastException extends RuntimeException {
    * @param status HTTP status returned by Contrast API
    * @param message exception message
    */
-  public ContrastException(final int status, final String message) {
+  public ContrastAPIException(final int status, final String message) {
     this(status, message, null);
   }
 
@@ -18,7 +18,7 @@ public class ContrastException extends RuntimeException {
    * @param message exception message
    * @param inner inner exception
    */
-  public ContrastException(final int status, final String message, final Exception inner) {
+  public ContrastAPIException(final int status, final String message, final Exception inner) {
     super(message, inner);
     this.status = status;
   }

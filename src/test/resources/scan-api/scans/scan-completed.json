@@ -1,0 +1,17 @@
+{
+  "id": "scan-id",
+  "organizationId": "organization-id",
+  "projectId": "project-id",
+  "codeArtifactId": "code-artifact-id",
+  "status": "COMPLETED",
+  "createdTime": "2021-07-14T16:09:30.000+00:00",
+  "startedTime": "2021-07-14T16:09:38.000+00:00",
+  "completedTime": "2021-07-14T16:09:59.000+00:00",
+  "language": "JAVA",
+  "label": "scan.http",
+  "errorMessage": null,
+  "includeNamespaceFilters": [
+    "org.owasp.webgoat.*"
+  ],
+  "excludeNamespaceFilters": []
+}

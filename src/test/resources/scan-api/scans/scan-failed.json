@@ -1,0 +1,17 @@
+{
+  "id": "scan-id",
+  "organizationId": "organization-id",
+  "projectId": "project-id",
+  "codeArtifactId": "code-artifact-id",
+  "status": "FAILED",
+  "createdTime": "2021-07-14T16:09:30.000+00:00",
+  "startedTime": "2021-07-14T16:09:38.000+00:00",
+  "completedTime": null,
+  "language": "JAVA",
+  "label": "scan.http",
+  "errorMessage": "TODO this is not a real example of a failed scan. We are guessing at which fields are set",
+  "includeNamespaceFilters": [
+    "org.owasp.webgoat.*"
+  ],
+  "excludeNamespaceFilters": []
+}

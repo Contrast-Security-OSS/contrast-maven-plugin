@@ -1,17 +1,18 @@
 package com.contrastsecurity.maven.plugin.it.stub;
 
+import static com.contrastsecurity.maven.plugin.Resources.file;
+
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
@@ -38,19 +39,24 @@ final class FakeContrastAPI implements ContrastAPI {
     server.createContext(
         "/api/ng/" + ORGANIZATION_ID + "/agents/default/java",
         authenticatedEndpoint(FakeContrastAPI::downloadAgent));
+
+    final String projects =
+        String.join("/", "", "api", "sast", "organizations", ORGANIZATION_ID, "projects");
     server.createContext(
-        "/api/sast/organizations/" + ORGANIZATION_ID + "/projects",
-        authenticatedEndpoint(FakeContrastAPI::projects));
+        String.join("/", projects, PROJECT_ID, "code-artifacts"),
+        authenticatedEndpoint(json(201, file("/scan-api/code-artifacts/code-artifact.json"))));
     server.createContext(
-        "/api/sast/organizations/"
-            + ORGANIZATION_ID
-            + "/projects/"
-            + PROJECT_ID
-            + "/code-artifacts",
-        authenticatedEndpoint(FakeContrastAPI::uploadCodeArtifact));
+        String.join("/", projects, PROJECT_ID, "scans"),
+        authenticatedEndpoint(json(201, file("/scan-api/scans/scan-waiting.json"))));
     server.createContext(
-        "/api/sast/organizations/" + ORGANIZATION_ID + "/projects/" + PROJECT_ID + "/scans",
-        authenticatedEndpoint(FakeContrastAPI::startScan));
+        String.join("/", projects, PROJECT_ID, "scans", SCAN_ID),
+        authenticatedEndpoint(json(200, file("/scan-api/scans/scan-completed.json"))));
+    server.createContext(
+        String.join("/", projects, PROJECT_ID, "scans", SCAN_ID, "summary"),
+        authenticatedEndpoint(json(200, file("/scan-api/scans/scan-summary.json"))));
+    server.createContext(
+        String.join("/", projects, PROJECT_ID, "scans", SCAN_ID, "raw-output"),
+        authenticatedEndpoint(json(200, file("/scan-api/sarif/empty.sarif.json"))));
 
     server.setExecutor(Executors.newSingleThreadExecutor());
     try {
@@ -99,19 +105,19 @@ final class FakeContrastAPI implements ContrastAPI {
     };
   }
 
-  /**
-   * This code is extracted to its own method so that we can break up this code into multiple
-   * statements which we cannot do when it is in a try-with-resources in the {@link
-   * #downloadAgent(HttpExchange)} method.
-   *
-   * @return new {@link BufferedInputStream} for reading the Contrast agent JAR from the file system
-   */
-  private static BufferedInputStream readContrastAgentJAR() throws FileNotFoundException {
-    final InputStream is = FakeContrastAPI.class.getResourceAsStream("/contrast-agent.jar");
-    if (is == null) {
-      throw new FileNotFoundException("Failed to find contrast-agent.jar testing resource");
-    }
-    return new BufferedInputStream(is);
+  private static HttpHandler json(final int code, final Path path) {
+    return exchange -> {
+      discardRequest(exchange);
+      exchange.getResponseHeaders().add("Content-Type", "application/json");
+      try {
+        exchange.sendResponseHeaders(code, Files.size(path));
+        Files.copy(path, exchange.getResponseBody());
+      } catch (final IOException e) {
+        throw new UncheckedIOException("Failed to send response", e);
+      } finally {
+        exchange.close();
+      }
+    };
   }
 
   private static HttpHandler authenticatedEndpoint(HttpHandler handler) {
@@ -148,85 +154,12 @@ final class FakeContrastAPI implements ContrastAPI {
 
   private static void downloadAgent(final HttpExchange exchange) {
     discardRequest(exchange);
-    // read the contrast-agent.jar into memory, because we need to know the size of the content that
-    // we'll send over the wire since we are not using chunked responses with this simple JDK HTTP
-    // server
-    final byte[] jar;
-    try (BufferedInputStream bis = readContrastAgentJAR();
-        ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-      final byte[] buffer = new byte[4096];
-      int read;
-      while ((read = bis.read(buffer)) != -1) {
-        bos.write(buffer, 0, read);
-      }
-      jar = bos.toByteArray();
-    } catch (final IOException e) {
-      throw new UncheckedIOException("Failed to read contrast-agent from file system", e);
-    }
-    // send jar in the response
+    exchange.getResponseHeaders().add("Content-Type", "application/java-archive");
+    final Path path = file("/contrast-agent.jar");
     try {
-      exchange.getResponseHeaders().add("Content-Type", "application/java-archive");
-      exchange.sendResponseHeaders(200, jar.length);
-      exchange.getResponseBody().write(jar);
+      exchange.sendResponseHeaders(200, Files.size(path));
+      Files.copy(path, exchange.getResponseBody());
     } catch (IOException e) {
-      throw new UncheckedIOException("Failed to send response", e);
-    }
-    exchange.close();
-  }
-
-  private static void projects(final HttpExchange exchange) {
-    final String json =
-        "{\n"
-            + "    \"id\": \"2f35cd90-b73e-44c5-8bb0-533afdbb07d5\",\n"
-            + "    \"organizationId\": \"d89d9103-89c7-4a74-968e-a8b93ea8f7bb\",\n"
-            + "    \"projectId\": \"02faf17f-0db6-4d0f-b6dc-0d9c00473ff2\",\n"
-            + "    \"filename\": \"spring-async.war\",\n"
-            + "    \"createdTime\": \"2021-06-08T15:46:03.748+00:00\"\n"
-            + "}";
-    final byte[] body = json.getBytes(StandardCharsets.UTF_8);
-    try {
-      exchange.sendResponseHeaders(201, body.length);
-      exchange.getResponseBody().write(body);
-    } catch (final IOException e) {
-      throw new UncheckedIOException("Failed to send response", e);
-    }
-    exchange.close();
-  }
-
-  private static void uploadCodeArtifact(final HttpExchange exchange) {
-    discardRequest(exchange);
-    final String json =
-        "{\n"
-            + "    \"id\": \""
-            + CODE_ARTIFACT_ID
-            + "\",\n"
-            + "    \"organizationId\": \""
-            + ORGANIZATION_ID
-            + "\",\n"
-            + "    \"projectId\": \""
-            + PROJECT_ID
-            + "\",\n"
-            + "    \"filename\": \"spring-async.war\",\n"
-            + "    \"createdTime\": \"2021-06-08T15:46:03.748+00:00\"\n"
-            + "}";
-    final byte[] body = json.getBytes(StandardCharsets.UTF_8);
-    try {
-      exchange.sendResponseHeaders(201, body.length);
-      exchange.getResponseBody().write(body);
-    } catch (final IOException e) {
-      throw new UncheckedIOException("Failed to send response", e);
-    }
-    exchange.close();
-  }
-
-  private static void startScan(final HttpExchange exchange) {
-    discardRequest(exchange);
-    final String json = "{\"id\": \"scan-id\"}";
-    final byte[] body = json.getBytes(StandardCharsets.UTF_8);
-    try {
-      exchange.sendResponseHeaders(201, body.length);
-      exchange.getResponseBody().write(body);
-    } catch (final IOException e) {
       throw new UncheckedIOException("Failed to send response", e);
     }
     exchange.close();
@@ -247,7 +180,7 @@ final class FakeContrastAPI implements ContrastAPI {
   private static final String SERVICE_KEY = "test-service-key";
   private static final String ORGANIZATION_ID = "organization-id";
   private static final String PROJECT_ID = "project-id";
-  private static final String CODE_ARTIFACT_ID = "code-artifact-id";
+  private static final String SCAN_ID = "scan-id";
   public static final String AUTHORIZATION =
       Base64.getEncoder()
           .encodeToString((USER_NAME + ":" + SERVICE_KEY).getBytes(StandardCharsets.US_ASCII));
