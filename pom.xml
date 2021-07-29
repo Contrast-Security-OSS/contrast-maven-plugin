@@ -128,6 +128,12 @@
       <version>${junit-jupiter.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>3.11.2</version>
+      <scope>test</scope>
+    </dependency>
     <!-- TODO[JG] Migrate from JUnit 4 -->
     <dependency>
       <groupId>org.junit.vintage</groupId>
@@ -479,6 +485,9 @@
           <configuration>
             <licenseName>apache_v2</licenseName>
             <inceptionYear>2021</inceptionYear>
+            <excludes>
+              <exclude>**/*.json</exclude>
+            </excludes>
           </configuration>
         </plugin>
         <plugin>
@@ -552,9 +561,6 @@
                 <configuration>
                   <failOnMissingHeader>true</failOnMissingHeader>
                   <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
-                  <excludes>
-                    <exclude>**/*.json</exclude>
-                  </excludes>
                 </configuration>
               </execution>
             </executions>

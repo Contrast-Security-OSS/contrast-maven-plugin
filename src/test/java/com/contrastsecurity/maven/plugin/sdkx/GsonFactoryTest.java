@@ -22,27 +22,31 @@ package com.contrastsecurity.maven.plugin.sdkx;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.contrastsecurity.maven.plugin.Resources;
 import com.google.gson.Gson;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link CodeArtifact} */
-final class CodeArtifactTest {
+/** Unit tests for {@link GsonFactory} */
+final class GsonFactoryTest {
 
+  /**
+   * Verifies that the {@code Gson} returned by the factor has requisite adapters for dealing with
+   * {@link java.time.LocalDateTime} types
+   */
   @Test
-  void gson_deserialization_configuration() throws IOException {
-    // WHEN deserialize code-artifact JSON with GSON
+  void parse_iso8601_strings_to_local_date_time() {
+    // GIVEN a new GSON instance that should handle java.time.LocalDateTime
     final Gson gson = GsonFactory.create();
-    final CodeArtifact artifact;
-    try (InputStream is = Resources.stream("/scan-api/code-artifacts/code-artifact.json")) {
-      artifact = gson.fromJson(new InputStreamReader(is), CodeArtifact.class);
-    }
 
-    // THEN has expected ID
-    final CodeArtifact expected = new CodeArtifact("code-artifact-id");
-    assertThat(artifact).isEqualTo(expected);
+    // WHEN deserialize a type containing a LocalDateTime
+    final Obj obj = gson.fromJson("{\"time\": \"1955-11-12T22:04:00\"}", Obj.class);
+
+    final LocalDateTime expected = LocalDateTime.of(1955, 11, 12, 22, 4, 0);
+    assertThat(obj.time).isEqualTo(expected);
+  }
+
+  /** GSON cannot work with local classes */
+  private static final class Obj {
+    LocalDateTime time;
   }
 }

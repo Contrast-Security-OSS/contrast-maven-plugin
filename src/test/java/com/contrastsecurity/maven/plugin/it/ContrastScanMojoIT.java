@@ -47,6 +47,9 @@ final class ContrastScanMojoIT {
     verifier.verifyTextInLog(
         "Uploading spring-test-application-0.0.1-SNAPSHOT.jar to Contrast Scan");
     verifier.verifyTextInLog("Starting scan with label 0.0.1-SNAPSHOT");
-    verifier.verifyTextInLog("Contrast Scan results will be available at http");
+    verifier.verifyTextInLog("Scan results will be available at http");
+    verifier.verifyTextInLog("Waiting for scan results");
+    verifier.verifyTextInLog("Scan completed");
+    verifier.assertFilePresent("./target/contrast-scan-reports/contrast-scan-results.sarif.json");
   }
 }

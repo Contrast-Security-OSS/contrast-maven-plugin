@@ -27,22 +27,36 @@ import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.time.LocalDateTime;
+import java.time.Month;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link CodeArtifact} */
-final class CodeArtifactTest {
+/** Unit tests for {@link ScanSummary}. */
+final class ScanSummaryTest {
 
   @Test
   void gson_deserialization_configuration() throws IOException {
-    // WHEN deserialize code-artifact JSON with GSON
+    // WHEN deserialize scan summary with GSON
+    final ScanSummary summary;
     final Gson gson = GsonFactory.create();
-    final CodeArtifact artifact;
-    try (InputStream is = Resources.stream("/scan-api/code-artifacts/code-artifact.json")) {
-      artifact = gson.fromJson(new InputStreamReader(is), CodeArtifact.class);
+    try (InputStream is = Resources.stream("/scan-api/scans/scan-summary.json");
+        Reader reader = new InputStreamReader(is)) {
+      summary = gson.fromJson(reader, ScanSummary.class);
     }
 
-    // THEN has expected ID
-    final CodeArtifact expected = new CodeArtifact("code-artifact-id");
-    assertThat(artifact).isEqualTo(expected);
+    // THEN deserialized object matches expected summary
+    final ScanSummary expected =
+        ScanSummary.builder()
+            .id("summary-id")
+            .scanId("scan-id")
+            .projectId("project-id")
+            .organizationId("organization-id")
+            .totalResults(10)
+            .totalNewResults(8)
+            .totalFixedResults(1)
+            .createdDate(LocalDateTime.of(2021, Month.JULY, 15, 20, 36, 48))
+            .build();
+    assertThat(summary).isEqualTo(expected);
   }
 }

@@ -95,6 +95,7 @@
                 </goals>
                 <configuration>
                   <projectId>project-id</projectId>
+                  <timeout>10000</timeout>
                 </configuration>
               </execution>
             </executions>

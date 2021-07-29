@@ -104,4 +104,23 @@ public final class StartScanRequest {
       return new StartScanRequest(projectId, codeArtifactId, label);
     }
   }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    final StartScanRequest that = (StartScanRequest) o;
+    return projectId.equals(that.projectId)
+        && codeArtifactId.equals(that.codeArtifactId)
+        && label.equals(that.label);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(projectId, codeArtifactId, label);
+  }
 }
