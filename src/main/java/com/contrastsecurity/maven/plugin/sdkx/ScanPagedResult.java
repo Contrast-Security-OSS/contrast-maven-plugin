@@ -8,9 +8,12 @@ import java.util.Objects;
 /**
  * Describes a page of results from the Scan API.
  *
- * <p>This class is package-private, because we are not yet supporting paging through results, so
- * this remains an implementation detail of this package. We may add support ofr paging through scan
- * results in a future version of the Contrast Java SDK.
+ * <p>This class is package-private, because this package does not yet support paging through
+ * results from the Contrast Scan API; therefore, this remains an implementation detail of this
+ * package.
+ *
+ * <p>We may add public support for paging through scan results in a future version of the Contrast
+ * Java SDK.
  *
  * @param <T> the type of item in the page
  */
@@ -19,15 +22,24 @@ final class ScanPagedResult<T> {
   private final List<T> content;
   private final int totalElements;
 
+  /**
+   * @param content page contents
+   * @param totalElements total number of elements matching the query (not the number of elements in
+   *     this page)
+   */
   ScanPagedResult(final List<T> content, final int totalElements) {
     this.content = Collections.unmodifiableList(new ArrayList<>(content));
     this.totalElements = totalElements;
   }
 
+  /** @return page contents */
   List<T> getContent() {
     return content;
   }
 
+  /**
+   * @return total number of elements matching the query (not the number of elements in this page)
+   */
   int getTotalElements() {
     return totalElements;
   }

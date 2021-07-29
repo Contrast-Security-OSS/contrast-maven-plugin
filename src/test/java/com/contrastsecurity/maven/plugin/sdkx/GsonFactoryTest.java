@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.gson.Gson;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link GsonFactory} */
@@ -19,14 +21,37 @@ final class GsonFactoryTest {
     final Gson gson = GsonFactory.create();
 
     // WHEN deserialize a type containing a LocalDateTime
-    final Obj obj = gson.fromJson("{\"time\": \"1955-11-12T22:04:00\"}", Obj.class);
+    final LocalDateTimeObj obj =
+        gson.fromJson("{\"time\": \"1955-11-12T22:04:00\"}", LocalDateTimeObj.class);
 
     final LocalDateTime expected = LocalDateTime.of(1955, 11, 12, 22, 4, 0);
     assertThat(obj.time).isEqualTo(expected);
   }
 
+  /**
+   * Verifies that the {@code Gson} returned by the factor has requisite adapters for dealing with
+   * {@link java.time.ZonedDateTime} types.
+   */
+  @Test
+  void parse_iso8601_zoned_strings_to_zoned_date_time() {
+    // GIVEN a new GSON instance that should handle java.time.ZonedDateTime
+    final Gson gson = GsonFactory.create();
+
+    // WHEN deserialize a type containing a ZonedDateTime
+    final ZonedDateTimeObj obj =
+        gson.fromJson("{\"time\": \"1955-11-12T22:04:00.000+00:00\"}", ZonedDateTimeObj.class);
+
+    final ZonedDateTime expected = ZonedDateTime.of(1955, 11, 12, 22, 4, 0, 0, ZoneOffset.UTC);
+    assertThat(obj.time).isEqualTo(expected);
+  }
+
   /** GSON cannot work with local classes */
-  private static final class Obj {
+  private static final class LocalDateTimeObj {
     LocalDateTime time;
+  }
+
+  /** GSON cannot work with local classes */
+  private static final class ZonedDateTimeObj {
+    ZonedDateTime time;
   }
 }

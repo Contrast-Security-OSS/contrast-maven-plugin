@@ -6,9 +6,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 
-/** Value object that describes a Contrast Scan project record */
+/** Value object that describes a Contrast Scan project */
 public final class Project {
 
+  /** @return new {@link Builder} */
   public static Builder builder() {
     return new Builder();
   }
@@ -65,62 +66,92 @@ public final class Project {
         Collections.unmodifiableList(new ArrayList<>(excludeNamespaceFilters));
   }
 
+  /** @return unique project ID */
   public String getId() {
     return id;
   }
 
+  /** @return unique organization ID */
   public String getOrganizationId() {
     return organizationId;
   }
 
+  /** @return project name */
   public String getName() {
     return name;
   }
 
+  /** @return if true, the project has been archived */
   public boolean isArchived() {
     return archived;
   }
 
+  /** @return programming language used by this project */
   public String getLanguage() {
     return language;
   }
 
+  /**
+   * @return count of critical severity vulnerabilities detected in the last scan to complete
+   *     successfully
+   */
   public int getCritical() {
     return critical;
   }
 
+  /**
+   * @return count of high severity vulnerabilities detected in the last scan to complete
+   *     successfully
+   */
   public int getHigh() {
     return high;
   }
 
+  /**
+   * @return count of medium severity vulnerabilities detected in the last scan to complete
+   *     successfully
+   */
   public int getMedium() {
     return medium;
   }
 
+  /**
+   * @return count of low severity vulnerabilities detected in the last scan to complete
+   *     successfully
+   */
   public int getLow() {
     return low;
   }
 
+  /**
+   * @return count of note severity vulnerabilities detected in the last scan to complete
+   *     successfully
+   */
   public int getNote() {
     return note;
   }
 
+  /** @return the time at which the last successfully completed scan finished */
   public ZonedDateTime getLastScanTime() {
     return lastScanTime;
   }
 
+  /** @return count of completed scans in this project */
   public int getCompletedScans() {
     return completedScans;
   }
 
+  /** @return ID of the last scan to complete successfully */
   public String getLastScanId() {
     return lastScanId;
   }
 
+  /** @return collection of code namespaces to include in the scan */
   public Collection<String> getIncludeNamespaceFilters() {
     return includeNamespaceFilters;
   }
 
+  /** @return collection of code namespaces to exclude from the scan */
   public Collection<String> getExcludeNamespaceFilters() {
     return excludeNamespaceFilters;
   }
@@ -212,6 +243,7 @@ public final class Project {
         + '}';
   }
 
+  /** Builder for {@link Project} */
   public static final class Builder {
 
     private String id;
@@ -305,6 +337,7 @@ public final class Project {
       return this;
     }
 
+    /** @return new {@code Project} */
     public Project build() {
       return new Project(
           id,

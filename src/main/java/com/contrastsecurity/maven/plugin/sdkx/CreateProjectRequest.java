@@ -5,6 +5,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 
+/**
+ * Value type that represents the body of the request to the Contrast Scan API for creating a new
+ * project.
+ */
 public final class CreateProjectRequest {
 
   private final String name;
@@ -12,6 +16,14 @@ public final class CreateProjectRequest {
   private final Collection<String> includeNamespaceFilters;
   private final Collection<String> excludeNamespaceFilters;
 
+  /**
+   * Constructor.
+   *
+   * @param name project name
+   * @param language project language
+   * @param includeNamespaceFilters collection of code namespaces to include in the scan
+   * @param excludeNamespaceFilters collection of code namespaces to exclude from the scan
+   */
   public CreateProjectRequest(
       final String name,
       final String language,
@@ -25,18 +37,22 @@ public final class CreateProjectRequest {
         Collections.unmodifiableCollection(new ArrayList<>(excludeNamespaceFilters));
   }
 
+  /** @return project name */
   public String getName() {
     return name;
   }
 
+  /** @return project language */
   public String getLanguage() {
     return language;
   }
 
+  /** @return collection of code namespaces to include in the scan */
   public Collection<String> getIncludeNamespaceFilters() {
     return includeNamespaceFilters;
   }
 
+  /** @return collection of code namespaces to exclude from the scan */
   public Collection<String> getExcludeNamespaceFilters() {
     return excludeNamespaceFilters;
   }

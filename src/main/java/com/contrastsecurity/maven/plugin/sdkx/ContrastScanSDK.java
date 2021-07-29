@@ -12,9 +12,27 @@ import java.io.InputStream;
  */
 public interface ContrastScanSDK {
 
+  /**
+   * Creates a new Scan project.
+   *
+   * @param organizationId unique ID for the user's organization
+   * @param request new project request
+   * @return the new {@link Project}
+   * @throws IOException when an IO error occurs sending the request to the Contrast Scan API
+   * @throws UnauthorizedException when Contrast rejects this request as unauthorized
+   */
   Project createProject(final String organizationId, final CreateProjectRequest request)
       throws IOException, UnauthorizedException;
 
+  /**
+   * Scan project lookup.
+   *
+   * @param organizationId unique ID for the user's organization
+   * @param projectName unique project name to find
+   * @return the {@link Project}, or {@code null} if no such project is found
+   * @throws IOException when an IO error occurs sending the query to the Contrast Scan API
+   * @throws UnauthorizedException when Contrast rejects this request as unauthorized
+   */
   Project findProjectByName(final String organizationId, final String projectName)
       throws IOException, UnauthorizedException;
 

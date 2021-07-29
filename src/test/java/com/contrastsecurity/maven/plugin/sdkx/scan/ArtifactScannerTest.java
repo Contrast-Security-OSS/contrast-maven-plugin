@@ -20,7 +20,7 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -88,7 +88,7 @@ final class ArtifactScannerTest {
             .scanId(SCAN_ID)
             .projectId(PROJECT_ID)
             .organizationId(ORGANIZATION_ID)
-            .createdDate(LocalDateTime.now())
+            .createdDate(ZonedDateTime.now())
             .totalResults(10)
             .totalFixedResults(2)
             .totalNewResults(8)

@@ -53,7 +53,7 @@ final class FakeContrastAPI implements ContrastAPI {
                   if (query.contains("unique=true")
                       && query.contains("name=spring-test-application")) {
                     // return one matching project
-                    path = file("/scan-api/projects/paged-projects.json");
+                    path = file("/scan-api/projects/paged-project.json");
                   } else {
                     // return no projects
                     path = file("/scan-api/projects/empty-projects-page.json");

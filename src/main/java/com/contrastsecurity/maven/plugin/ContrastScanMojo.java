@@ -163,6 +163,18 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     }
   }
 
+  /**
+   * Finds a Scan project with the project name from the plugin configuration, or creates such a
+   * "Java" project if one does not exist.
+   *
+   * <p>Note: the Scan API does not expose an endpoint for doing this atomically, so it is possible
+   * that another process creates the project after having determined it to not-exist but before
+   * attempting to create it.
+   *
+   * @param contrastScan client with which to make the requests
+   * @return existing or new {@link Project}
+   * @throws MojoExecutionException when fails to make request to the Scan API
+   */
   private Project findOrCreateProject(final ContrastScanSDK contrastScan)
       throws MojoExecutionException {
     final Project project;

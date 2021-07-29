@@ -65,16 +65,19 @@ public final class DefaultContrastScanSDK implements ContrastScanSDK {
     try (Reader reader = new InputStreamReader(contrast.makeRequest(HttpMethod.GET, uri))) {
       page = gson.fromJson(reader, new TypeToken<ScanPagedResult<Project>>() {}.getType());
     }
+
+    // the Scan API reuses a paged response structure even when we specify the query parameter
+    // "unique=true". When "unique=true", there should be at most one scan. If this is not true,
+    // throw an exception, because something is wrong with the Scan API.
     if (page.getTotalElements() > 1) {
       throw new ContrastException(
           "Expected Contrast to return exactly one project with the given name, or no projects, but returned "
               + page.getTotalElements()
               + " projects");
     }
-    if (page.getTotalElements() == 1) {
-      return page.getContent().get(0);
-    }
-    return null;
+
+    // return the project, or null if no such project is found
+    return page.getTotalElements() == 1 ? page.getContent().get(0) : null;
   }
 
   @Override
