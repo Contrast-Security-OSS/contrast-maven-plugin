@@ -20,7 +20,7 @@ final class ScanSummaryTest {
     // WHEN deserialize scan summary with GSON
     final ScanSummary summary;
     final Gson gson = GsonFactory.create();
-    try (InputStream is = Resources.stream("/scan-api/scan-summary.json");
+    try (InputStream is = Resources.stream("/scan-api/scans/scan-summary.json");
         Reader reader = new InputStreamReader(is)) {
       summary = gson.fromJson(reader, ScanSummary.class);
     }
@@ -34,7 +34,7 @@ final class ScanSummaryTest {
             .organizationId("organization-id")
             .totalResults(10)
             .totalNewResults(8)
-            .totalFixedResults(2)
+            .totalFixedResults(1)
             .createdDate(LocalDateTime.of(2021, Month.JULY, 15, 20, 36, 48))
             .build();
     assertThat(summary).isEqualTo(expected);
