@@ -1,7 +1,6 @@
 package com.contrastsecurity.maven.plugin.sdkx;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assumptions.assumeThat;
 
 import com.contrastsecurity.maven.plugin.Resources;
 import com.google.gson.Gson;
@@ -29,11 +28,15 @@ final class ScanTest {
 
   /** Verifies that completed scans and failed scans are finished */
   @ValueSource(
-      strings = {"/scan-api/scans/scan-completed.json", "/scan-api/scans/scan-failed.json"})
+      strings = {
+        "/scan-api/scans/scan-cancelled.json",
+        "/scan-api/scans/scan-completed.json",
+        "/scan-api/scans/scan-failed.json"
+      })
   @ParameterizedTest
   void is_finished(final String path) throws IOException {
-    // TODO skip scan-failed.json because we do not yet have an example of a failed scan
-    assumeThat(path).isNotEqualTo("/scan-api/scans/scan-failed.json");
+    // TODO scan-failed.json is a complete guess. We have not yet seen an example of a failed scan,
+    // so we don't know exactly what the API will return
     final Scan scan = readScanResource(path);
     assertThat(scan.isFinished()).isTrue();
   }
