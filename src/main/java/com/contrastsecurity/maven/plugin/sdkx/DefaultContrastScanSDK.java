@@ -60,7 +60,7 @@ public final class DefaultContrastScanSDK implements ContrastScanSDK {
     final String uri =
         String.join("/", "", "sast", "organizations", organizationId, "projects")
             + "?unique=true&name="
-            + URLEncoder.encode(projectName, "US-ASCII");
+            + URLEncoder.encode(projectName, StandardCharsets.UTF_8.name());
     final ScanPagedResult<Project> page;
     try (Reader reader = new InputStreamReader(contrast.makeRequest(HttpMethod.GET, uri))) {
       page = gson.fromJson(reader, new TypeToken<ScanPagedResult<Project>>() {}.getType());

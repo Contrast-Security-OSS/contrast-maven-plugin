@@ -9,8 +9,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.time.Month;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link ScanSummary}. */
@@ -37,7 +37,7 @@ final class ScanSummaryTest {
             .totalNewResults(8)
             .totalFixedResults(1)
             .createdDate(
-                ZonedDateTime.of(2021, Month.JULY.getValue(), 15, 20, 36, 48, 0, ZoneOffset.UTC))
+                OffsetDateTime.of(2021, Month.JULY.getValue(), 15, 20, 36, 48, 0, ZoneOffset.UTC))
             .build();
     assertThat(summary).isEqualTo(expected);
   }

@@ -6,8 +6,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
 /** Factory for configuring an instance of GSON that is compatible with the Scan API */
@@ -15,41 +14,25 @@ final class GsonFactory {
 
   static Gson create() {
     return new GsonBuilder()
-        .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeTypeAdapter().nullSafe())
-        .registerTypeAdapter(ZonedDateTime.class, new ZonedDateTimeTypeAdapter().nullSafe())
+        .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeTypeAdapter().nullSafe())
         .create();
   }
 
   /** static members only */
   private GsonFactory() {}
 
-  private static final class ZonedDateTimeTypeAdapter extends TypeAdapter<ZonedDateTime> {
+  private static final class OffsetDateTimeTypeAdapter extends TypeAdapter<OffsetDateTime> {
 
     @Override
-    public void write(final JsonWriter writer, final ZonedDateTime value) throws IOException {
-      final String formatted = value.format(DateTimeFormatter.ISO_ZONED_DATE_TIME);
+    public void write(final JsonWriter writer, final OffsetDateTime value) throws IOException {
+      final String formatted = value.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
       writer.value(formatted);
     }
 
     @Override
-    public ZonedDateTime read(final JsonReader reader) throws IOException {
+    public OffsetDateTime read(final JsonReader reader) throws IOException {
       final String iso8601 = reader.nextString();
-      return ZonedDateTime.parse(iso8601, DateTimeFormatter.ISO_ZONED_DATE_TIME);
-    }
-  }
-
-  private static final class LocalDateTimeTypeAdapter extends TypeAdapter<LocalDateTime> {
-
-    @Override
-    public void write(final JsonWriter writer, final LocalDateTime value) throws IOException {
-      final String formatted = value.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-      writer.value(formatted);
-    }
-
-    @Override
-    public LocalDateTime read(final JsonReader reader) throws IOException {
-      final String iso8601 = reader.nextString();
-      return LocalDateTime.parse(iso8601, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+      return OffsetDateTime.parse(iso8601, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
   }
 }

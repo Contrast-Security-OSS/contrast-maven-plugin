@@ -1,6 +1,6 @@
 package com.contrastsecurity.maven.plugin.sdkx;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,7 +24,7 @@ public final class Project {
   private final int medium;
   private final int low;
   private final int note;
-  private final ZonedDateTime lastScanTime;
+  private final OffsetDateTime lastScanTime;
   private final int completedScans;
   private final String lastScanId;
   private final Collection<String> includeNamespaceFilters;
@@ -42,7 +42,7 @@ public final class Project {
       final int medium,
       final int low,
       final int note,
-      final ZonedDateTime lastScanTime,
+      final OffsetDateTime lastScanTime,
       final int completedScans,
       final String lastScanId,
       final Collection<String> includeNamespaceFilters,
@@ -131,8 +131,11 @@ public final class Project {
     return note;
   }
 
-  /** @return the time at which the last successfully completed scan finished */
-  public ZonedDateTime getLastScanTime() {
+  /**
+   * @return the time at which the last successfully completed scan finished, or {@code null} if no
+   *     such scan exists
+   */
+  public OffsetDateTime getLastScanTime() {
     return lastScanTime;
   }
 
@@ -141,7 +144,9 @@ public final class Project {
     return completedScans;
   }
 
-  /** @return ID of the last scan to complete successfully */
+  /**
+   * @return ID of the last scan to complete successfully, or {@code null} if no such scan exists
+   */
   public String getLastScanId() {
     return lastScanId;
   }
@@ -256,7 +261,7 @@ public final class Project {
     private int medium;
     private int low;
     private int note;
-    private ZonedDateTime lastScanTime;
+    private OffsetDateTime lastScanTime;
     private int completedScans;
     private String lastScanId;
     private Collection<String> includeNamespaceFilters;
@@ -312,7 +317,7 @@ public final class Project {
       return this;
     }
 
-    public Builder lastScanTime(final ZonedDateTime lastScanTime) {
+    public Builder lastScanTime(final OffsetDateTime lastScanTime) {
       this.lastScanTime = lastScanTime;
       return this;
     }

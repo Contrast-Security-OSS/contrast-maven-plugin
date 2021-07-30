@@ -6,7 +6,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.contrastsecurity.maven.plugin.sdkx.ScanSummary;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -72,7 +72,7 @@ final class ContrastScanMojoTest {
             .organizationId("organization-id")
             .projectId("project-id")
             .scanId("scan-id")
-            .createdDate(ZonedDateTime.now())
+            .createdDate(OffsetDateTime.now())
             .totalResults(totalResults)
             .totalNewResults(totalNewResults)
             .totalFixedResults(totalFixedResults)
@@ -106,7 +106,7 @@ final class ContrastScanMojoTest {
             .organizationId("organization-id")
             .projectId("project-id")
             .scanId("scan-id")
-            .createdDate(ZonedDateTime.now())
+            .createdDate(OffsetDateTime.now())
             .totalResults(10)
             .totalNewResults(8)
             .totalFixedResults(1)

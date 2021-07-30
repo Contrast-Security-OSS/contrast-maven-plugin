@@ -38,13 +38,13 @@ final class FakeContrastAPI implements ContrastAPI {
     // register stub handlers
     server.createContext(
         "/api/ng/" + ORGANIZATION_ID + "/agents/default/java",
-        authenticatedEndpoint(FakeContrastAPI::downloadAgent));
+        authenticateAndCleanup(FakeContrastAPI::downloadAgent));
 
     final String projects =
         String.join("/", "", "api", "sast", "organizations", ORGANIZATION_ID, "projects");
     server.createContext(
         projects,
-        authenticatedEndpoint(
+        authenticateAndCleanup(
             exchange -> {
               switch (exchange.getRequestMethod()) {
                 case "GET":
@@ -69,19 +69,19 @@ final class FakeContrastAPI implements ContrastAPI {
             }));
     server.createContext(
         String.join("/", projects, PROJECT_ID, "code-artifacts"),
-        authenticatedEndpoint(json(201, file("/scan-api/code-artifacts/code-artifact.json"))));
+        authenticate(json(201, file("/scan-api/code-artifacts/code-artifact.json"))));
     server.createContext(
         String.join("/", projects, PROJECT_ID, "scans"),
-        authenticatedEndpoint(json(201, file("/scan-api/scans/scan-waiting.json"))));
+        authenticate(json(201, file("/scan-api/scans/scan-waiting.json"))));
     server.createContext(
         String.join("/", projects, PROJECT_ID, "scans", SCAN_ID),
-        authenticatedEndpoint(json(200, file("/scan-api/scans/scan-completed.json"))));
+        authenticate(json(200, file("/scan-api/scans/scan-completed.json"))));
     server.createContext(
         String.join("/", projects, PROJECT_ID, "scans", SCAN_ID, "summary"),
-        authenticatedEndpoint(json(200, file("/scan-api/scans/scan-summary.json"))));
+        authenticate(json(200, file("/scan-api/scans/scan-summary.json"))));
     server.createContext(
         String.join("/", projects, PROJECT_ID, "scans", SCAN_ID, "raw-output"),
-        authenticatedEndpoint(json(200, file("/scan-api/sarif/empty.sarif.json"))));
+        authenticate(json(200, file("/scan-api/sarif/empty.sarif.json"))));
 
     server.setExecutor(Executors.newSingleThreadExecutor());
     try {
@@ -127,7 +127,7 @@ final class FakeContrastAPI implements ContrastAPI {
    * @return new {@code HttpHandler}
    */
   private static HttpHandler status(final int code) {
-    return exchange -> status(exchange, code);
+    return cleanup(exchange -> status(exchange, code));
   }
 
   /**
@@ -137,11 +137,9 @@ final class FakeContrastAPI implements ContrastAPI {
    * @param code HTTP status code to return
    */
   private static void status(final HttpExchange exchange, final int code) throws IOException {
-    discardRequest(exchange);
     // ideally we would use response length -1 according to the HttpServer JavaDoc, but it's not
     // working as expected
     exchange.sendResponseHeaders(code, 0);
-    exchange.close();
   }
 
   /**
@@ -152,7 +150,7 @@ final class FakeContrastAPI implements ContrastAPI {
    * @return new {@code HttpHandler}
    */
   private static HttpHandler json(final int code, final Path path) {
-    return exchange -> json(exchange, code, path);
+    return cleanup(exchange -> json(exchange, code, path));
   }
 
   /**
@@ -164,15 +162,12 @@ final class FakeContrastAPI implements ContrastAPI {
    * @param path JSON file to send in the response
    */
   private static void json(final HttpExchange exchange, final int code, final Path path) {
-    discardRequest(exchange);
     exchange.getResponseHeaders().add("Content-Type", "application/json");
     try {
       exchange.sendResponseHeaders(code, Files.size(path));
       Files.copy(path, exchange.getResponseBody());
     } catch (final IOException e) {
       throw new UncheckedIOException("Failed to send response", e);
-    } finally {
-      exchange.close();
     }
   }
 
@@ -182,7 +177,7 @@ final class FakeContrastAPI implements ContrastAPI {
    * @param handler handler to decorate
    * @return new {@code HttpHandler}
    */
-  private static HttpHandler authenticatedEndpoint(HttpHandler handler) {
+  private static HttpHandler authenticate(HttpHandler handler) {
     // local pair class for iterating over common header verification logic
     class ExpectedHeader {
       final String name;
@@ -215,12 +210,40 @@ final class FakeContrastAPI implements ContrastAPI {
   }
 
   /**
+   * Decorates an {@code HttpHandler} with clean-up semantics including discarding the entire
+   * request body (because these endpoints don't consider the contents of the request bodies).
+   *
+   * @param handler handler to decorate
+   * @return decorated {@code HttpHandler}
+   */
+  private static HttpHandler cleanup(final HttpHandler handler) {
+    return exchange -> {
+      try {
+        discardRequest(exchange);
+        handler.handle(exchange);
+      } finally {
+        exchange.close();
+      }
+    };
+  }
+
+  /**
+   * Applies both the {@link #authenticate(HttpHandler)} and {@link #cleanup(HttpHandler)}
+   * decorators
+   *
+   * @param handler handler to decorate
+   * @return decorated {@code HttpHandler}
+   */
+  private static HttpHandler authenticateAndCleanup(final HttpHandler handler) {
+    return cleanup(authenticate(handler));
+  }
+
+  /**
    * Sends the Contrast agent jar to the response in the given {@code HttpExchange}.
    *
    * @param exchange exchange to which the response will be sent
    */
   private static void downloadAgent(final HttpExchange exchange) {
-    discardRequest(exchange);
     exchange.getResponseHeaders().add("Content-Type", "application/java-archive");
     final Path path = file("/contrast-agent.jar");
     try {
@@ -229,7 +252,6 @@ final class FakeContrastAPI implements ContrastAPI {
     } catch (IOException e) {
       throw new UncheckedIOException("Failed to send response", e);
     }
-    exchange.close();
   }
 
   /**

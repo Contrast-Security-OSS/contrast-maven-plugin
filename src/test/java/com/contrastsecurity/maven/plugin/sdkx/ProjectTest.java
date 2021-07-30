@@ -10,8 +10,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.time.Month;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -44,7 +44,7 @@ final class ProjectTest {
             .low(4)
             .note(5)
             .lastScanTime(
-                ZonedDateTime.of(2021, Month.JULY.getValue(), 27, 18, 38, 1, 0, ZoneOffset.UTC))
+                OffsetDateTime.of(2021, Month.JULY.getValue(), 27, 18, 38, 1, 0, ZoneOffset.UTC))
             .completedScans(6)
             .lastScanId("scan-id")
             .includeNamespaceFilters(Collections.emptyList())

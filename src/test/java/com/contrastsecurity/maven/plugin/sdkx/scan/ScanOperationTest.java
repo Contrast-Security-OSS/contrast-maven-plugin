@@ -17,7 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
@@ -69,7 +69,7 @@ final class ScanOperationTest {
             .scanId(completed.getId())
             .projectId(completed.getProjectId())
             .organizationId(completed.getOrganizationId())
-            .createdDate(ZonedDateTime.now())
+            .createdDate(OffsetDateTime.now())
             .totalResults(10)
             .totalFixedResults(2)
             .totalNewResults(8)
@@ -227,7 +227,7 @@ final class ScanOperationTest {
             .scanId(completed.getId())
             .projectId(completed.getProjectId())
             .organizationId(completed.getOrganizationId())
-            .createdDate(ZonedDateTime.now())
+            .createdDate(OffsetDateTime.now())
             .totalResults(10)
             .totalFixedResults(2)
             .totalNewResults(8)
@@ -259,7 +259,7 @@ final class ScanOperationTest {
             .scanId(completed.getId())
             .projectId(completed.getProjectId())
             .organizationId(completed.getOrganizationId())
-            .createdDate(ZonedDateTime.now())
+            .createdDate(OffsetDateTime.now())
             .totalResults(10)
             .totalFixedResults(2)
             .totalNewResults(8)
