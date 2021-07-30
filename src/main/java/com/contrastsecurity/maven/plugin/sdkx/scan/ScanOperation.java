@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
@@ -142,7 +143,7 @@ public final class ScanOperation {
                 CompletableFuture.supplyAsync(
                     () -> {
                       try {
-                        Files.copy(is, file);
+                        Files.copy(is, file, StandardCopyOption.REPLACE_EXISTING);
                       } catch (final IOException e) {
                         throw new UncheckedIOException("Failed to save SARIF to file", e);
                       } finally {

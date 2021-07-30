@@ -1,1 +1,17 @@
-
+{
+  "id": "project-id",
+  "organizationId": "organization-id",
+  "name": "spring-test-application",
+  "archived": false,
+  "language": "JAVA",
+  "critical": 1,
+  "high": 2,
+  "medium": 3,
+  "low": 4,
+  "note": 5,
+  "lastScanTime": "2021-07-27T18:38:01.000+00:00",
+  "completedScans": 6,
+  "lastScanId": "scan-id",
+  "includeNamespaceFilters": [],
+  "excludeNamespaceFilters": []
+}
