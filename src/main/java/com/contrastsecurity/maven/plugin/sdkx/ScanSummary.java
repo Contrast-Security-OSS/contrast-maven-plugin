@@ -20,7 +20,7 @@ package com.contrastsecurity.maven.plugin.sdkx;
  * #L%
  */
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 /** Value type that describes a scan results summary */
@@ -39,7 +39,7 @@ public final class ScanSummary {
   private final int totalResults;
   private final int totalNewResults;
   private final int totalFixedResults;
-  private final LocalDateTime createdDate;
+  private final OffsetDateTime createdDate;
 
   /** visible for GSON */
   ScanSummary(
@@ -51,7 +51,7 @@ public final class ScanSummary {
       final int totalResults,
       final int totalNewResults,
       final int totalFixedResults,
-      final LocalDateTime createdDate) {
+      final OffsetDateTime createdDate) {
     this.id = Objects.requireNonNull(id);
     this.scanId = Objects.requireNonNull(scanId);
     this.organizationId = Objects.requireNonNull(organizationId);
@@ -110,7 +110,7 @@ public final class ScanSummary {
   }
 
   /** @return time at which this scan summary was created */
-  public LocalDateTime getCreatedDate() {
+  public OffsetDateTime getCreatedDate() {
     return createdDate;
   }
 
@@ -187,7 +187,7 @@ public final class ScanSummary {
     private int totalResults;
     private int totalNewResults;
     private int totalFixedResults;
-    private LocalDateTime createdDate;
+    private OffsetDateTime createdDate;
 
     public Builder id(final String id) {
       this.id = id;
@@ -229,7 +229,7 @@ public final class ScanSummary {
       return this;
     }
 
-    public Builder createdDate(final LocalDateTime createdDate) {
+    public Builder createdDate(final OffsetDateTime createdDate) {
       this.createdDate = createdDate;
       return this;
     }

@@ -26,7 +26,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.contrastsecurity.maven.plugin.sdkx.ScanSummary;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -46,7 +46,7 @@ final class ContrastScanMojoTest {
   void before() {
     mojo = new ContrastScanMojo();
     mojo.setOrganizationId("organization-id");
-    mojo.setProjectId("project-id");
+    mojo.setProjectName("project-id");
   }
 
   /**
@@ -65,9 +65,11 @@ final class ContrastScanMojoTest {
   void it_generates_clickable_url(final String url) throws MojoExecutionException {
     // GIVEN a scan mojo with known URL, organization ID, and project ID
     mojo.setURL(url);
+    mojo.setOrganizationId("organization-id");
 
     // WHEN generate URL for the user to click-through to display the scan in their browser
-    final String clickableScanURL = mojo.createClickableScanURL("scan-id").toExternalForm();
+    final String clickableScanURL =
+        mojo.createClickableScanURL("project-id", "scan-id").toExternalForm();
 
     // THEN outputs expected URL
     assertThat(clickableScanURL)
@@ -90,7 +92,7 @@ final class ContrastScanMojoTest {
             .organizationId("organization-id")
             .projectId("project-id")
             .scanId("scan-id")
-            .createdDate(LocalDateTime.now())
+            .createdDate(OffsetDateTime.now())
             .totalResults(totalResults)
             .totalNewResults(totalNewResults)
             .totalFixedResults(totalFixedResults)
@@ -124,7 +126,7 @@ final class ContrastScanMojoTest {
             .organizationId("organization-id")
             .projectId("project-id")
             .scanId("scan-id")
-            .createdDate(LocalDateTime.now())
+            .createdDate(OffsetDateTime.now())
             .totalResults(10)
             .totalNewResults(8)
             .totalFixedResults(1)

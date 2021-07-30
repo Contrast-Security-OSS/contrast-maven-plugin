@@ -20,8 +20,11 @@ package com.contrastsecurity.maven.plugin;
  * #L%
  */
 
+import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.maven.plugin.sdkx.ContrastScanSDK;
+import com.contrastsecurity.maven.plugin.sdkx.CreateProjectRequest;
 import com.contrastsecurity.maven.plugin.sdkx.DefaultContrastScanSDK;
+import com.contrastsecurity.maven.plugin.sdkx.Project;
 import com.contrastsecurity.maven.plugin.sdkx.ScanSummary;
 import com.contrastsecurity.maven.plugin.sdkx.scan.ArtifactScanner;
 import com.contrastsecurity.maven.plugin.sdkx.scan.ScanOperation;
@@ -33,6 +36,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
@@ -61,15 +65,14 @@ import org.apache.maven.project.MavenProject;
 public final class ContrastScanMojo extends AbstractContrastMojo {
 
   @Parameter(defaultValue = "${project}", readonly = true)
-  private MavenProject project;
+  private MavenProject mavenProject;
 
   /**
    * Contrast Scan project unique ID to which the plugin runs new Scans. This will be replaced
    * imminently with a project name
    */
-  // TODO[JAVA-3297] replace this with "project"
-  @Parameter(required = true)
-  private String projectId;
+  @Parameter(property = "project", defaultValue = "${project.name}")
+  private String projectName;
 
   /**
    * File path of the Java artifact to upload for scanning. By default, uses the path to this
@@ -113,13 +116,13 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
   private ContrastSDK contrast;
 
   /** visible for testing */
-  String getProjectId() {
-    return projectId;
+  String getProjectName() {
+    return projectName;
   }
 
   /** visible for testing */
-  void setProjectId(final String projectId) {
-    this.projectId = projectId;
+  void setProjectName(final String projectName) {
+    this.projectName = projectName;
   }
 
   /** visible for testing */
@@ -136,21 +139,27 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
   public void execute() throws MojoExecutionException, MojoFailureException {
     // initialize plugin
     initialize();
+    final ContrastScanSDK contrastScan = new DefaultContrastScanSDK(contrast, getURL());
 
     // check that file exists
     final Path file =
-        artifactPath == null ? project.getArtifact().getFile().toPath() : artifactPath.toPath();
+        artifactPath == null
+            ? mavenProject.getArtifact().getFile().toPath()
+            : artifactPath.toPath();
     if (!Files.exists(file)) {
       throw new MojoExecutionException(
           file
               + " does not exist. Make sure to bind the scan goal to a phase that will execute after the artifact to scan has been built");
     }
 
-    final ContrastScanSDK contrastScan = new DefaultContrastScanSDK(contrast, getURL());
+    // get or create project
+    final Project project = findOrCreateProject(contrastScan);
+
+    // start scan
     final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
     final ArtifactScanner scanner =
         new ArtifactScanner(
-            executor, contrastScan, getOrganizationId(), getProjectId(), POLL_SCAN_INTERVAL);
+            executor, contrastScan, getOrganizationId(), project.getId(), POLL_SCAN_INTERVAL);
     try {
       getLog().info("Uploading " + file.getFileName() + " to Contrast Scan");
       final ScanOperation operation = scanner.scanArtifact(file, label);
@@ -161,7 +170,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
       }
 
       // show link in build log
-      final URL clickableScanURL = createClickableScanURL(operation.id());
+      final URL clickableScanURL = createClickableScanURL(project.getId(), operation.id());
       getLog().info("Scan results will be available at " + clickableScanURL.toExternalForm());
 
       // optionally wait for results, output summary to console, output sarif to file system
@@ -175,12 +184,69 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
   }
 
   /**
+   * Finds a Scan project with the project name from the plugin configuration, or creates such a
+   * "Java" project if one does not exist.
+   *
+   * <p>Note: the Scan API does not expose an endpoint for doing this atomically, so it is possible
+   * that another process creates the project after having determined it to not-exist but before
+   * attempting to create it.
+   *
+   * @param contrastScan client with which to make the requests
+   * @return existing or new {@link Project}
+   * @throws MojoExecutionException when fails to make request to the Scan API
+   */
+  private Project findOrCreateProject(final ContrastScanSDK contrastScan)
+      throws MojoExecutionException {
+    final Project project;
+    try {
+      project = contrastScan.findProjectByName(getOrganizationId(), projectName);
+    } catch (final IOException e) {
+      throw new MojoExecutionException("Failed to retrieve project " + projectName, e);
+    } catch (final UnauthorizedException e) {
+      throw new MojoExecutionException(
+          "Authentication failure while retrieving project "
+              + projectName
+              + " - verify Contrast connection configuration",
+          e);
+    }
+    if (project != null) {
+      getLog().debug("Found project with name " + projectName);
+      if (project.isArchived()) {
+        // TODO the behavior of tools like this plugin has yet to be defined with respect to
+        // archived projects; however, the UI exposes no way to archive projects at the moment.
+        // For now, simply log a warning to help debug this in the future should we encounter this
+        // case
+        getLog().warn("Project " + projectName + " is archived");
+      }
+      return project;
+    }
+
+    // project does not exist, so create a new one
+    getLog().debug("No project exists with name " + projectName + " - creating one");
+    final CreateProjectRequest request =
+        new CreateProjectRequest(
+            projectName, "JAVA", Collections.emptyList(), Collections.emptyList());
+    try {
+      return contrastScan.createProject(getOrganizationId(), request);
+    } catch (final IOException e) {
+      throw new MojoExecutionException("Failed to create project " + projectName, e);
+    } catch (final UnauthorizedException e) {
+      throw new MojoExecutionException(
+          "Authentication failure while creating project "
+              + projectName
+              + " - verify Contrast connection configuration",
+          e);
+    }
+  }
+
+  /**
    * visible for testing
    *
    * @return Contrast browser application URL for users to click-through and see their scan results
    * @throws MojoExecutionException when the URL is malformed
    */
-  URL createClickableScanURL(final String scanId) throws MojoExecutionException {
+  URL createClickableScanURL(final String projectId, final String scanId)
+      throws MojoExecutionException {
     final String path =
         String.join(
             "/",

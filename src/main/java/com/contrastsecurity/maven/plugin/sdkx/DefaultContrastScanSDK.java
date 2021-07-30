@@ -26,6 +26,7 @@ import com.contrastsecurity.http.MediaType;
 import com.contrastsecurity.sdk.ContrastSDK;
 import com.contrastsecurity.utils.ContrastSDKUtils;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -34,6 +35,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.net.HttpURLConnection;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -56,6 +58,46 @@ public final class DefaultContrastScanSDK implements ContrastScanSDK {
   public DefaultContrastScanSDK(final ContrastSDK contrast, final String restURL) {
     this.contrast = Objects.requireNonNull(contrast);
     this.restURL = ContrastSDKUtils.ensureApi(Objects.requireNonNull(restURL));
+  }
+
+  @Override
+  public Project createProject(final String organizationId, final CreateProjectRequest request)
+      throws IOException, UnauthorizedException {
+    // requests made with ContrastSDK.makeRequest must have their path prepended with "/"
+    final String path = String.join("/", "", "sast", "organizations", organizationId, "projects");
+    final String json = gson.toJson(request);
+    try (Reader reader =
+        new InputStreamReader(
+            contrast.makeRequestWithBody(HttpMethod.POST, path, json, MediaType.JSON))) {
+      return gson.fromJson(reader, Project.class);
+    }
+  }
+
+  @Override
+  public Project findProjectByName(final String organizationId, final String projectName)
+      throws IOException, UnauthorizedException {
+    // requests made with ContrastSDK.makeRequest must have their path prepended with "/"
+    final String uri =
+        String.join("/", "", "sast", "organizations", organizationId, "projects")
+            + "?unique=true&name="
+            + URLEncoder.encode(projectName, StandardCharsets.UTF_8.name());
+    final ScanPagedResult<Project> page;
+    try (Reader reader = new InputStreamReader(contrast.makeRequest(HttpMethod.GET, uri))) {
+      page = gson.fromJson(reader, new TypeToken<ScanPagedResult<Project>>() {}.getType());
+    }
+
+    // the Scan API reuses a paged response structure even when we specify the query parameter
+    // "unique=true". When "unique=true", there should be at most one scan. If this is not true,
+    // throw an exception, because something is wrong with the Scan API.
+    if (page.getTotalElements() > 1) {
+      throw new ContrastException(
+          "Expected Contrast to return exactly one project with the given name, or no projects, but returned "
+              + page.getTotalElements()
+              + " projects");
+    }
+
+    // return the project, or null if no such project is found
+    return page.getTotalElements() == 1 ? page.getContent().get(0) : null;
   }
 
   @Override
