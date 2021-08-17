@@ -5,8 +5,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.contrastsecurity.maven.plugin.sdkx.ScanSummary;
-import java.time.OffsetDateTime;
+import com.contrastsecurity.sdk.scan.ScanSummary;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -67,16 +68,16 @@ final class ContrastScanMojoTest {
     final int totalNewResults = 8;
     final int totalFixedResults = 1;
     final ScanSummary summary =
-        ScanSummary.builder()
+        FakeScanSummary.builder()
             .id("summary-id")
             .organizationId("organization-id")
             .projectId("project-id")
             .scanId("scan-id")
-            .createdDate(OffsetDateTime.now())
+            .createdDate(Instant.now())
             .totalResults(totalResults)
             .totalNewResults(totalNewResults)
             .totalFixedResults(totalFixedResults)
-            .duration(0)
+            .duration(Duration.ofMillis(0))
             .build();
     @SuppressWarnings("unchecked")
     final Consumer<String> console = mock(Consumer.class);
@@ -101,16 +102,16 @@ final class ContrastScanMojoTest {
 
     // WHEN print summary to console
     final ScanSummary summary =
-        ScanSummary.builder()
+        FakeScanSummary.builder()
             .id("summary-id")
             .organizationId("organization-id")
             .projectId("project-id")
             .scanId("scan-id")
-            .createdDate(OffsetDateTime.now())
+            .createdDate(Instant.now())
             .totalResults(10)
             .totalNewResults(8)
             .totalFixedResults(1)
-            .duration(0)
+            .duration(Duration.ofMillis(0))
             .build();
     @SuppressWarnings("unchecked")
     final Consumer<String> console = mock(Consumer.class);
