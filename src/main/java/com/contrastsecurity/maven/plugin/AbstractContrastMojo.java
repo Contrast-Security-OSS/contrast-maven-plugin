@@ -1,6 +1,7 @@
 package com.contrastsecurity.maven.plugin;
 
 import com.contrastsecurity.sdk.ContrastSDK;
+import com.contrastsecurity.sdk.UserAgentProduct;
 import java.net.Authenticator;
 import java.net.InetSocketAddress;
 import java.net.PasswordAuthentication;
@@ -21,6 +22,9 @@ abstract class AbstractContrastMojo extends AbstractMojo {
 
   @Parameter(defaultValue = "${settings}", readonly = true)
   private Settings settings;
+
+  @Parameter(defaultValue = "${maven.version}", readonly = true)
+  private String mavenVersion;
 
   /**
    * User name for communicating with Contrast. Agent users lack permissions required by this
@@ -91,6 +95,14 @@ abstract class AbstractContrastMojo extends AbstractMojo {
   @Parameter(property = "proxyPort")
   private int proxyPort;
 
+  String getMavenVersion() {
+    return mavenVersion;
+  }
+
+  void setMavenVersion(final String mavenVersion) {
+    this.mavenVersion = mavenVersion;
+  }
+
   String getUserName() {
     return userName;
   }
@@ -137,17 +149,28 @@ abstract class AbstractContrastMojo extends AbstractMojo {
    * @throws MojoExecutionException when fails to connect to Contrast
    */
   ContrastSDK connectToContrast() throws MojoExecutionException {
-    Proxy proxy = getProxy();
-
+    final Proxy proxy = getProxy();
+    final UserAgentProduct maven = getUserAgentProduct();
     try {
       return new ContrastSDK.Builder(userName, serviceKey, apiKey)
           .withApiUrl(url)
           .withProxy(proxy)
+          .withUserAgentProduct(maven)
           .build();
-    } catch (IllegalArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       throw new MojoExecutionException(
           "\n\nWe couldn't connect to Contrast at this address [" + url + "]. The error is: ", e);
     }
+  }
+
+  /**
+   * visible for testing
+   *
+   * @return {@link UserAgentProduct} for the contrast-maven-plugin
+   */
+  final UserAgentProduct getUserAgentProduct() {
+    final String comment = "Apache Maven " + mavenVersion;
+    return UserAgentProduct.of("contrast-maven-plugin", Version.VERSION, comment);
   }
 
   private Proxy getProxy() throws MojoExecutionException {
