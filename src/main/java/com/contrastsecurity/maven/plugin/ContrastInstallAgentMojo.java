@@ -4,16 +4,17 @@ import com.contrastsecurity.exceptions.UnauthorizedException;
 import com.contrastsecurity.models.AgentType;
 import com.contrastsecurity.models.Applications;
 import com.contrastsecurity.sdk.ContrastSDK;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -138,19 +139,20 @@ public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
   }
 
   public void execute() throws MojoExecutionException {
-    verifyAppIdOrNameNotBlank();
+    verifyAppIdOrNameNotNull();
     getLog().info("Attempting to connect to Contrast and install the Java agent.");
 
     ContrastSDK contrast = connectToContrast();
 
-    File agentFile = installJavaAgent(contrast);
+    Path agent = installJavaAgent(contrast);
+    contrastAgentLocation = agent.toAbsolutePath().toString();
 
     getLog().info("Agent downloaded.");
 
-    if (StringUtils.isNotBlank(getAppId())) {
+    if (getAppId() != null) {
       applicationName = getAppName(contrast, getAppId());
 
-      if (StringUtils.isNotBlank(getAppName())) {
+      if (getAppName() != null) {
         getLog().info("Using 'appId' property; 'appName' property is ignored.");
       }
 
@@ -241,7 +243,7 @@ public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
       getLog().info("No CI build number detected, we'll use current timestamp.");
       appVersionQualifier = new SimpleDateFormat("yyyyMMddHHmmss").format(currentDate);
     }
-    if (StringUtils.isNotBlank(getAppId())) {
+    if (getAppId() != null) {
       computedAppVersion = applicationName + "-" + appVersionQualifier;
     } else {
       computedAppVersion = getAppName() + "-" + appVersionQualifier;
@@ -261,7 +263,7 @@ public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
       }
     }
 
-    return StringUtils.join(metadata, ",");
+    return String.join(",", metadata);
   }
 
   String buildArgLine(String currentArgLine) {
@@ -315,18 +317,18 @@ public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
       argLineBuilder.append(" -Dcontrast.override.appname=").append(applicationName);
     }
 
-    if (!StringUtils.isEmpty(serverPath)) {
+    if (serverPath != null) {
       argLineBuilder.append(" -Dcontrast.path=").append(serverPath);
     }
 
-    if (!StringUtils.isEmpty(applicationSessionMetadata)) {
+    if (applicationSessionMetadata != null) {
       argLineBuilder
           .append(" -Dcontrast.application.session_metadata='")
           .append(applicationSessionMetadata)
           .append("'");
     }
 
-    if (!StringUtils.isEmpty(applicationTags)) {
+    if (applicationTags != null) {
       argLineBuilder.append(" -Dcontrast.application.tags=").append(applicationTags);
     }
 
@@ -336,52 +338,40 @@ public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
     return newArgLine.trim();
   }
 
-  File installJavaAgent(ContrastSDK connection) throws MojoExecutionException {
-    byte[] javaAgent;
-    File agentFile;
-
-    if (StringUtils.isEmpty(jarPath)) {
-      getLog().info("No jar path was configured. Downloading the latest contrast.jar...");
-
-      final String organizationID = getOrganizationId();
-      try {
-        javaAgent = connection.getAgent(AgentType.JAVA, organizationID);
-      } catch (IOException e) {
-        throw new MojoExecutionException(
-            "\n\nCouldn't download the Java agent from Contrast. Please check that all your credentials are correct. If everything is correct, please contact Contrast Support. The error is:",
-            e);
-      } catch (UnauthorizedException e) {
-        throw new MojoExecutionException(
-            "\n\nWe contacted Contrast successfully but couldn't authorize with the credentials you provided. The error is:",
-            e);
-      }
-
-      // Save the jar to the 'target' directory
-      agentFile = new File(project.getBuild().getDirectory() + File.separator + AGENT_NAME);
-
-      try {
-        FileUtils.writeByteArrayToFile(agentFile, javaAgent);
-      } catch (IOException e) {
-        throw new MojoExecutionException("Unable to save the latest java agent.", e);
-      }
-
-      getLog().info("Saved the latest java agent to " + agentFile.getAbsolutePath());
-      contrastAgentLocation = agentFile.getAbsolutePath();
-
-    } else {
+  Path installJavaAgent(ContrastSDK connection) throws MojoExecutionException {
+    if (jarPath != null) {
       getLog().info("Using configured jar path " + jarPath);
-
-      agentFile = new File(jarPath);
-
-      if (!agentFile.exists()) {
+      final Path agent = Paths.get(jarPath);
+      if (!Files.exists(agent)) {
         throw new MojoExecutionException("Unable to load the local Java agent from " + jarPath);
       }
-
       getLog().info("Loaded the latest java agent from " + jarPath);
-      contrastAgentLocation = jarPath;
+      return agent;
     }
 
-    return agentFile;
+    getLog().info("No jar path was configured. Downloading the latest contrast.jar...");
+    final byte[] bytes;
+    final String organizationID = getOrganizationId();
+    try {
+      bytes = connection.getAgent(AgentType.JAVA, organizationID);
+    } catch (IOException e) {
+      throw new MojoExecutionException(
+          "\n\nCouldn't download the Java agent from Contrast. Please check that all your credentials are correct. If everything is correct, please contact Contrast Support. The error is:",
+          e);
+    } catch (UnauthorizedException e) {
+      throw new MojoExecutionException(
+          "\n\nWe contacted Contrast successfully but couldn't authorize with the credentials you provided. The error is:",
+          e);
+    }
+    // Save the jar to the 'target' directory
+    final Path agent = Paths.get(project.getBuild().getDirectory(), AGENT_NAME);
+    try {
+      Files.write(agent, bytes, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+    } catch (final IOException e) {
+      throw new MojoExecutionException("Unable to save the latest java agent.", e);
+    }
+    getLog().info("Saved the latest java agent to " + agent.toAbsolutePath());
+    return agent;
   }
 
   private static final String AGENT_NAME = "contrast.jar";
