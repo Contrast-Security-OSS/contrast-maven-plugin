@@ -72,11 +72,6 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-utils</artifactId>
-      <version>3.0.24</version>
-    </dependency>
-    <dependency>
       <groupId>com.contrastsecurity</groupId>
       <artifactId>contrast-sdk-java</artifactId>
       <version>2.22</version>
@@ -92,6 +87,21 @@
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-project</artifactId>
       <version>2.2.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-settings</artifactId>
+      <version>2.2.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model</artifactId>
+      <version>3.5.3</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.6.2</version>
     </dependency>
     <dependency>
       <groupId>com.google.auto.value</groupId>
@@ -317,6 +327,18 @@
               <outputDirectory>
                 ${project.build.testOutputDirectory}
               </outputDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>analyze-dependencies</id>
+            <phase>test</phase>
+            <goals>
+              <goal>analyze-only</goal>
+            </goals>
+            <configuration>
+              <failOnWarning>true</failOnWarning>
+              <!-- https://stackoverflow.com/a/27729783/501368 -->
+              <ignoreNonCompile>true</ignoreNonCompile>
             </configuration>
           </execution>
         </executions>
