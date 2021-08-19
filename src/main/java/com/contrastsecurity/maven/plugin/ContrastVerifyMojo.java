@@ -38,7 +38,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -59,18 +58,17 @@ public final class ContrastVerifyMojo extends AbstractAssessMojo {
   String minSeverity;
 
   public void execute() throws MojoExecutionException {
-    verifyAppIdOrNameNotBlank();
+    verifyAppIdOrNameNotNull();
     ContrastSDK contrast = connectToContrast();
 
     getLog().info("Successfully authenticated to Contrast.");
 
     getLog().info("Checking for new vulnerabilities for appVersion [" + computedAppVersion + "]");
 
-    String applicationId;
-    if (StringUtils.isNotBlank(getAppId())) {
+    final String applicationId;
+    if (getAppId() != null) {
       applicationId = getAppId();
-
-      if (StringUtils.isNotBlank(getAppName())) {
+      if (getAppName() != null) {
         getLog().info("Using 'appId' property; 'appName' property is ignored.");
       }
 
@@ -80,7 +78,7 @@ public final class ContrastVerifyMojo extends AbstractAssessMojo {
 
     List<Long> serverIds = null;
 
-    if (StringUtils.isNotBlank(getServerName())) {
+    if (getServerName() != null) {
       serverIds = getServerId(contrast, applicationId);
     }
 
