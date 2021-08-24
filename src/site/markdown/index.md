@@ -1,9 +1,9 @@
-# Contrast Maven Plugin
+## Contrast Maven Plugin
 
 The Contrast Maven Plugin helps users include one or more Contrast Security analysis features in
 their Java web application Maven projects.
 
-## Goals Overview
+### Goals Overview
 
 * [contrast:install](install-mojo.html) includes the Contrast Java agent in integration testing to
   provide Contrast Assess runtime security analysis.
@@ -14,7 +14,7 @@ their Java web application Maven projects.
   vulnerabilities using static analysis.
 
 
-## Usage
+### Usage
 
 General instructions for how to use the Contrast Maven Plugin may be found on
 the [usage page](usage.html). 

@@ -45,6 +45,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -142,12 +143,9 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     final ContrastScanSDK contrastScan = new DefaultContrastScanSDK(contrast, getURL());
 
     // check that file exists
-    final Path file =
-        artifactPath == null
-            ? mavenProject.getArtifact().getFile().toPath()
-            : artifactPath.toPath();
+    final Path file = artifactPath == null ? findProjectArtifactOrFail() : artifactPath.toPath();
     if (!Files.exists(file)) {
-      throw new MojoExecutionException(
+      throw new MojoFailureException(
           file
               + " does not exist. Make sure to bind the scan goal to a phase that will execute after the artifact to scan has been built");
     }
@@ -181,6 +179,39 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     } finally {
       executor.shutdown();
     }
+  }
+
+  /**
+   * Inspects the {@link #mavenProject} to find the project's artifact, or fails if no such artifact
+   * can be found. We may not find an artifact when the user has configured this goal to run before
+   * the artifact is created, or if the project does not produce an artifact (e.g. a module of type
+   * {@code pom}).
+   *
+   * <p>By default, some Maven plugins will skip their work instead of failing when inputs are not
+   * found. For example, the {@code maven-surefire-plugin} default behavior will skip tests if no
+   * test classes are found (and this may be overridden with configuration).
+   *
+   * <p>So, why does this plugin fail instead of simply skipping its work and logging a warning?
+   * Because we want the user to avoid one particularly problematic configuration. Users can easily
+   * mis-configure this plugin in a multi-module build by including it in the parent POM's build
+   * plugins. In this case, all child modules will inherit this plugin in their builds, and the
+   * build will scan not just the web application modules, but also the internal dependencies that
+   * are components of their applications. Contrast Scan is intended to be used on their artifact
+   * that represents the web application, and users should not scan the components of their web
+   * application individually. We can detect this mis-configuration by failing when there is no
+   * artifact, because the build will fail on the parent POM project (since it is of type {@code
+   * pom}).
+   *
+   * @throws MojoFailureException when artifact does not exist
+   */
+  private Path findProjectArtifactOrFail() throws MojoFailureException {
+    final Artifact artifact = mavenProject.getArtifact();
+    final File file = artifact == null ? null : artifact.getFile();
+    if (file == null) {
+      throw new MojoFailureException(
+          "Project's artifact file has not ben set - see https://contrastsecurity.dev/contrast-maven-plugin/troubleshooting/artifact-not-set.html");
+    }
+    return file.toPath();
   }
 
   /**

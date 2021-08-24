@@ -46,5 +46,11 @@
       <item name="Goals" href="plugin-info.html" />
       <item name="Usage" href="usage.html" />
     </menu>
+    <menu name="Examples">
+      <item name="Multi-Module Projects" href="examples/multi-module-projects.html" />
+    </menu>
+    <menu name="Troubleshooting">
+      <item name="Artifact Not Set" href="troubleshooting/artifact-not-set.html" />
+    </menu>
   </body>
 </project>
