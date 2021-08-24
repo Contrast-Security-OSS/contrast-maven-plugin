@@ -1,4 +1,4 @@
-# Usage
+## Usage
 
 The Contrast Maven Plugin helps users include one or more Contrast Security analysis features in
 their Maven projects. All such analysis must connect to Contrast, and therefore each plugin goal
@@ -22,7 +22,7 @@ environment variables:
 </pluginManagement>
 ```
 
-## Contrast Assess
+### Contrast Assess
 
 [Contrast Assess](https://docs.contrastsecurity.com/en/assess.html) is an application security
 testing tool that combines Static (SAST), Dynamic (DAST), and Interactive Application Security
@@ -82,7 +82,7 @@ mvn verify -Passess
 ```
 
 
-## Contrast Scan
+### Contrast Scan
 
 Contrast Scan is a static application security testing (SAST) tool that makes it easy for you to
 find and remediate vulnerabilities in your Java web applications.

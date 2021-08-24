@@ -18,10 +18,20 @@ final class Verifiers {
   /** @return new {@link Verifier} for the /it/spring-boot sample Maven project */
   static Verifier springBoot(final ConnectionParameters connection)
       throws IOException, VerificationException {
-    final File projectDir =
-        ResourceExtractor.simpleExtractResources(
-            ContrastInstallAgentMojoIT.class, "/it/spring-boot");
+    final String path = "/it/spring-boot";
+    return verifier(connection, path);
+  }
 
+  /** @return new {@link Verifier} for the /it/parent-pom sample Maven project */
+  static Verifier parentPOM(final ConnectionParameters connection)
+      throws IOException, VerificationException {
+    final String path = "/it/parent-pom";
+    return verifier(connection, path);
+  }
+
+  private static Verifier verifier(final ConnectionParameters connection, final String path)
+      throws IOException, VerificationException {
+    final File projectDir = ResourceExtractor.simpleExtractResources(Verifiers.class, path);
     final Verifier verifier = new Verifier(projectDir.getAbsolutePath());
     final String testRepository =
         Objects.requireNonNull(
