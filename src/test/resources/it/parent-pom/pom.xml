@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.contrastsecurity.test</groupId>
+  <artifactId>test-parent-pom</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <description>Parent POM module that mistakenly includes the scan goal in its build</description>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>@project.groupId@</groupId>
+        <artifactId>@project.artifactId@</artifactId>
+        <version>@project.version@</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>scan</goal>
+            </goals>
+            <configuration>
+              <timeout>10000</timeout>
+            </configuration>
+          </execution>
+        </executions>
+        <configuration>
+          <username>${contrast.api.user_name}</username>
+          <organizationId>${contrast.api.organization_id}</organizationId>
+          <apiKey>${contrast.api.api_key}</apiKey>
+          <serviceKey>${contrast.api.service_key}</serviceKey>
+          <apiUrl>${contrast.api.url}</apiUrl>
+          <appName>spring-test-application</appName>
+          <serverName>spring-test-application-ci</serverName>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

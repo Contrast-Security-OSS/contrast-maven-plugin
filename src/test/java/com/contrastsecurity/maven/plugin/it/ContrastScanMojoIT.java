@@ -32,4 +32,21 @@ final class ContrastScanMojoIT {
     verifier.verifyTextInLog("Scan completed");
     verifier.assertFilePresent("./target/contrast-scan-reports/contrast-scan-results.sarif.json");
   }
+
+  @Test
+  void fails_when_no_artifact_detected(final ContrastAPI contrast)
+      throws VerificationException, IOException {
+    // GIVEN a POM project that uses the plugin
+    final Verifier verifier = Verifiers.parentPOM(contrast.connection());
+
+    // WHEN execute the "verify" goal
+    try {
+      verifier.executeGoal("verify");
+    } catch (VerificationException ignored) {
+    }
+
+    // THEN plugin fails because there is no artifact to scan
+    verifier.verifyTextInLog(
+        "Project's artifact file has not ben set - see https://contrastsecurity.dev/contrast-maven-plugin/troubleshooting/artifact-not-set.html");
+  }
 }
