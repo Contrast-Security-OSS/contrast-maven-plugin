@@ -105,9 +105,6 @@ The following example includes the `scan` goal in a `scan` profile
             <goals>
               <goal>scan</goal>
             </goals>
-            <configuration>
-              <projectId>my-contrast-scan-project-id</projectId>
-            </configuration>
           </execution>
         </executions>
       </plugin>
