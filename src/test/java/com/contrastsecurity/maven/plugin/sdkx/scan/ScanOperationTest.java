@@ -219,7 +219,7 @@ final class ScanOperationTest {
     // THEN operation ceases to poll for updates
     // sleep a little to allow executor's queue to clear out
     try {
-      Thread.sleep(10);
+      Thread.sleep(100);
     } catch (final InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new AssertionError("Interrupted", e);
