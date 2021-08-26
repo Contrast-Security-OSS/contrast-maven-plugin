@@ -15,10 +15,25 @@
   <version>2.13-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
 
+  <name>Contrast Maven Plugin</name>
+  <description>Maven plugin to test for vulnerabilities when running integration tests for a Java
+    application
+  </description>
+  <url>https://docs.contrastsecurity.com/en/maven.html</url>
+
   <organization>
-    <name>Contrast Security</name>
+    <name>Contrast Security, Inc.</name>
     <url>https://contrastsecurity.com</url>
   </organization>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+      <comments>A business-friendly OSS license</comments>
+    </license>
+  </licenses>
 
   <distributionManagement>
     <snapshotRepository>
@@ -40,12 +55,6 @@
     </developerConnection>
     <tag>HEAD</tag>
   </scm>
-
-  <name>Contrast Maven Plugin</name>
-  <description>Maven plugin to test for vulnerabilities when running integration tests for a Java
-    application
-  </description>
-  <url>https://docs.contrastsecurity.com/en/maven.html</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -152,41 +161,6 @@
 
     <plugins>
       <plugin>
-        <groupId>com.diffplug.spotless</groupId>
-        <artifactId>spotless-maven-plugin</artifactId>
-        <version>2.12.0</version>
-        <configuration>
-          <formats>
-            <format>
-              <includes>
-                <include>pom.xml</include>
-                <include>README.md</include>
-                <include>.github/workflows/**/*.yml</include>
-                <include>src/**/*.java</include>
-                <include>src/**/*.xml</include>
-                <include>src/**/*.properties</include>
-              </includes>
-              <trimTrailingWhitespace/>
-              <endWithNewline/>
-            </format>
-          </formats>
-          <java>
-            <googleJavaFormat>
-              <version>1.9</version>
-            </googleJavaFormat>
-            <removeUnusedImports/>
-          </java>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>check</goal>
-            </goals>
-            <phase>test-compile</phase>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <source>1.8</source>
@@ -199,6 +173,23 @@
             </path>
           </annotationProcessorPaths>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <!-- Always automatically add license file to generated sources -->
+            <id>update-generated-sources</id>
+            <goals>
+              <goal>update-file-header</goal>
+            </goals>
+            <phase>process-test-sources</phase>
+            <configuration>
+              <roots>${project.build.directory}/generated-sources</roots>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-plugin-plugin</artifactId>
@@ -360,7 +351,8 @@
             <!-- never use legacy JUnit tests for new integration tests -->
             <classpathDependencyExcludes>
               <classpathDependencyExclude>junit:junit</classpathDependencyExclude>
-              <classpathDependencyExclude>org.junit.vintage:junit-vintage-engine</classpathDependencyExclude>
+              <classpathDependencyExclude>org.junit.vintage:junit-vintage-engine
+              </classpathDependencyExclude>
             </classpathDependencyExcludes>
           </configuration>
         </plugin>
@@ -405,6 +397,42 @@
           <version>1.11.2</version>
         </plugin>
         <plugin>
+          <groupId>com.diffplug.spotless</groupId>
+          <artifactId>spotless-maven-plugin</artifactId>
+          <version>2.12.0</version>
+          <configuration>
+            <formats>
+              <format>
+                <includes>
+                  <include>pom.xml</include>
+                  <include>README.md</include>
+                  <include>.github/workflows/**/*.yml</include>
+                  <include>src/**/*.java</include>
+                  <include>src/**/*.xml</include>
+                  <include>src/**/*.properties</include>
+                </includes>
+                <trimTrailingWhitespace/>
+                <endWithNewline/>
+              </format>
+            </formats>
+            <java>
+              <googleJavaFormat>
+                <version>1.9</version>
+              </googleJavaFormat>
+              <removeUnusedImports/>
+            </java>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>license-maven-plugin</artifactId>
+          <version>2.0.0</version>
+          <configuration>
+            <licenseName>apache_v2</licenseName>
+            <inceptionYear>2021</inceptionYear>
+          </configuration>
+        </plugin>
+        <plugin>
           <groupId>org.sonatype.plugins</groupId>
           <artifactId>nexus-staging-maven-plugin</artifactId>
           <version>1.6.8</version>
@@ -414,6 +442,80 @@
 
   </build>
   <profiles>
+    <profile>
+      <id>developer</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>update-file-header</goal>
+                </goals>
+                <phase>process-test-sources</phase>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>com.diffplug.spotless</groupId>
+            <artifactId>spotless-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>apply</goal>
+                </goals>
+                <phase>process-test-sources</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>ci</id>
+      <activation>
+        <property>
+          <name>env.CI</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>check-file-header</goal>
+                </goals>
+                <phase>process-test-sources</phase>
+                <configuration>
+                  <failOnMissingHeader>true</failOnMissingHeader>
+                  <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>com.diffplug.spotless</groupId>
+            <artifactId>spotless-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>check</goal>
+                </goals>
+                <phase>process-test-sources</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <profile>
       <id>end-to-end-test</id>
       <!--
