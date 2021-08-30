@@ -64,8 +64,9 @@ public final class ContrastAPIStubExtension
 
   /**
    * @param context the current JUnit {@link ExtensionContext}
-   * @return {@link ExternalContrastAPI} if Contrast connection properties are provided, otherwise a
-   *     {@link FakeContrastAPI}
+   * @return {@link ExternalContrastAPI} if Contrast connection properties are provided, otherwise
+   *     fails. We leave open the possibility that we will once again provide a stubbed API e.g. one
+   *     that uses Pactflow hosted stubs.
    */
   private static ContrastAPI createFromConfiguration(final ExtensionContext context) {
     // gather configuration parameters from the current context
@@ -95,8 +96,8 @@ public final class ContrastAPIStubExtension
               .build();
       return new ExternalContrastAPI(connection);
     }
-    // default case, use a fake Contrast API
-    return new FakeContrastAPI();
+    throw new IllegalArgumentException(
+        "Context lacks required configuration for connecting to an external Contrast instance");
   }
 
   private static final Namespace NAMESPACE = Namespace.create(ContrastAPIStubExtension.class);

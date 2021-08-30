@@ -74,7 +74,7 @@
     <dependency>
       <groupId>com.contrastsecurity</groupId>
       <artifactId>contrast-sdk-java</artifactId>
-      <version>3.2-SNAPSHOT</version>
+      <version>3.3</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -210,8 +210,7 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
+          <release>8</release>
           <annotationProcessorPaths>
             <path>
               <groupId>com.google.auto.value</groupId>
@@ -264,85 +263,6 @@
             <phase>package</phase>
             <goals>
               <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>install-to-test-repository</id>
-            <phase>pre-integration-test</phase>
-            <goals>
-              <goal>copy</goal>
-            </goals>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>${project.groupId}</groupId>
-                  <artifactId>${project.artifactId}</artifactId>
-                  <version>${project.version}</version>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>${project.groupId}</groupId>
-                  <artifactId>${project.artifactId}</artifactId>
-                  <version>${project.version}</version>
-                  <type>pom</type>
-                </artifactItem>
-              </artifactItems>
-              <outputDirectory>
-                ${contrast.test-repository}/com/contrastsecurity/${project.artifactId}/${project.version}
-              </outputDirectory>
-            </configuration>
-          </execution>
-          <execution>
-            <id>retrieve-agent-for-testing</id>
-            <phase>pre-integration-test</phase>
-            <goals>
-              <goal>copy</goal>
-            </goals>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>com.contrastsecurity</groupId>
-                  <artifactId>contrast-agent</artifactId>
-                  <!-- practically any version will satisfy the needs of the test -->
-                  <version>3.8.5.20387</version>
-                </artifactItem>
-              </artifactItems>
-              <stripVersion>true</stripVersion>
-              <outputDirectory>
-                ${project.build.testOutputDirectory}
-              </outputDirectory>
-            </configuration>
-          </execution>
-          <execution>
-            <id>analyze-dependencies</id>
-            <phase>test</phase>
-            <goals>
-              <goal>analyze-only</goal>
-            </goals>
-            <configuration>
-              <failOnWarning>true</failOnWarning>
-              <!-- https://stackoverflow.com/a/27729783/501368 -->
-              <ignoreNonCompile>true</ignoreNonCompile>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <configuration>
-          <systemProperties>
-            <contrast.test-repository>${contrast.test-repository}</contrast.test-repository>
-          </systemProperties>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>integration-test</goal>
-              <goal>verify</goal>
             </goals>
           </execution>
         </executions>
@@ -478,6 +398,9 @@
         <plugin>
           <artifactId>maven-release-plugin</artifactId>
           <version>2.5.3</version>
+          <configuration>
+            <releaseProfiles>release</releaseProfiles>
+          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-scm-plugin</artifactId>
@@ -506,30 +429,107 @@
   <profiles>
     <profile>
       <id>end-to-end-test</id>
+      <activation>
+        <!-- active in CI by default -->
+        <property>
+          <name>${env.CI}</name>
+          <value>true</value>
+        </property>
+      </activation>
       <!--
-      This profile runs the integration tests with an external Contrast system instead of a stub.
+      This profile runs the integration tests with an external Contrast system.
       Developers configure the connection to the external system using Contrast environment
-      variables for connecting to a
+      variables for connecting to Contrast.
       -->
       <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <artifactId>maven-failsafe-plugin</artifactId>
-              <configuration>
-                <systemProperties>
-                  <contrast.api.url>${env.CONTRAST__API__URL}</contrast.api.url>
-                  <contrast.api.user_name>${env.CONTRAST__API__USER_NAME}</contrast.api.user_name>
-                  <contrast.api.api_key>${env.CONTRAST__API__API_KEY}</contrast.api.api_key>
-                  <contrast.api.service_key>${env.CONTRAST__API__SERVICE_KEY}
-                  </contrast.api.service_key>
-                  <contrast.api.organization_id>${env.CONTRAST__API__ORGANIZATION_ID}
-                  </contrast.api.organization_id>
-                </systemProperties>
-              </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
+        <plugins>
+          <plugin>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>install-to-test-repository</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>copy</goal>
+                </goals>
+                <configuration>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>${project.groupId}</groupId>
+                      <artifactId>${project.artifactId}</artifactId>
+                      <version>${project.version}</version>
+                    </artifactItem>
+                    <artifactItem>
+                      <groupId>${project.groupId}</groupId>
+                      <artifactId>${project.artifactId}</artifactId>
+                      <version>${project.version}</version>
+                      <type>pom</type>
+                    </artifactItem>
+                  </artifactItems>
+                  <outputDirectory>
+                    ${contrast.test-repository}/com/contrastsecurity/${project.artifactId}/${project.version}
+                  </outputDirectory>
+                </configuration>
+              </execution>
+              <execution>
+                <id>retrieve-agent-for-testing</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>copy</goal>
+                </goals>
+                <configuration>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>com.contrastsecurity</groupId>
+                      <artifactId>contrast-agent</artifactId>
+                      <!-- practically any version will satisfy the needs of the test -->
+                      <version>3.8.5.20387</version>
+                    </artifactItem>
+                  </artifactItems>
+                  <stripVersion>true</stripVersion>
+                  <outputDirectory>
+                    ${project.build.testOutputDirectory}
+                  </outputDirectory>
+                </configuration>
+              </execution>
+              <execution>
+                <id>analyze-dependencies</id>
+                <phase>test</phase>
+                <goals>
+                  <goal>analyze-only</goal>
+                </goals>
+                <configuration>
+                  <failOnWarning>true</failOnWarning>
+                  <!-- https://stackoverflow.com/a/27729783/501368 -->
+                  <ignoreNonCompile>true</ignoreNonCompile>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <systemProperties>
+                <contrast.test-repository>${contrast.test-repository}</contrast.test-repository>
+                <contrast.api.url>${env.CONTRAST__API__URL}</contrast.api.url>
+                <contrast.api.user_name>${env.CONTRAST__API__USER_NAME}</contrast.api.user_name>
+                <contrast.api.api_key>${env.CONTRAST__API__API_KEY}</contrast.api.api_key>
+                <contrast.api.service_key>${env.CONTRAST__API__SERVICE_KEY}
+                </contrast.api.service_key>
+                <contrast.api.organization_id>${env.CONTRAST__API__ORGANIZATION_ID}
+                </contrast.api.organization_id>
+              </systemProperties>
+            </configuration>
+          </plugin>
+        </plugins>
       </build>
     </profile>
     <profile>
