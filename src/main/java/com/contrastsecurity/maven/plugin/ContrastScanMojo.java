@@ -46,7 +46,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -137,7 +136,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
   }
 
   @Override
-  public void execute() throws MojoExecutionException, MojoFailureException {
+  public void execute() throws MojoFailureException, MojoFailureException {
     // initialize plugin
     initialize();
     final Projects projects = contrast.scan(getOrganizationId()).projects();
@@ -159,7 +158,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     try {
       codeArtifact = project.codeArtifacts().upload(file);
     } catch (final IOException | HttpResponseException e) {
-      throw new MojoExecutionException("Failed to upload code artifact to Contrast Scan", e);
+      throw new MojoFailureException("Failed to upload code artifact to Contrast Scan", e);
     }
 
     // start scan
@@ -169,7 +168,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
       scan =
           project.scans().define().withLabel(label).withExistingCodeArtifact(codeArtifact).create();
     } catch (final IOException | HttpResponseException e) {
-      throw new MojoExecutionException("Failed to start scan for code artifact " + codeArtifact, e);
+      throw new MojoFailureException("Failed to start scan for code artifact " + codeArtifact, e);
     }
 
     // show link in build log
@@ -226,16 +225,16 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
    *
    * @param projects project resource collection
    * @return existing or new {@link Project}
-   * @throws MojoExecutionException when fails to make request to the Scan API
+   * @throws MojoFailureException when fails to make request to the Scan API
    */
-  private Project findOrCreateProject(Projects projects) throws MojoExecutionException {
+  private Project findOrCreateProject(Projects projects) throws MojoFailureException {
     final Optional<Project> optional;
     try {
       optional = projects.findByName(projectName);
     } catch (final IOException e) {
-      throw new MojoExecutionException("Failed to retrieve project " + projectName, e);
+      throw new MojoFailureException("Failed to retrieve project " + projectName, e);
     } catch (final UnauthorizedException e) {
-      throw new MojoExecutionException(
+      throw new MojoFailureException(
           "Authentication failure while retrieving project "
               + projectName
               + " - verify Contrast connection configuration",
@@ -258,7 +257,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     try {
       return projects.define().withName(projectName).withLanguage("JAVA").create();
     } catch (final IOException | HttpResponseException e) {
-      throw new MojoExecutionException("Failed to create project " + projectName, e);
+      throw new MojoFailureException("Failed to create project " + projectName, e);
     }
   }
 
@@ -266,10 +265,10 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
    * visible for testing
    *
    * @return Contrast browser application URL for users to click-through and see their scan results
-   * @throws MojoExecutionException when the URL is malformed
+   * @throws MojoFailureException when the URL is malformed
    */
   URL createClickableScanURL(final String projectId, final String scanId)
-      throws MojoExecutionException {
+      throws MojoFailureException {
     final String path =
         String.join(
             "/",
@@ -287,7 +286,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
       final URL url = new URL(getURL());
       return new URL(url.getProtocol(), url.getHost(), url.getPort(), path);
     } catch (final MalformedURLException e) {
-      throw new MojoExecutionException(
+      throw new MojoFailureException(
           "Error building clickable Scan URL. Please contact support@contrastsecurity.com for help",
           e);
     }
@@ -296,13 +295,13 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
   /**
    * Waits for the scan to complete, writes results in SARIF to the file system, and optionally
    * displays a summary of the results in the console. Translates all errors that could occur while
-   * retrieving results to one of {@code MojoExecutionException} or {@code MojoFailureException}.
+   * retrieving results to one of {@code MojoFailureException} or {@code MojoFailureException}.
    *
    * @param scan the scan to wait for and retrieve the results of
-   * @throws MojoExecutionException when fails to retrieve scan results for unexpected reasons
+   * @throws MojoFailureException when fails to retrieve scan results for unexpected reasons
    * @throws MojoFailureException when the wait for scan results operation times out
    */
-  private void waitForResults(final Scan scan) throws MojoExecutionException, MojoFailureException {
+  private void waitForResults(final Scan scan) throws MojoFailureException, MojoFailureException {
     final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     try {
       final Path outputFile = outputPath.toPath();
@@ -310,7 +309,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
       try {
         Files.createDirectories(reportsDirectory);
       } catch (final IOException e) {
-        throw new MojoExecutionException("Failed to create Contrast Scan reports directory", e);
+        throw new MojoFailureException("Failed to create Contrast Scan reports directory", e);
       }
 
       final CompletionStage<Scan> await = scan.await(scheduler);
@@ -345,10 +344,10 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
       // ExecutionException should always have a cause, but its constructor does not enforce this,
       // so check if the cause is null
       final Throwable inner = cause == null ? e : cause;
-      throw new MojoExecutionException("Failed to retrieve Contrast Scan results", inner);
+      throw new MojoFailureException("Failed to retrieve Contrast Scan results", inner);
     } catch (final InterruptedException e) {
       Thread.currentThread().interrupt();
-      throw new MojoExecutionException("Interrupted while retrieving Contrast Scan results", e);
+      throw new MojoFailureException("Interrupted while retrieving Contrast Scan results", e);
     } catch (final TimeoutException e) {
       final Duration duration = Duration.ofMillis(timeoutMs);
       final String durationString =
@@ -388,9 +387,9 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
    * {@link #execute()} method
    *
    * @throws IllegalStateException when has already been initialized
-   * @throws MojoExecutionException when cannot connect to Contrast
+   * @throws MojoFailureException when cannot connect to Contrast
    */
-  private synchronized void initialize() throws MojoExecutionException {
+  private synchronized void initialize() throws MojoFailureException {
     if (contrast != null) {
       throw new IllegalStateException("Already initialized");
     }

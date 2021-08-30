@@ -20,7 +20,7 @@ package com.contrastsecurity.maven.plugin;
  * #L%
  */
 
-import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 
 /** Abstract mojo for mojos that report Assess data to a Contrast instrumented application */
@@ -63,9 +63,9 @@ abstract class AbstractAssessMojo extends AbstractContrastMojo {
   @Parameter(property = "serverName", required = true)
   private String serverName;
 
-  void verifyAppIdOrNameNotNull() throws MojoExecutionException {
+  void verifyAppIdOrNameNotNull() throws MojoFailureException {
     if (appId == null && appName == null) {
-      throw new MojoExecutionException(
+      throw new MojoFailureException(
           "Please specify appId or appName in the plugin configuration.");
     }
   }
