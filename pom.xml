@@ -295,7 +295,8 @@
         <version>3.1.0</version>
         <configuration>
           <scmBranch>gh-pages</scmBranch>
-          <serverId>github</serverId>
+          <username>${env.GITHUB_ACTOR}</username>
+          <password>${env.GITHUB_TOKEN}</password>
         </configuration>
         <executions>
           <execution>
