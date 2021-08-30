@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import org.apache.maven.model.Plugin;
-import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -158,7 +158,7 @@ public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
     environmentToSessionMetadata.put("CIRCLE_BUILD_NUM", "buildNumber");
   }
 
-  public void execute() throws MojoExecutionException {
+  public void execute() throws MojoFailureException {
     verifyAppIdOrNameNotNull();
     getLog().info("Attempting to connect to Contrast and install the Java agent.");
 
@@ -207,7 +207,7 @@ public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
   }
 
   private String getAppName(ContrastSDK contrastSDK, String applicationId)
-      throws MojoExecutionException {
+      throws MojoFailureException {
     Applications applications;
     try {
       final String organizationID = getOrganizationId();
@@ -221,10 +221,10 @@ public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
         logMessage =
             "\n\n Unable to retrieve the application list from Contrast. Please check Contrast connection configuration\n";
       }
-      throw new MojoExecutionException(logMessage, e);
+      throw new MojoFailureException(logMessage, e);
     }
     if (applications.getApplication() == null) {
-      throw new MojoExecutionException(
+      throw new MojoFailureException(
           "\n\nApplication with id '"
               + applicationId
               + "' not found. Make sure this application appears in Contrast under the 'Applications' tab.\n");
@@ -358,12 +358,12 @@ public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
     return newArgLine.trim();
   }
 
-  Path installJavaAgent(ContrastSDK connection) throws MojoExecutionException {
+  Path installJavaAgent(ContrastSDK connection) throws MojoFailureException {
     if (jarPath != null) {
       getLog().info("Using configured jar path " + jarPath);
       final Path agent = Paths.get(jarPath);
       if (!Files.exists(agent)) {
-        throw new MojoExecutionException("Unable to load the local Java agent from " + jarPath);
+        throw new MojoFailureException("Unable to load the local Java agent from " + jarPath);
       }
       getLog().info("Loaded the latest java agent from " + jarPath);
       return agent;
@@ -375,11 +375,11 @@ public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
     try {
       bytes = connection.getAgent(AgentType.JAVA, organizationID);
     } catch (IOException e) {
-      throw new MojoExecutionException(
+      throw new MojoFailureException(
           "\n\nCouldn't download the Java agent from Contrast. Please check that all your credentials are correct. If everything is correct, please contact Contrast Support. The error is:",
           e);
     } catch (UnauthorizedException e) {
-      throw new MojoExecutionException(
+      throw new MojoFailureException(
           "\n\nWe contacted Contrast successfully but couldn't authorize with the credentials you provided. The error is:",
           e);
     }
@@ -388,7 +388,7 @@ public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
     try {
       Files.write(agent, bytes, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
     } catch (final IOException e) {
-      throw new MojoExecutionException("Unable to save the latest java agent.", e);
+      throw new MojoFailureException("Unable to save the latest java agent.", e);
     }
     getLog().info("Saved the latest java agent to " + agent.toAbsolutePath());
     return agent;

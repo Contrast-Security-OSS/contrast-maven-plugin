@@ -31,7 +31,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
-import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -63,7 +63,7 @@ final class ContrastScanMojoTest {
         "https://app.contrastsecurity.com/Contrast/api/"
       })
   @ParameterizedTest
-  void it_generates_clickable_url(final String url) throws MojoExecutionException {
+  void it_generates_clickable_url(final String url) throws MojoFailureException {
     // GIVEN a scan mojo with known URL, organization ID, and project ID
     mojo.setURL(url);
     mojo.setOrganizationId("organization-id");

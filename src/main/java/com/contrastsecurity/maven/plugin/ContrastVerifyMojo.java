@@ -38,7 +38,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -57,7 +57,7 @@ public final class ContrastVerifyMojo extends AbstractAssessMojo {
   @Parameter(property = "minSeverity", defaultValue = "Medium")
   String minSeverity;
 
-  public void execute() throws MojoExecutionException {
+  public void execute() throws MojoFailureException {
     verifyAppIdOrNameNotNull();
     ContrastSDK contrast = connectToContrast();
 
@@ -98,9 +98,9 @@ public final class ContrastVerifyMojo extends AbstractAssessMojo {
       final String organizationID = getOrganizationId();
       traces = contrast.getTraces(organizationID, applicationId, form);
     } catch (IOException e) {
-      throw new MojoExecutionException("Unable to retrieve the traces.", e);
+      throw new MojoFailureException("Unable to retrieve the traces.", e);
     } catch (UnauthorizedException e) {
-      throw new MojoExecutionException("Unable to connect to Contrast.", e);
+      throw new MojoFailureException("Unable to connect to Contrast.", e);
     }
 
     if (traces != null && traces.getCount() > 0) {
@@ -110,7 +110,7 @@ public final class ContrastVerifyMojo extends AbstractAssessMojo {
         getLog().info(generateTraceReport(trace));
       }
 
-      throw new MojoExecutionException(
+      throw new MojoFailureException(
           "Your application is vulnerable. Please see the above report for new vulnerabilities.");
     } else {
       getLog().info("No new vulnerabilities were found.");
@@ -135,10 +135,10 @@ public final class ContrastVerifyMojo extends AbstractAssessMojo {
    * @param sdk Contrast SDK object
    * @param applicationId application id to filter on
    * @return List<Long> id of the servers
-   * @throws MojoExecutionException
+   * @throws MojoFailureException
    */
   private List<Long> getServerId(ContrastSDK sdk, String applicationId)
-      throws MojoExecutionException {
+      throws MojoFailureException {
     ServerFilterForm serverFilterForm = new ServerFilterForm();
     serverFilterForm.setApplicationIds(Arrays.asList(applicationId));
 
@@ -150,9 +150,9 @@ public final class ContrastVerifyMojo extends AbstractAssessMojo {
       serverFilterForm.setQ(URLEncoder.encode(getServerName(), "UTF-8"));
       servers = sdk.getServersWithFilter(organizationID, serverFilterForm);
     } catch (IOException e) {
-      throw new MojoExecutionException("Unable to retrieve the servers.", e);
+      throw new MojoFailureException("Unable to retrieve the servers.", e);
     } catch (UnauthorizedException e) {
-      throw new MojoExecutionException("Unable to connect to Contrast.", e);
+      throw new MojoFailureException("Unable to connect to Contrast.", e);
     }
 
     if (!servers.getServers().isEmpty()) {
@@ -161,7 +161,7 @@ public final class ContrastVerifyMojo extends AbstractAssessMojo {
         serverIds.add(server.getServerId());
       }
     } else {
-      throw new MojoExecutionException(
+      throw new MojoFailureException(
           "\n\nServer with name '"
               + getServerName()
               + "' not found. Make sure this server name appears in Contrast under the 'Servers' tab.\n");
@@ -176,10 +176,10 @@ public final class ContrastVerifyMojo extends AbstractAssessMojo {
    * @param sdk Contrast SDK object
    * @param applicationName application name to filter on
    * @return String of the application
-   * @throws MojoExecutionException
+   * @throws MojoFailureException
    */
   private String getApplicationId(ContrastSDK sdk, String applicationName)
-      throws MojoExecutionException {
+      throws MojoFailureException {
 
     Applications applications;
 
@@ -187,7 +187,7 @@ public final class ContrastVerifyMojo extends AbstractAssessMojo {
     try {
       applications = sdk.getApplications(organizationID);
     } catch (Exception e) {
-      throw new MojoExecutionException(
+      throw new MojoFailureException(
           "\n\nUnable to retrieve the application list from Contrast. Please check Contrast connection configuration\n",
           e);
     }
@@ -198,7 +198,7 @@ public final class ContrastVerifyMojo extends AbstractAssessMojo {
       }
     }
 
-    throw new MojoExecutionException(
+    throw new MojoFailureException(
         "\n\nApplication with name '"
             + applicationName
             + "' not found. Make sure this server name appears in Contrast under the 'Applications' tab.\n");

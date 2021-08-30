@@ -27,7 +27,7 @@ import java.net.InetSocketAddress;
 import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.settings.Settings;
 
@@ -166,9 +166,9 @@ abstract class AbstractContrastMojo extends AbstractMojo {
   /**
    * @return new ContrastSDK configured to connect with the authentication and proxy parameters
    *     defined by this abstract mojo
-   * @throws MojoExecutionException when fails to connect to Contrast
+   * @throws MojoFailureException when fails to connect to Contrast
    */
-  ContrastSDK connectToContrast() throws MojoExecutionException {
+  ContrastSDK connectToContrast() throws MojoFailureException {
     final Proxy proxy = getProxy();
     final UserAgentProduct maven = getUserAgentProduct();
     try {
@@ -178,7 +178,7 @@ abstract class AbstractContrastMojo extends AbstractMojo {
           .withUserAgentProduct(maven)
           .build();
     } catch (final IllegalArgumentException e) {
-      throw new MojoExecutionException(
+      throw new MojoFailureException(
           "\n\nWe couldn't connect to Contrast at this address [" + url + "]. The error is: ", e);
     }
   }
@@ -193,7 +193,7 @@ abstract class AbstractContrastMojo extends AbstractMojo {
     return UserAgentProduct.of("contrast-maven-plugin", Version.VERSION, comment);
   }
 
-  private Proxy getProxy() throws MojoExecutionException {
+  private Proxy getProxy() throws MojoFailureException {
     Proxy proxy = Proxy.NO_PROXY;
     final org.apache.maven.settings.Proxy proxySettings = settings.getActiveProxy();
     if (useProxy) {
@@ -201,7 +201,7 @@ abstract class AbstractContrastMojo extends AbstractMojo {
       if (proxyHost != null && proxyPort != 0) {
         proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
       } else {
-        throw new MojoExecutionException(
+        throw new MojoFailureException(
             "When useProxy is true, proxyHost and proxyPort is required.");
       }
     } else if (proxySettings != null) {
