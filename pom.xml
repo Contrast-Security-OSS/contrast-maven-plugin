@@ -20,6 +20,13 @@
     <url>https://contrastsecurity.com</url>
   </organization>
 
+  <developers>
+    <developer>
+      <name>Contrast Security</name>
+      <email>support@contrastsecurity.com</email>
+    </developer>
+  </developers>
+
   <licenses>
     <license>
       <name>Apache License, Version 2.0</name>
