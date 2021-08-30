@@ -1,4 +1,4 @@
-package com.contrastsecurity.maven.plugin.sdkx.scan;
+package com.contrastsecurity.maven.plugin;
 
 /*-
  * #%L
@@ -20,25 +20,12 @@ package com.contrastsecurity.maven.plugin.sdkx.scan;
  * #L%
  */
 
-import com.contrastsecurity.maven.plugin.sdkx.Scan;
-import java.util.Objects;
+/** Constants that describe this artifact. */
+public final class Version {
 
-/** Indicates a condition that prevents Contrast Scan from completing an analysis */
-public class ScanException extends RuntimeException {
+  /** Version of this contrast-maven-plugin */
+  public static final String VERSION = "${project.version}";
 
-  private final Scan scan;
-
-  /**
-   * @param scan the scan that cannot be completed
-   * @param message exception message
-   */
-  public ScanException(final Scan scan, final String message) {
-    super(message);
-    this.scan = Objects.requireNonNull(scan);
-  }
-
-  /** @return the scan that cannot be completed */
-  public final Scan getScan() {
-    return scan;
-  }
+  /** static members only */
+  private Version() {}
 }
