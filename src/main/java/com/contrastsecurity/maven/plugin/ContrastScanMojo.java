@@ -55,7 +55,7 @@ import org.apache.maven.project.MavenProject;
 /**
  * Analyzes the Maven project's artifact with Contrast Scan to provide security insights
  *
- * @since 2.13
+ * @since 2.13.0
  */
 @Mojo(
     name = "scan",
