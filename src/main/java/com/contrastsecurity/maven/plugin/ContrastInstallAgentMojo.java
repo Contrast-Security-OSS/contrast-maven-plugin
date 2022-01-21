@@ -314,7 +314,10 @@ public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
     StringBuilder argLineBuilder = new StringBuilder();
     argLineBuilder.append(currentArgLine);
     argLineBuilder.append(" -javaagent:").append(contrastAgentLocation);
-    argLineBuilder.append(" -Dcontrast.server=").append(getServerName());
+    final String serverName = getServerName();
+    if (serverName != null) {
+      argLineBuilder.append(" -Dcontrast.server=").append(serverName);
+    }
     if (environment != null) {
       argLineBuilder.append(" -Dcontrast.env=").append(environment);
     } else {

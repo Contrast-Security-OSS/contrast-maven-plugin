@@ -59,8 +59,7 @@ abstract class AbstractAssessMojo extends AbstractContrastMojo {
   private String appId;
 
   /** Overrides the reported server name */
-  // TODO[JG] why is this required?
-  @Parameter(property = "serverName", required = true)
+  @Parameter(property = "serverName")
   private String serverName;
 
   void verifyAppIdOrNameNotNull() throws MojoFailureException {

@@ -148,6 +148,13 @@ public class ContrastInstallAgentMojoTest {
         "-javaagent:/usr/local/bin/contrast.jar -Dcontrast.server=Bushwood -Dcontrast.env=qa -Dcontrast.override.appversion=caddyshack-2 -Dcontrast.reporting.period=200 -Dcontrast.override.appname=caddyshack";
     assertEquals(expectedArgLine, installMojo.buildArgLine(currentArgLine));
 
+    installMojo.setServerName(null); // no server name
+    currentArgLine = "";
+    expectedArgLine =
+        "-javaagent:/usr/local/bin/contrast.jar -Dcontrast.env=qa -Dcontrast.override.appversion=caddyshack-2 -Dcontrast.reporting.period=200 -Dcontrast.override.appname=caddyshack";
+    assertEquals(expectedArgLine, installMojo.buildArgLine(currentArgLine));
+
+    installMojo.setServerName("Bushwood");
     installMojo.serverPath = "/home/tomcat/app/";
     currentArgLine = "";
     expectedArgLine =
