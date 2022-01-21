@@ -59,7 +59,6 @@
           <serviceKey>${contrast.api.service_key}</serviceKey>
           <apiUrl>${contrast.api.url}</apiUrl>
           <appName>spring-test-application</appName>
-          <serverName>spring-test-application-ci</serverName>
         </configuration>
       </plugin>
     </plugins>
