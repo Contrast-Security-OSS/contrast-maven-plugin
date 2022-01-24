@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
-## [Unreleased]
+## [2.13.2] - 2022-01-24
+### Changed
+- `install` and `verify` goals no longer require the `serverName` configuration parameter. The `serverName` configuration parameter can add stability to the `verify` goal for very active builds, but it is not strictly necessary nor desirable for most use cases.
+
+## [2.13.1] - 2021-08-31
 ### Added
 - Contrast Scan support
 
