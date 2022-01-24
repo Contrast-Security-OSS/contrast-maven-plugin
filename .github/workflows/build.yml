@@ -3,6 +3,10 @@ name: build
 on: [push]
 
 jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dangoslen/changelog-enforcer@v3
   build:
     name: Verify
     runs-on: ubuntu-latest
