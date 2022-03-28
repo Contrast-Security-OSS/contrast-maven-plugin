@@ -35,14 +35,18 @@ import org.apache.maven.it.util.ResourceExtractor;
  */
 final class Verifiers {
 
-  /** @return new {@link Verifier} for the /it/spring-boot sample Maven project */
+  /**
+   * @return new {@link Verifier} for the /it/spring-boot sample Maven project
+   */
   static Verifier springBoot(final ConnectionParameters connection)
       throws IOException, VerificationException {
     final String path = "/it/spring-boot";
     return verifier(connection, path);
   }
 
-  /** @return new {@link Verifier} for the /it/parent-pom sample Maven project */
+  /**
+   * @return new {@link Verifier} for the /it/parent-pom sample Maven project
+   */
   static Verifier parentPOM(final ConnectionParameters connection)
       throws IOException, VerificationException {
     final String path = "/it/parent-pom";

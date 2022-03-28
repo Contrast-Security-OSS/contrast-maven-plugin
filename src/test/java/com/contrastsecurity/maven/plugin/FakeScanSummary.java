@@ -38,34 +38,54 @@ abstract class FakeScanSummary implements ScanSummary {
   @AutoValue.Builder
   abstract static class Builder {
 
-    /** @see ScanSummary#id() */
+    /**
+     * @see ScanSummary#id()
+     */
     abstract Builder id(String value);
 
-    /** @see ScanSummary#scanId() */
+    /**
+     * @see ScanSummary#scanId()
+     */
     abstract Builder scanId(String value);
 
-    /** @see ScanSummary#projectId() */
+    /**
+     * @see ScanSummary#projectId()
+     */
     abstract Builder projectId(String value);
 
-    /** @see ScanSummary#organizationId() */
+    /**
+     * @see ScanSummary#organizationId()
+     */
     abstract Builder organizationId(String value);
 
-    /** @see ScanSummary#duration() */
+    /**
+     * @see ScanSummary#duration()
+     */
     abstract Builder duration(Duration value);
 
-    /** @see ScanSummary#totalResults() */
+    /**
+     * @see ScanSummary#totalResults()
+     */
     abstract Builder totalResults(int value);
 
-    /** @see ScanSummary#totalNewResults() () */
+    /**
+     * @see ScanSummary#totalNewResults() ()
+     */
     abstract Builder totalNewResults(int value);
 
-    /** @see ScanSummary#totalFixedResults() () */
+    /**
+     * @see ScanSummary#totalFixedResults() ()
+     */
     abstract Builder totalFixedResults(int value);
 
-    /** @see ScanSummary#createdDate() */
+    /**
+     * @see ScanSummary#createdDate()
+     */
     abstract Builder createdDate(Instant value);
 
-    /** @return new {@link ScanSummary} */
+    /**
+     * @return new {@link ScanSummary}
+     */
     abstract FakeScanSummary build();
   }
 }

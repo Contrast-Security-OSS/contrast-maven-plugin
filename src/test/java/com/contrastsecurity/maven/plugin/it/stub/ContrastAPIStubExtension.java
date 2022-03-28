@@ -58,7 +58,9 @@ public final class ContrastAPIStubExtension
     contrast.stop();
   }
 
-  /** @return true if the parameter is of type {@link ContrastAPI} */
+  /**
+   * @return true if the parameter is of type {@link ContrastAPI}
+   */
   @Override
   public boolean supportsParameter(
       final ParameterContext parameterContext, final ExtensionContext extensionContext)
@@ -66,7 +68,9 @@ public final class ContrastAPIStubExtension
     return parameterContext.getParameter().getType() == ContrastAPI.class;
   }
 
-  /** @return the {@link ContrastAPI} in the current test context */
+  /**
+   * @return the {@link ContrastAPI} in the current test context
+   */
   @Override
   public Object resolveParameter(
       final ParameterContext parameterContext, final ExtensionContext extensionContext)
@@ -74,7 +78,9 @@ public final class ContrastAPIStubExtension
     return getContrastAPI(extensionContext);
   }
 
-  /** @return new or existing {@link ContrastAPI} in the current test context */
+  /**
+   * @return new or existing {@link ContrastAPI} in the current test context
+   */
   private static ContrastAPI getContrastAPI(final ExtensionContext context) {
     return context
         .getStore(NAMESPACE)

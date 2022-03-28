@@ -30,24 +30,36 @@ import java.util.Properties;
 @AutoValue
 public abstract class ConnectionParameters {
 
-  /** @return new {@link Builder} */
+  /**
+   * @return new {@link Builder}
+   */
   public static Builder builder() {
     return new AutoValue_ConnectionParameters.Builder();
   }
 
-  /** @return Contrast API URL e.g. https://app.contrastsecurity.com/Contrast/api */
+  /**
+   * @return Contrast API URL e.g. https://app.contrastsecurity.com/Contrast/api
+   */
   public abstract String url();
 
-  /** @return Contrast API username */
+  /**
+   * @return Contrast API username
+   */
   public abstract String username();
 
-  /** @return Contrast API Key */
+  /**
+   * @return Contrast API Key
+   */
   public abstract String apiKey();
 
-  /** @return Contrast API service key */
+  /**
+   * @return Contrast API service key
+   */
   public abstract String serviceKey();
 
-  /** @return Contrast organization ID */
+  /**
+   * @return Contrast organization ID
+   */
   public abstract String organizationID();
 
   /**
