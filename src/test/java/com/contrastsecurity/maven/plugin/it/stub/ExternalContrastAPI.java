@@ -30,7 +30,9 @@ final class ExternalContrastAPI implements ContrastAPI {
 
   private final ConnectionParameters connection;
 
-  /** @param connection the connection parameters constant to provide to users */
+  /**
+   * @param connection the connection parameters constant to provide to users
+   */
   public ExternalContrastAPI(final ConnectionParameters connection) {
     this.connection = Objects.requireNonNull(connection);
   }
