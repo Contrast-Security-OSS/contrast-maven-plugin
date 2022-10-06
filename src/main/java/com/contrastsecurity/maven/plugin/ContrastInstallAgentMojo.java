@@ -41,12 +41,13 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.FileUtils;
 
 /**
  * Includes the Contrast Java agent in integration testing to provide Contrast Assess runtime
  * security analysis.
  */
-@Mojo(name = "install", defaultPhase = LifecyclePhase.VALIDATE, requiresOnline = true)
+@Mojo(name = "install", defaultPhase = LifecyclePhase.PROCESS_SOURCES, requiresOnline = true)
 public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
 
   @Parameter(defaultValue = "${project}", readonly = true)
@@ -387,7 +388,13 @@ public final class ContrastInstallAgentMojo extends AbstractAssessMojo {
           e);
     }
     // Save the jar to the 'target' directory
-    final Path agent = Paths.get(project.getBuild().getDirectory(), AGENT_NAME);
+    final Path target = Paths.get(project.getBuild().getDirectory());
+    try {
+      FileUtils.forceMkdir(target.toFile());
+    } catch (final IOException e) {
+      throw new MojoFailureException("Unable to create directory " + target, e);
+    }
+    final Path agent = target.resolve(AGENT_NAME);
     try {
       Files.write(agent, bytes, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
     } catch (final IOException e) {

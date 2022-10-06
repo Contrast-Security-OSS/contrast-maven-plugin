@@ -41,7 +41,7 @@ export CONTRAST__API__URL=https://app.contrastsecurity.com/Contrast/api
 export CONTRAST__API__USER_NAME=<your-user-name>
 export CONTRAST__API__API_KEY=<your-api-key>
 export CONTRAST__API__SERVICE_KEY=<your-service-key>
-export CONTRAST__API__ORGANIZATION=<your-organization-id>
+export CONTRAST__API__ORGANIZATION_ID=<your-organization-id>
 ```
 
 You may find it useful to store the environment variable configuration in a file so that you can
