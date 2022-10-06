@@ -64,7 +64,6 @@
             <goals>
               <goal>install</goal>
             </goals>
-            <phase>pre-integration-test</phase>
           </execution>
         </executions>
         <configuration>
