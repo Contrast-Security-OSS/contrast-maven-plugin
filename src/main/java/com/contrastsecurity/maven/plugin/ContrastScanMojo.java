@@ -210,7 +210,7 @@ public final class ContrastScanMojo extends AbstractContrastMojo {
     final File file = artifact == null ? null : artifact.getFile();
     if (file == null) {
       throw new MojoFailureException(
-          "Project's artifact file has not ben set - see https://contrastsecurity.dev/contrast-maven-plugin/troubleshooting/artifact-not-set.html");
+          "Project's artifact file has not been set - see https://contrastsecurity.dev/contrast-maven-plugin/troubleshooting/artifact-not-set.html");
     }
     return file.toPath();
   }
