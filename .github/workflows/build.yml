@@ -11,26 +11,22 @@ jobs:
     name: Verify
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v2
+      - uses: actions/setup-java@v4
         with:
           java-version: 11
           distribution: temurin
 
-      - name: Cache Maven Wrapper
-        uses: actions/cache@v2
+      - uses: actions/setup-java@v4
         with:
-          path: ./.mvn/wrapper/maven-wrapper.jar
-          key: ${{ runner.os }}-maven-wrapper-${{ hashFiles('./.mvn/wrapper/maven-wrapper.properties') }}
-          restore-keys: ${{ runner.os }}-maven-wrapper
+          java-version: 17
+          distribution: temurin
 
-      - name: Cache Maven Repository
-        uses: actions/cache@v2
+      - uses: actions/setup-java@v4
         with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-m2-repository-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2-repository
+          java-version: 21
+          distribution: temurin
 
       - name: Maven Verify
         env:

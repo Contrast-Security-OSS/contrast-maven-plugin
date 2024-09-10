@@ -9,7 +9,11 @@ Available on [Maven Central](https://search.maven.org/search?q=a:contrast-maven-
 
 ## Building
 
-Requires JDK 11 to build
+Requires JDK 21 to build.
+
+Tests require JDK 11 and 17 to be set-up in [Maven
+Toolchains](https://maven.apache.org/guides/mini/guide-using-toolchains.html)
+and requires that Maven be on the `PATH`.
 
 Use `./mvnw verify` to build and test changes to the project
 
