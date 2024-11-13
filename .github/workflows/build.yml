@@ -35,4 +35,4 @@ jobs:
           CONTRAST__API__API_KEY: ${{ secrets.CONTRAST__API__API_KEY }}
           CONTRAST__API__SERVICE_KEY: ${{ secrets.CONTRAST__API__SERVICE_KEY }}
           CONTRAST__API__ORGANIZATION_ID: ${{ secrets.CONTRAST__API__ORGANIZATION_ID }}
-        run: ./mvnw --batch-mode -Pend-to-end-test verify
+        run: ./mvnw verify

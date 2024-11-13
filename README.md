@@ -1,5 +1,12 @@
 # Contrast Maven Plugin
 
+### This repository has been archived
+
+| The Contrast Maven Plugin source code has been moved to the [Contrast-SDK-Java repository](https://github.com/Contrast-Security-OSS/contrast-sdk-java)   |
+|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+#
+
+
 Maven plugin for including Contrast security analysis in Java web applications
 
 See [usage](https://contrastsecurity.dev/contrast-maven-plugin/usage.html) to get started
